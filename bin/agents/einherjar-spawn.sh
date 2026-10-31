@@ -749,6 +749,16 @@ if [ -z "$WT" ]; then
 fi
 [ -d "$WT" ] || { echo "error: Yggdrasil worktree missing: $WT" >&2; exit 1; }
 
+# Keep pi from loading extensions twice: a worktree is a copy of the project, so
+# its .pi/extensions/ collides with the project's own (pi walks up the tree and
+# loads both, failing with "Tool X conflicts"). Drop the worktree's copy so pi
+# resolves extensions from the project home (~/ymir/.pi/extensions) only. Mark
+# the path assume-unchanged so the deletion never leaks into the worker's commit.
+if [ -d "$WT/.pi/extensions" ]; then
+  rm -rf "$WT/.pi/extensions"
+  git -C "$WT" update-index --assume-unchanged .pi/extensions 2>/dev/null || true
+fi
+
 # A linked worktree's .git file points at the project's common git dir. Mount
 # that dir at the same path in the sandbox so git resolves inside Utgard.
 GIT_COMMON=
