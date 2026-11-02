@@ -32,6 +32,13 @@ able to choose a time — that is what a booking link is for. The administrative
 settings) is the part that belongs behind the gate; do not put the whole hostname behind Authelia or the
 only people who can book are the ones who already have an account.
 
+## The mirrored documents
+
+The hourly mirror copies a project's status documents onto the heart; the desk serves them at
+`/desk/docs/<project>/<file>`, behind the same membership rule as the record — a person who may not see a
+place may not read its mirrored documents either. Only flat `.md`, `.html` and `.txt` names are served, and
+nothing outside the project's own directory.
+
 ## The desk
 
 `bin/gimle/desk.py` renders the page behind the door: **due this week**, **last decisions**, **questions
