@@ -49,7 +49,9 @@ async function resolveYmirPaths(): Promise<{ root: string; home: string; state: 
       if (home) home = home.replace(/\/hodd$/, "") // hoard -> home
     } catch {}
   }
-  if (!home) home = `${process.env.HOME}/Documents/ymirhome`
+  // No guessed home: the resolver is the only place that knows where the hoard lives (RULES/07).
+  // A machine with neither YMIR_HOME nor a working `hodd.sh path` says so, loudly.
+  if (!home) throw new Error("YMIR_HOME not resolved — set YMIR_HOME or make bin/vault/hodd.sh path answer")
   
   const state = process.env.BROKK_STATE_OVERRIDE || `${home}/state`
   
