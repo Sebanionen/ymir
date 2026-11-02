@@ -129,3 +129,47 @@ tiers[4]{tier,what_it_is,what_it_needs of the host}
 **Why this is the important half of the rule.** The house has spent months making capabilities work on every
 *device* while assuming every user wants every *capability*. A person who wants an agent with a home, memory and
 a set of principles should not have to answer a question about the heart's role to get one.
+
+## 2026-11-02 (appended, second) — what belongs in a container, and what must never be
+
+Asked the same day: *"what things should be runed in containers? aduit this."* The audit is
+`hodd/docs/audits/2026-11-02-what-belongs-in-a-container.md` in the home; this is the law it produced.
+
+```
+container_law[5]{test,consequence}
+  "untrusted input over a network","container — a stranger's message, a peer's payload, a meeting's audio and a user's scene are all attack surface (Vexa, the ear, the whiteboard bridge, the MCP face, the mail desk)"
+  "third-party code with its own dependency closure","container — a runtime, a database, a Node/PHP/Ruby app; the version conflict is the house's problem, not the host's (Plane, AFFiNE, Cal.com, Forgejo, Authelia, Caddy, ntfy)"
+  "a capability the host should not grant casually","container — a browser, a GPU, raw sockets: grant it to the namespace, not to the operator"
+  "ephemeral, or must not see the home","container — this is Utgard's whole purpose"
+  "must read the operator's OWN truth to be honest","never — nornir, housewatch, the gates, groa-update, mimir and bifrost exist to read git, systemd, the home and the ledger; containerised they are blind, and a container over a mounted working tree inherits the drift it was meant to prevent (RULES/02 §7)"
+```
+
+**And the thing a container never buys:** version discipline for the runtime. That is a pinned checkout, not a
+namespace. Isolation is not a substitute for a deploy door.
+
+## 2026-11-02 (appended, third) — a capability is not installed until it works from any directory
+
+His word: *"ymir should not just work form booting agents with in ymirs repo/folder. ymir should work globally over the
+users computers."*
+
+Measured the same day (`hodd/docs/audits/2026-11-02-globally-not-just-in-the-repo.md`):
+
+- the **command** is global (`~/.npm-global/bin/ymir`), the **contract** is global for OpenCode, Claude and Codex
+  (`~/.config/opencode/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`) — and **absent for Pi**:
+  `~/.pi/agent/extensions/` holds `.ymir-root` and `.ymir-seat` and no extension, and there is no `~/.pi/AGENTS.md`;
+- the **capabilities** are global for no harness: the twelve Pi extensions and the OpenCode guards load only from
+  `.pi/extensions/` and `.opencode/plugins/` **inside the checkout**;
+- the published package carries **five** of those twelve extensions, so an installer that trusted the package would
+  hand the user less than half of what the house runs;
+- **486 scripts** resolve the root through `BASH_SOURCE`, which is correct inside a checkout and wrong behind any
+  symlink — a global `~/.local/bin` install would break them the way a moved shelf broke twenty-four Skírnir roots.
+
+```
+global_law[4]{rule,evidence}
+  "A CAPABILITY IS INSTALLED ONLY WHEN IT ANSWERS FROM A NEUTRAL DIRECTORY","the acceptance is `$HOME` and `/tmp`, never the checkout"
+  "THE ROOT RESOLVES THROUGH REALPATH, ONCE","one function in bin/fleet/ymir-platform.sh; a symlinked door must find the tree"
+  "EVERY HARNESS GETS THE CONTRACT AND THE CAPABILITIES IN ITS OWN GLOBAL DIR","present in three of four today; Pi is the gap, and the package's subset is the second gap"
+  "THE UPDATER RE-VERIFIES THE GLOBAL SET, NOT JUST THE CHECKOUT","otherwise a user's agent drifts from the house the moment they pull"
+```
+
+A house that only works where its own repository happens to be checked out is a house for its author.
