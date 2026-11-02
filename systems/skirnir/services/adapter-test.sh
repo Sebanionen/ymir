@@ -7,7 +7,10 @@
 # a bot message can never start a loop. A stub stands in for api.telegram.org (TELEGRAM_API_BASE).
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# The repo root, found by walking up to the tree that holds .pi and RULES — never counted in
+# "../", because this shelf was moved once (bin/assistant/ -> systems/skirnir/, plan 149) and
+# 25 scripts kept the old depth, so every $ROOT/bin/... pointed into systems/ instead (2026-11-02).
+ROOT="$(CDPATH='' cd "$SCRIPT_DIR" && while [ ! -e "$PWD/.pi" ] || [ ! -d "$PWD/RULES" ]; do [ "$PWD" = / ] && break; cd ..; done; pwd)"
 TMP="$(mktemp -d)"; export YMIR_HOME="$TMP/home" SKIRNIR_NO_ESCALATE=1
 # the hoard is RESOLVED, never guessed (Rule 07)
 . "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null || true
