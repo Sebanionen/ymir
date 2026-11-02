@@ -41,3 +41,19 @@ YMIR_HOME=/tmp/freshhome bin/engine/home-seed.sh --repo --yes → "initialised" 
 repeat run                                                 → "complete, every directory is already here"
 real home, --check                                         → "complete"
 ```
+
+## Appended — the contract arrived the same hour, and this door became its parser
+
+Another hand landed **RULES/42** and `.agents/home-contract.yaml` in the same sitting: *every file the runtime
+reads from the home, and how it reaches the user* — 45 rows, each naming a path, a kind (`seeded · stub ·
+defaulted · optional · generated`), the template that ships it, the door that writes it, whether the house can run
+without it, and why. Its ward calls **one parser** and refuses two truths.
+
+`bin/engine/home-seed.sh` is that parser now: `--list` prints the rows for the ward, and a plain run seeds every
+`seeded`/`stub`/`defaulted` row from its template when the file is **absent** — never overwriting what is there.
+Measured on a scratch home: 25 files arrive from the templates, the ward reports `45 rows, 0 findings, clean`, and
+a second run reports `complete`.
+
+So the answer to the Allfather's question is now the library's: *"all templates we need from ymir home in ymir so
+they come on updates and installations"* — they ship, the installer seeds them, Gróa re-checks the shelves, and a
+ward proves the three agree.
