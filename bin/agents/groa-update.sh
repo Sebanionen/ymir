@@ -189,25 +189,56 @@ if [ -x "$SCRIPT_DIR/../seat/valknut-load.sh" ]; then
     fi
   fi
 
-  # The harness CONTRACTS and the OpenCode plugin: an update that leaves a user's agent reading last
-  # month's law, or running without the house's tools, is not an update (RULES/13, 2026-11-02).
-  if [ -x "$SCRIPT_DIR/../seat/harness-contract-install.sh" ]; then
-    if bash "$SCRIPT_DIR/../seat/harness-contract-install.sh" --check >/dev/null 2>&1; then
-      printf 'harness contracts: current\n'
+  # THE HOME: an update cannot assume the home exists. Measured 2026-11-02 — a fresh operator was told
+  # "everything private lives in your home" and then met an empty directory. An update that finds it missing
+  # says so in plain words and lays it out; it never guesses and never overwrites.
+  if [ -x "$SCRIPT_DIR/../engine/home-seed.sh" ]; then
+    if [ "${CHECK:-0}" = "1" ]; then
+      if bash "$SCRIPT_DIR/../engine/home-seed.sh" --check >/dev/null 2>&1; then
+        printf 'home: shelves complete\n'
+      else
+        printf 'home: shelves incomplete — an update would lay them out (bin/engine/home-seed.sh)\n'
+      fi
     else
+      bash "$SCRIPT_DIR/../engine/home-seed.sh" --yes >/dev/null 2>&1 \
+        && printf 'home: shelves laid out and readme written\n' \
+        || printf 'home: home-seed could not lay the shelves out — run bin/engine/home-seed.sh and read its rows\n'
+    fi
+  fi
+  # THE HARNESSES: an update that leaves a user's agent reading last month's law, or running without the
+  # house's extensions, is not an update (RULES/13, 2026-11-02; his word: "all extentons and packets to all
+  # harnesses must come on uptaaes"). One verb does all of it, per harness the descriptors know about —
+  # contracts, plugins, hooks, rules — and it NAMES what it will not merge blindly (a user's own JSON).
+  if [ -x "$SCRIPT_DIR/../seat/harness-extensions-install.sh" ]; then
+    if [ "${CHECK:-0}" = "1" ]; then
+      # --check changes NOTHING: report, never write (an updater that writes during a dry run is not a dry run)
+      if bash "$SCRIPT_DIR/../seat/harness-extensions-install.sh" --check >/dev/null 2>&1; then
+        printf 'harnesses: extensions and contracts current\n'
+      else
+        printf 'harnesses: extensions or contracts are stale — an update would refresh them\n'
+      fi
+    elif ! bash "$SCRIPT_DIR/../seat/harness-extensions-install.sh" --check >/dev/null 2>&1; then
+      if bash "$SCRIPT_DIR/../seat/harness-extensions-install.sh" >/dev/null 2>&1; then
+        printf 'harnesses: extensions and contracts refreshed on every harness present\n'
+      else
+        printf 'FAIL — the harness extensions could not be refreshed.\n' >&2
+        printf '      run bin/seat/harness-extensions-install.sh and read its rows\n' >&2
+        seat_failed=1
+      fi
+    else
+      printf 'harnesses: extensions and contracts current\n'
+    fi
+  fi
+  if [ -x "$SCRIPT_DIR/../seat/harness-contract-install.sh" ]; then
+    if ! bash "$SCRIPT_DIR/../seat/harness-contract-install.sh" --check >/dev/null 2>&1; then
       bash "$SCRIPT_DIR/../seat/harness-contract-install.sh" >/dev/null 2>&1 \
         && printf 'harness contracts: relinked to the seat contract\n' \
         || { printf 'FAIL — a harness contract is stale and could not be relinked.\n' >&2; seat_failed=1; }
     fi
   fi
-  if [ -f "$SCRIPT_DIR/../.opencode/plugins/ymir-tools.ts" ] && command -v opencode >/dev/null 2>&1; then
-    mkdir -p "$HOME/.config/opencode/plugins"
-    if ! diff -q "$SCRIPT_DIR/../.opencode/plugins/ymir-tools.ts" "$HOME/.config/opencode/plugins/ymir-tools.ts" >/dev/null 2>&1; then
-      cp "$SCRIPT_DIR/../.opencode/plugins/ymir-tools.ts" "$HOME/.config/opencode/plugins/" \
-        && printf 'opencode plugin: redeployed (the tools changed this update)\n'
-    fi
-  fi
-  if "$SCRIPT_DIR/../seat/valknut-load.sh" --all --global >/dev/null 2>&1; then
+  if [ "${CHECK:-0}" = "1" ]; then
+    printf 'rebound: skipped (check mode writes nothing)\n'
+  elif "$SCRIPT_DIR/../seat/valknut-load.sh" --all --global >/dev/null 2>&1; then
     printf 'rebound (agents · skills · pi extensions)\n'
   else
     # A seat that could NOT be seated is not updated. This used to WARN and carry
