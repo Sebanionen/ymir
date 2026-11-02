@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",656
+  "shell doors (bin/*.sh)",657
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -291,7 +291,7 @@ capabilities[5]{surface,count}:
 | hermes-ensure.sh | hermes-ensure.sh — ensure the Hermes agent runtime is present. | tested+named | keep (a human or a cron row must run it) |
 | prereq-ensure.sh | prereq-ensure.sh — self-healing prerequisite engine for Ymir. | tested+named | keep (a human or a cron row must run it) |
 | prove-install.sh | prove-install.sh — THE INSTALL CLAUSE, proven or NAMED as a gap. | tested | keep (a human or a cron row must run it) |
-| runtime-deploy.sh | runtime-deploy.sh — move the PINNED runtime checkout to the merged tre | uncalled | **decide** — unnamed and untested: move it to src/ or hodd/reference/ (Rule 11), never delete |
+| runtime-deploy.sh | runtime-deploy.sh — move the PINNED runtime checkout to the merged tre | tested | keep (a human or a cron row must run it) |
 | version-stamp.sh | version-stamp.sh — a seat says exactly which build it runs (2026-09-22 | tested | keep (a human or a cron row must run it) |
 | ymir-autoboot.sh | ymir-autoboot.sh — the boot proof: what this seat's roles OWE, and whe | tested+named | keep (a human or a cron row must run it) |
 | ymir-config.sh | ymir-config.sh — the operator's own preferences, honoured and remember | tested | keep (a human or a cron row must run it) |
@@ -339,6 +339,7 @@ capabilities[5]{surface,count}:
 | extension-api-check.sh | extension-api-check.sh — a Ymir extension must speak Pi's ACTUAL tool  | tested+named | keep (a human or a cron row must run it) |
 | home-index-check.sh | home-index-check.sh — every shelf in the home has an index, and the in | tested | keep (a human or a cron row must run it) |
 | model-alias-check.sh | model-alias-check.sh — does every alias a body names resolve in the fl | tested+named | keep (a human or a cron row must run it) |
+| portability-ratchet.sh | portability-ratchet.sh — the GNU-only callers may go DOWN, never up. | tested | keep (a human or a cron row must run it) |
 | readme-claims.sh | readme-claims.sh — the user-facing documents must not claim what the t | tested | keep (a human or a cron row must run it) |
 | syn-arm-pretool-check.sh | syn-arm-pretool-check.sh - PreToolUse seatbelt for watcher-arm bash comm | tested+named | keep (a human or a cron row must run it) |
 | syn-asset-pretool-check.sh | syn-asset-pretool-check.sh — PreToolUse seatbelt for governed paths. | tested+named | keep (a human or a cron row must run it) |
@@ -380,7 +381,7 @@ capabilities[5]{surface,count}:
 | public-guard.sh | public-guard.sh — every PUBLIC, user-facing file must be free of opera | tested+named | keep (a human or a cron row must run it) |
 | rules-number-guard.sh | rules-number-guard.sh — the house law is NUMBERED, so no two rules may | tested | keep (a human or a cron row must run it) |
 | runtime-guard.sh | runtime-guard.sh — THE TREE IS NOT A RUNTIME. | tested | keep (a human or a cron row must run it) |
-| runtime-pinned-guard.sh | runtime-pinned-guard.sh — a unit that executes from a WORKING tree is  | uncalled | **decide** — unnamed and untested: move it to src/ or hodd/reference/ (Rule 11), never delete |
+| runtime-pinned-guard.sh | runtime-pinned-guard.sh — a unit that executes from a WORKING tree is  | tested | keep (a human or a cron row must run it) |
 | secret-guard.sh | secret-guard.sh — refuse to commit obvious secrets or private env file | tested+named | keep (a human or a cron row must run it) |
 | sensitive-gate.sh | sensitive-gate.sh — one gate for every external surface of a sensitive | tested | keep (a human or a cron row must run it) |
 | subsystem-docs-guard.sh | subsystem-docs-guard.sh — the books a subsystem names must exist, and  | tested | keep (a human or a cron row must run it) |
@@ -474,7 +475,7 @@ capabilities[5]{surface,count}:
 | ymir-state.sh | ymir-state.sh — the DOOR to the engine's STATE module (`src/ymir_runti | tested+named | keep (a human or a cron row must run it) |
 | gladsheim-ensure.sh | gladsheim-ensure.sh — seat the fleet room, whatever shape this machine | tested | keep (a human or a cron row must run it) |
 | gladsheim.sh | gladsheim.sh — the door to Gladsheim, the fleet room. | tested | keep (a human or a cron row must run it) |
-| harness-contract-install.sh | harness-contract-install.sh — every harness reads ONE contract, and an | uncalled | **decide** — unnamed and untested: move it to src/ or hodd/reference/ (Rule 11), never delete |
+| harness-contract-install.sh | harness-contract-install.sh — every harness reads ONE contract, and an | tested | keep (a human or a cron row must run it) |
 | herdr-ensure.sh | herdr-ensure.sh — Þjazi: guarantee the terminal backend Ymir needs. | tested+named | keep (a human or a cron row must run it) |
 | herdr-run.sh | herdr-run.sh — raise an Eindri in herdr, by the grain that fits the er | tested+named | keep (a human or a cron row must run it) |
 | valknut-load.sh | valknut-load.sh — Valknut, the knot that binds the repo distro into ea | tested+named | keep (a human or a cron row must run it) |

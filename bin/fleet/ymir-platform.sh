@@ -241,3 +241,76 @@ ymir_isolation_layers() {
   [ -n "$out" ] || out="none"
   printf '%s' "$out"
 }
+
+# ── the host facilities every door uses, without naming a GNU tool ───────────
+#
+# Measured 2026-11-02: 43 scripts call `stat -c`, 43 call `sha256sum`, 10 `flock`, 7 `mapfile`, 6 `setsid`,
+# 5 `nproc`, 4 `sed -i` — every one of them GNU-only, and none routed through here. These are the verbs;
+# a script that needs the facility calls the verb (RULES/05, 2026-11-02 appended).
+
+ymir_stat() {  # <format: size|mtime|mode> <path>
+  local what=$1 path=$2
+  case "$(ymir_os)" in
+    macos|msys)
+      case "$what" in
+        size)  stat -f '%z' "$path" ;;
+        mtime) stat -f '%m' "$path" ;;
+        mode)  stat -f '%Lp' "$path" ;;
+        *)     return 2 ;;
+      esac ;;
+    *)
+      case "$what" in
+        size)  stat -c '%s' "$path" ;;
+        mtime) stat -c '%Y' "$path" ;;
+        mode)  stat -c '%a' "$path" ;;
+        *)     return 2 ;;
+      esac ;;
+  esac
+}
+
+ymir_sha256() {  # <file|-> — prints the bare digest
+  if command -v sha256sum >/dev/null 2>&1; then sha256sum "$@" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then shasum -a 256 "$@" | awk '{print $1}'
+  elif command -v openssl >/dev/null 2>&1; then openssl dgst -sha256 -r "$@" | awk '{print $1}'
+  else return 1; fi
+}
+
+ymir_nproc() {  # how many CPUs this host will give us
+  if command -v nproc >/dev/null 2>&1; then nproc
+  elif command -v sysctl >/dev/null 2>&1; then sysctl -n hw.ncpu 2>/dev/null || printf '1'
+  else printf '1'; fi
+}
+
+ymir_sed_i() {  # <script> <file...> — in place, whichever sed this is
+  case "$(ymir_os)" in
+    macos|msys) sed -i '' "$@" ;;
+    *)          sed -i "$@" ;;
+  esac
+}
+
+ymir_lock() {  # <lockfile> <command...> — an exclusive lock, flock where it exists, a mkdir-lock where not
+  local lock=$1; shift
+  if command -v flock >/dev/null 2>&1; then
+    exec 9>"$lock" || return 1
+    flock -n 9 || return 1
+    "$@"; local rc=$?
+    flock -u 9 2>/dev/null || true
+    return $rc
+  fi
+  local d="$lock.d"
+  mkdir "$d" 2>/dev/null || return 1
+  "$@"; local rc=$?
+  rmdir "$d" 2>/dev/null || true
+  return $rc
+}
+
+ymir_read_lines() {  # <array-name> <file> — mapfile where bash has it, a while-read where it does not (3.2)
+  local __name=$1 __file=$2 __line
+  eval "$__name=()"
+  if [ "${BASH_VERSINFO[0]}" -ge 4 ] && [ -n "${BASH_VERSINFO[1]:-}" ]; then
+    mapfile -t "$__name" <"$__file" && return 0
+  fi
+  while IFS= read -r __line || [ -n "$__line" ]; do
+    eval "$__name+=(\"\$__line\")"
+  done <"$__file"
+}

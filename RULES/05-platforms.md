@@ -114,3 +114,20 @@ launchd or Task Scheduler equivalent.
 **What the rule therefore demands of the next change:** a platform claim is made only for a layer that has been
 *run* in the last thirty days, and every new core script that touches a host facility goes through
 `bin/fleet/ymir-platform.sh` — not through a GNU tool name.
+
+## 2026-11-02 (appended, later) — what shipped, and the words "Windows" and "portable" still do not mean what they sound like
+
+**Merged and live:** the pinned runtime (`~/ymir-runtime`, ten units, `bin/engine/runtime-deploy.sh`,
+`runtime-pinned-guard`), the harness-contract installer, the recovered OpenCode plugin, and the first gate routed
+through the platform shim (`vault-guard` → `ymir_sha256`).
+
+**In review, not merged:** the shim's six verbs, the portability ratchet, and the Windows package manifests
+(`winget`, `scoop`) beside the NSIS installer.
+
+**The honest state, in one paragraph, for whoever reads this rule next.** Windows works by hosting Linux: the NSIS
+installer raises Ubuntu on WSL2 and runs the Linux install inside it — packaged, and *not proved*, because no clean
+Windows machine has run it and the installer workflow last executed on 2026-09-16. Portability is 1 of 82: the verbs
+exist and the ratchet holds the line, but 33 tracked files still call `stat -c`, 33 `sha256sum`, 7 `mapfile`,
+5 `flock`, 3 `sed -i`, 1 `nproc`, and the service surface is still 26 systemd units with no launchd or Windows
+rendering. A rule that says "runs on Linux, macOS and Windows" while all of that is true is a rule that needs this
+paragraph attached to it — which is what this is.
