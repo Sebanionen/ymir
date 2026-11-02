@@ -1270,6 +1270,20 @@ step_opencode_v2_plugin() {
   fi
 }
 
+# ── Codex plugin: the same Ymir doors, served through stdio MCP ──────────────
+step_codex_plugin() {
+  have codex || { add codex-plugin SKIP "no codex on this host — nothing to integrate with"; return 0; }
+  have node || { add codex-plugin FAIL "node is required for the Codex plugin"; return 0; }
+  local door="$SCRIPT_DIR/../seat/codex-plugin-install.mjs" output
+  [ -f "$door" ] || { add codex-plugin FAIL "the Codex plugin installer is missing from this package"; return 0; }
+  local args=(); [ "$CHECK" = 1 ] && args+=(--check)
+  if output="$(node "$door" "${args[@]}" 2>&1)"; then
+    add codex-plugin OK "$output"
+  else
+    add codex-plugin FAIL "$output"
+  fi
+}
+
 # ── 6b. delivery gates (git hooks) ───────────────────────────────────────────
 #
 # Rule 08: work leaves by PR, and every push carries a fix note. The
@@ -1689,6 +1703,7 @@ run_step step_spa "the spa"
 run_step step_omarchy "omarchy layer"
 run_step step_loaders "loaders"
   run_step step_opencode_v2_plugin "opencode V2 plugin"
+run_step step_codex_plugin "Codex plugin"
   run_step step_council "the council of models"
 run_step step_vault "the vault"
 run_step step_garmr "the hound"

@@ -1340,3 +1340,23 @@ the fleet shape) · plan 73 (Gladsheim) · tickets ymir/55, ymir/57.
 cleanly to `single`/`standalone` on a box with no registry. Every shape‑dependent step —
 this one included — **asks it**, and none re‑derives the shape by hand (plan 76, the shape
 law; Rule 07's reason applied to topology).
+
+
+## Codex receives the house tools on setup and update
+
+`step_codex_plugin` runs `node bin/seat/codex-plugin-install.mjs` on a host with
+Codex. Its computed-plan row is `codex-plugin`; `--check` proves the installed
+source, enabled registration and cache instead of merely checking that a source
+file exists. Missing Node or unsupported Codex plugin commands fail the step.
+
+The same helper is called after every normal Gróa update and returns failure to
+the updater if refresh or verification fails. It uses Codex's own local marketplace
+and plugin commands, retains unrelated Codex config, and preserves an explicit
+operator disable. Generated plugin paths live in `CODEX_HOME`, never in the public
+Ymir source tree. See `harness-integration/codex.md` for layout and verification.
+
+The npm package already includes `.agents/` and `bin/`, so clone installs and npm
+installs receive the same Codex plugin source and deployment helper. Linux and
+macOS use the same Node helper; Windows follows the existing WSL runtime layer.
+A successful local CLI test does not establish that the entire Windows/WSL fleet
+runtime is installed or working; its shell and service checks remain required.

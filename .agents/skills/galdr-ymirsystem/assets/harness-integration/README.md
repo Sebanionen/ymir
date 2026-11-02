@@ -1412,3 +1412,14 @@ Two limits, stated because a later reader will meet them:
   extensions would stop recognising its own worktree once sparse. The real tree keeps
   `.pi/agents`, `.pi/shared` and `.pi/mcp-adapter.json` beside them, and the test's fixture
   mirrors that deliberately. The walk itself is unchanged.
+
+
+## Codex model tools — the same owner scripts
+
+Codex now has a packaged tools adapter at `.agents/harness/codex/`, alongside
+`.agents/harness/opencode/plugins/ymir-tools.ts` and the Pi extension tree.
+`bin/seat/codex-plugin-install.mjs` installs and verifies its local marketplace,
+plugin cache and enabled state; first setup and Gróa both call this one door.
+It serves the shared model tools via stdio MCP. Pi-specific UI callbacks stay in
+Pi. Existing Codex project hooks and canonical skill/agent bindings remain their
+own surfaces. See `codex.md` for the install/update contract and honest test limits.
