@@ -13,7 +13,10 @@
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# The repo root, found by walking up to the tree that holds .pi and RULES — never counted in
+# "../", because this shelf was moved once (bin/assistant/ -> systems/skirnir/, plan 149) and
+# 25 scripts kept the old depth, so every $ROOT/bin/... pointed into systems/ instead (2026-11-02).
+ROOT="$(CDPATH='' cd "$SCRIPT_DIR" && while [ ! -e "$PWD/.pi" ] || [ ! -d "$PWD/RULES" ]; do [ "$PWD" = / ] && break; cd ..; done; pwd)"
 VERBOSE=0; [ "${1-}" = "--verbose" ] && VERBOSE=1
 
 TMP="$(mktemp -d)"

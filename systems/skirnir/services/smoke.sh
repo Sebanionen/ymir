@@ -15,7 +15,10 @@
 # seat with the host's microphone, the invented Trello id, the silent no-answer, the empty digest.
 set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+# The repo root, found by walking up to the tree that holds .pi and RULES — never counted in
+# "../", because this shelf was moved once (bin/assistant/ -> systems/skirnir/, plan 149) and
+# 25 scripts kept the old depth, so every $ROOT/bin/... pointed into systems/ instead (2026-11-02).
+ROOT="$(CDPATH='' cd "$SCRIPT_DIR" && while [ ! -e "$PWD/.pi" ] || [ ! -d "$PWD/RULES" ]; do [ "$PWD" = / ] && break; cd ..; done; pwd)"
 . "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null || true
 ymir_home_root H 2>/dev/null || true
 QUICK=0; QUIET=0
