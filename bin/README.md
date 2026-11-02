@@ -506,7 +506,7 @@ bin[672]{file,does,kind,verdict,disposition,callers,lines}:
   "runes-project.sh","runes-project.sh — the DAG projector, regenerates runes_audit.md from events.","tool","wired","keep",0,65
   "runtime-deploy.sh","runtime-deploy.sh — move the PINNED runtime checkout to the merged tree, and prove what is running.","tool","wired","keep",1,96
   "runtime-guard.sh","runtime-guard.sh — THE TREE IS NOT A RUNTIME.","data","wired","keep",0,125
-  "runtime-pinned-guard.sh","runtime-pinned-guard.sh — a unit that executes from a WORKING tree is a machine running whatever branch","tool","wired","keep",0,68
+  "runtime-pinned-guard.sh","runtime-pinned-guard.sh — a unit that executes from a WORKING tree is a machine running whatever branch","tool","wired","keep",0,77
   "saga-session-start.sh","saga-session-start.sh - the one-command Brokk session start.","tool","tested","keep",3,288
   "saga-sessionstart-run.sh","saga-sessionstart-run.sh - session-open entry point for run-tier harnesses.","tool","wired","keep",0,91
   "saga-wake-drain.sh","saga-wake-drain.sh - present durable Brokk wakes, or acknowledge them.","tool","wired","keep",5,122

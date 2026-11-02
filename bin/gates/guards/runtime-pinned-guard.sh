@@ -22,6 +22,15 @@ conf="${home:+$home/config/runtime.env}"
 PIN="${YMIR_RUNTIME_DIR:-$HOME/ymir-runtime}"
 BRANCH="${YMIR_RUNTIME_BRANCH:-main}"
 
+# Ask git about ANOTHER checkout without the caller's repository in the way. This ward runs
+# inside the pre-push hook, and git exports GIT_DIR (and friends) to a hook: with GIT_DIR set,
+# `git -C <other tree>` answers about the PUSHING tree, not the one it was pointed at. Measured
+# 2026-11-02 — the first push from a worktree was refused with "the pinned runtime stands on
+# yggdrasil/<branch>, not main", about a runtime that was standing on main: the ward read the
+# pushing branch and blamed the operator's runtime for it. Every push this house makes comes
+# from a worktree (Rule 08), so the gate refused all of them.
+gother() { env -u GIT_DIR -u GIT_WORK_TREE -u GIT_COMMON_DIR -u GIT_INDEX_FILE git "$@"; }
+
 command -v systemctl >/dev/null 2>&1 || {
   printf 'runtime-pinned-guard[1]{finding,detail}:\n  "none","no systemd on this host — units are another role\x27s business"\n'; exit 0; }
 systemctl --user list-unit-files >/dev/null 2>&1 || {
@@ -40,7 +49,7 @@ while IFS= read -r f; do
     "$PIN"/*) continue ;;                      # the pinned checkout: correct by definition
     /home/*/ymir/*|*/ymir/bin/*|*/ymir/systems/*|*/ymir/tools/*)
       # is it inside a git WORKING tree (a checkout a human switches branches in)?
-      top=$(git -C "$(dirname "$target")" rev-parse --show-toplevel 2>/dev/null)
+      top=$(gother -C "$(dirname "$target")" rev-parse --show-toplevel 2>/dev/null)
       [ -n "$top" ] && bad+=("$unit → $target (working tree)") ;;
   esac
 done < <(ls "$HOME/.config/systemd/user"/*.service 2>/dev/null)
@@ -53,7 +62,7 @@ if [ "${#bad[@]}" -gt 0 ]; then
 fi
 
 if [ -d "$PIN/.git" ]; then
-  cur=$(git -C "$PIN" rev-parse --abbrev-ref HEAD 2>/dev/null)
+  cur=$(gother -C "$PIN" rev-parse --abbrev-ref HEAD 2>/dev/null)
   if [ "$cur" != "$BRANCH" ]; then
     printf 'runtime-pinned-guard[1]{finding,detail}:\n  "the pinned runtime is off its branch","%s stands on %s, not %s"\n' "$PIN" "${cur:-unknown}" "$BRANCH"
     printf 'help: git -C %s checkout %s (or run bin/engine/runtime-deploy.sh)\n' "$PIN" "$BRANCH" >&2
