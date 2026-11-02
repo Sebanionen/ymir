@@ -1,0 +1,25 @@
+name: opencode
+binary: opencode
+detect:
+  process: ["opencode"]
+  env: []
+launch: "opencode"
+inject: "opencode run <prompt>"
+transcript:
+  shape: sqlite              # v2 persists sessions in a database; read-only session APIs are still requested
+  root: ~/.local/share/opencode
+  path: "log/opencode.log (plaintext log); sessions in the store"
+extensions:
+  global_dir: ~/.config/opencode/plugins
+  project_dir: .opencode/plugins
+  format: "ts|js plugin, or a package with a plugin entry"
+  dedupe: "config plugin[] is a list of specs; the same spec twice is loaded twice"
+instructions:
+  global: ~/.config/opencode/AGENTS.md
+  project: AGENTS.md
+config: ~/.config/opencode/opencode.json
+capabilities:
+  streaming: full
+  hooks: full                # plugin event API: message.updated, session.idle, permission.asked…
+  resume: full
+  mcp: full

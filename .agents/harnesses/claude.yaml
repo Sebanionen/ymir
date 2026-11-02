@@ -1,0 +1,25 @@
+name: claude
+binary: claude
+detect:
+  process: ["*claude*"]
+  env: []
+launch: "claude"
+inject: "claude -p <prompt>"
+transcript:
+  shape: jsonl-flat
+  root: ~/.claude/projects
+  path: "<project>/<uuid>.jsonl (full conversation, plaintext); history.jsonl holds prompts"
+extensions:
+  global_dir: ~/.claude
+  project_dir: .claude
+  format: "hooks in settings.json (shell commands); agents and skills in directories"
+  dedupe: "settings.json is a single file — one hook list, project settings merge over user settings"
+instructions:
+  global: ~/.claude/CLAUDE.md
+  project: CLAUDE.md
+config: ~/.claude/settings.json
+capabilities:
+  streaming: full
+  hooks: full                # shell hooks: Stop, PreToolUse, SessionEnd…
+  resume: full
+  telemetry: otel            # CLAUDE_CODE_ENABLE_TELEMETRY + OTEL_METRICS/LOGS_EXPORTER

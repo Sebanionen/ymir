@@ -1,0 +1,23 @@
+name: muse
+binary: muse
+detect:
+  process: ["muse", "muse-bin-*"]        # the launcher execs muse-bin-<version>, which changes on update
+  env: ["MUSE_CURRENT_SESSION_LOG"]      # a per-session log PATH, not an identity; ancestry is the guarantee
+launch: "muse"
+inject: ""
+transcript:
+  shape: file-path
+  root: ""
+  path: "$MUSE_CURRENT_SESSION_LOG (published per session; its export to children is unverified, muse 0.1.0-R708.1)"
+extensions:
+  global_dir: ~/.muse
+  project_dir: .muse
+  format: unknown
+instructions:
+  global: ~/.muse/AGENTS.md
+  project: AGENTS.md
+config: ~/.muse/*
+capabilities:
+  streaming: partial
+  hooks: unknown
+  resume: unknown
