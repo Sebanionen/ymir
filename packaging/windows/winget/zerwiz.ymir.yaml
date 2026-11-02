@@ -1,0 +1,27 @@
+# winget manifest — Ymir for Windows.
+#
+# What it installs, said plainly: Windows does not run Ymir natively. This manifest raises the host that
+# does — Ubuntu on WSL2 — and runs `bin/engine/ymir-install.sh` inside it (RULES/05, appended 2026-11-02).
+# The native-vs-VM question is the Allfather's to decide, not a packaging detail to hide.
+PackageIdentifier: zerwiz.ymir
+PackageVersion: 0.1.53
+PackageLocale: en-US
+Publisher: Whynot Productions
+PublisherUrl: https://github.com/zerwiz
+PackageName: Ymir
+PackageUrl: https://github.com/zerwiz/ymir
+License: Apache-2.0
+LicenseUrl: https://github.com/zerwiz/ymir/blob/main/LICENSE
+ShortDescription: The agent operating system — one home, one roster, one well, one forge.
+Description: >-
+  Ymir installs a Linux host on Windows through WSL2 (Ubuntu), then installs the Ymir runtime, the
+  harness integrations and the agent home inside it. macOS uses the same shape with a Lima VM.
+Moniker: ymir
+Tags: [ ai, agents, cli, developer-tools, harness ]
+Installers:
+  - Architecture: x64
+    InstallerType: nullsoft
+    InstallerUrl: https://github.com/zerwiz/ymir/releases/download/v0.1.53/Ymir-Setup-0.1.53.exe
+    InstallerSha256: REPLACE_WITH_SHA256_OF_THE_RELEASED_EXE
+ManifestType: singleton
+ManifestVersion: 1.6.0
