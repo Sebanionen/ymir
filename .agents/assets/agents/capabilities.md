@@ -10,11 +10,11 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",634
+  "shell doors (bin/*.sh)",653
   "runtime modules (src/ymir_runtime/*.py)",56
-  "skills (.agents/skills/*)",29
+  "skills (.agents/skills/*)",30
   "Pi extension tools",0
-  "generated","2026-10-31"
+  "generated","2026-11-02"
 
 | door | the job | verdict | tech decision |
 |---|---|---|---|
@@ -52,6 +52,7 @@ capabilities[5]{surface,count}:
 | name-registry.sh | name-registry.sh — the collision system for Ymir's names. | tested | keep (a human or a cron row must run it) |
 | profile.sh | profile.sh — what THIS user's machine actually is, probed not assumed. | tested+named | keep (a human or a cron row must run it) |
 | project-git.sh | project-git.sh — resolve a project's GitHub block from the master regi | tested+named | keep (a human or a cron row must run it) |
+| report.sh | report.sh — THE handoff door. A worker that stops writes one of these, | tested | keep (a human or a cron row must run it) |
 | research-round.sh | research-round.sh — one reusable research errand: seat a skald or a sa | tested | keep (a human or a cron row must run it) |
 | rodd-operational-input.sh | rodd-operational-input.sh - canonical Rödd operational-input protocol. | tested+named | keep (a human or a cron row must run it) |
 | seat-identity.sh | seat-identity.sh — print a seat's primary agent and its role file. | tested+named | keep (a human or a cron row must run it) |
@@ -246,6 +247,7 @@ capabilities[5]{surface,count}:
 | fm-x-poll.sh | One short-poll of the relay connector for a pending X-mode mention. | tested | keep (a human or a cron row must run it) |
 | fm-x-reply.sh | Post firstmate's composed answer back to the relay for a pending X-mode  | tested | keep (a human or a cron row must run it) |
 | bitrate-gate.sh | bitrate-gate.sh — a diffusion clip that "completes" is not a clip that | tested | keep (a human or a cron row must run it) |
+| plane.sh | plane.sh — THE door to Plane. No agent talks to the Plane API without  | tested | keep (a human or a cron row must run it) |
 | a2a-mcp.sh | a2a-mcp.sh — install/verify the Ymir MCP servers into the harnesses so | tested+named | keep (a human or a cron row must run it) |
 | a2a-serve.sh | a2a-serve.sh — run the a2a-sdk A2A 1.0 server for a seated Eindri. | tested | keep (a human or a cron row must run it) |
 | a2a-talk.sh | a2a-talk.sh — list A2A agents and talk to one (bidirectional reply). | tested+named | keep (a human or a cron row must run it) |
@@ -258,6 +260,12 @@ capabilities[5]{surface,count}:
 | mimir-bridge.sh | mimir-bridge.sh — raise/lower the well bridge (Mimirsbrunn on :4602). | tested+named | keep (a human or a cron row must run it) |
 | ratatoskr.sh | ratatoskr.sh — Ymir's front door to the A2A engine (`a2abridge`). | tested+named | keep (a human or a cron row must run it) |
 | ymir-plan.sh | ymir-plan.sh — THE INSTALL PLAN. Probe this machine, print what would  | tested+named | keep (a human or a cron row must run it) |
+| collab.sh | collab.sh — Vingólf, the assembly hall: who collaborates with the hou | tested+named | keep (a human or a cron row must run it) |
+| init.sh | init.sh — put the collaboration shelf into a repository, or check the  | tested | keep (a human or a cron row must run it) |
+| letter.sh | letter.sh — the collaboration letter, rendered from a template and lef | tested+named | keep (a human or a cron row must run it) |
+| ship.sh | ship.sh — the house's git discipline as one door: branch, commit named | tested | keep (a human or a cron row must run it) |
+| handoff-check-wrapper.sh | handoff/check.sh — the stable door for the baton, in any project. | tested | keep (a human or a cron row must run it) |
+| test_collab.sh | test_collab.sh — the proofs for bin/collab (Vingólf). No network, no  | tested | keep (a human or a cron row must run it) |
 | app-build.sh | app-build — build the in-tree apps (plan 35). | tested+named | keep (a human or a cron row must run it) |
 | app-lib.sh | app-lib.sh — where an app actually lives. | tested+named | keep (a human or a cron row must run it) |
 | design-icon.sh | design-icon.sh — every app wears its own rune. | tested+named | keep (a human or a cron row must run it) |
@@ -381,6 +389,7 @@ capabilities[5]{surface,count}:
 | repo-scrub.sh | repo-scrub.sh — purge private paths from ALL git history before going  | tested | keep (a human or a cron row must run it) |
 | toolchain.sh | toolchain.sh — the provider wrappers (W0033). A typed front door to th | tested+named | keep (a human or a cron row must run it) |
 | wedge-notify.sh | wedge-notify.sh — the Ymir wedge-alarm notifier. | tested+named | keep (a human or a cron row must run it) |
+| deploy.sh | deploy.sh — put a merged tree on the desk host, and prove which commit | tested+named | keep (a human or a cron row must run it) |
 | project-and-publish.sh | project-and-publish.sh — project the meeting record, then hand it to t | tested | keep (a human or a cron row must run it) |
 | bootstrap-macos.sh | bootstrap-macos.sh — give a macOS operator the Linux host Ymir needs. | tested+named | keep (a human or a cron row must run it) |
 | browser-watch.sh | browser-watch.sh — record when a browser leaves, so a disappearance is | tested | keep (a human or a cron row must run it) |
@@ -477,6 +486,7 @@ capabilities[5]{surface,count}:
 | brokk-wake-grant.sh | shellcheck source=bin/time/brokk-wake-lib.sh | tested+named | keep (a human or a cron row must run it) |
 | brokk-wake-lib.sh | Shared durable wake queue and portable lock helpers. | tested+named | keep (a human or a cron row must run it) |
 | calendar-watch.sh | calendar-watch.sh — do not walk into a meeting by accident. | tested | keep (a human or a cron row must run it) |
+| daily-line.sh | daily-line.sh — THE daily line: what moved, what is blocked, what is o | tested | keep (a human or a cron row must run it) |
 | housewatch.sh | housewatch.sh — the quiet parts of the house, checked on a timer so th | tested | keep (a human or a cron row must run it) |
 | nornir-cron-start.sh | nornir-cron-start.sh - ensure Brokk's scheduled jobs are running (idempo | tested+named | keep (a human or a cron row must run it) |
 | nornir-job-asken-handoff.sh | nornir-job-asken-handoff.sh — the rollover, on the schedule. | tested+named | keep (a human or a cron row must run it) |
@@ -515,16 +525,16 @@ capabilities[5]{surface,count}:
 | snotra-board.sh | bin/time/snotra/snotra-board.sh -> systems/snotra/services/cron/snotra-b | tested+named | keep (a human or a cron row must run it) |
 | snotra-bot.sh | bin/time/snotra/snotra-bot.sh -> systems/snotra/services/ear/snotra-bot. | tested+named | keep (a human or a cron row must run it) |
 | snotra-capture.sh | bin/time/snotra/snotra-capture.sh -> systems/snotra/services/ear/snotra- | tested+named | keep (a human or a cron row must run it) |
-| snotra-card-moves.sh | snotra-card-moves.sh — card-movement automation rules (DEC-20261022-04 | tested | keep (a human or a cron row must run it) |
+| snotra-card-moves.sh | bin/time/snotra/snotra-card-moves.sh -> systems/snotra/services/cron/sno | tested | keep (a human or a cron row must run it) |
 | snotra-cron.sh | bin/time/snotra/snotra-cron.sh -> systems/snotra/services/cron/snotra-cr | tested | keep (a human or a cron row must run it) |
 | snotra-detect.sh | bin/time/snotra/snotra-detect.sh -> systems/snotra/services/ear/snotra-d | tested+named | keep (a human or a cron row must run it) |
 | snotra-dispatch.sh | bin/time/snotra/snotra-dispatch.sh -> systems/snotra/services/cron/snotr | tested | keep (a human or a cron row must run it) |
 | snotra-ensure.sh | bin/time/snotra/snotra-ensure.sh -> systems/snotra/services/ear/snotra-e | tested+named | keep (a human or a cron row must run it) |
 | snotra-evidence.sh | bin/time/snotra/snotra-evidence.sh -> systems/snotra/services/record/sno | tested | keep (a human or a cron row must run it) |
-| snotra-friday-synch.sh | snotra-friday-synch.sh — the Friday Synch (DEC-20261022-04). | tested | keep (a human or a cron row must run it) |
-| snotra-grooming.sh | snotra-grooming.sh — the Monthly Grooming card (DEC-20261022-04). | tested | keep (a human or a cron row must run it) |
+| snotra-friday-synch.sh | bin/time/snotra/snotra-friday-synch.sh -> systems/snotra/services/cron/s | tested | keep (a human or a cron row must run it) |
+| snotra-grooming.sh | bin/time/snotra/snotra-grooming.sh -> systems/snotra/services/cron/snotr | tested | keep (a human or a cron row must run it) |
 | snotra-harvest.sh | bin/time/snotra/snotra-harvest.sh -> systems/snotra/services/ear/snotra- | tested+named | keep (a human or a cron row must run it) |
-| snotra-ingest.sh | snotra-ingest.sh — ingest transcripts from external sources into the m | tested | keep (a human or a cron row must run it) |
+| snotra-ingest.sh | bin/time/snotra/snotra-ingest.sh -> systems/snotra/services/cron/snotra- | tested | keep (a human or a cron row must run it) |
 | snotra-init.sh | bin/time/snotra/snotra-init.sh -> systems/snotra/services/record/snotra- | tested | keep (a human or a cron row must run it) |
 | snotra-iscall.sh | bin/time/snotra/snotra-iscall.sh -> systems/snotra/services/ear/snotra-i | tested | keep (a human or a cron row must run it) |
 | snotra-layout.sh | bin/time/snotra/snotra-layout.sh -> systems/snotra/services/record/snotr | tested+named | keep (a human or a cron row must run it) |
@@ -537,10 +547,11 @@ capabilities[5]{surface,count}:
 | snotra-project.sh | bin/time/snotra/snotra-project.sh -> systems/snotra/services/cron/snotra | tested+named | keep (a human or a cron row must run it) |
 | snotra-promote.sh | bin/time/snotra/snotra-promote.sh -> systems/snotra/services/approve/sno | tested+named | keep (a human or a cron row must run it) |
 | snotra-provenance.sh | bin/time/snotra/snotra-provenance.sh -> systems/snotra/services/record/s | tested | keep (a human or a cron row must run it) |
+| snotra-reason.sh | bin/time/snotra/snotra-reason.sh -> systems/snotra/services/ear/snotra-r | tested | keep (a human or a cron row must run it) |
 | snotra-render-email.sh | bin/time/snotra/snotra-render-email.sh -> systems/snotra/services/letter | tested | keep (a human or a cron row must run it) |
 | snotra-render-pdf.sh | bin/time/snotra/snotra-render-pdf.sh -> systems/snotra/services/letters/ | tested | keep (a human or a cron row must run it) |
-| snotra-route.sh | snotra-route.sh — the action router: from transcription to action acro | tested | keep (a human or a cron row must run it) |
-| snotra-rules.sh | snotra-rules.sh — the rules engine for per-board, per-project, per-com | tested | keep (a human or a cron row must run it) |
+| snotra-route.sh | bin/time/snotra/snotra-route.sh -> systems/snotra/services/cron/snotra-r | tested | keep (a human or a cron row must run it) |
+| snotra-rules.sh | bin/time/snotra/snotra-rules.sh -> systems/snotra/services/cron/snotra-r | tested | keep (a human or a cron row must run it) |
 | snotra-signoff.sh | bin/time/snotra/snotra-signoff.sh -> systems/snotra/services/approve/sno | tested | keep (a human or a cron row must run it) |
 | snotra-store.sh | bin/time/snotra/snotra-store.sh -> systems/snotra/services/record/snotra | tested+named | keep (a human or a cron row must run it) |
 | snotra-stream.sh | bin/time/snotra/snotra-stream.sh -> systems/snotra/services/ear/snotra-s | tested | keep (a human or a cron row must run it) |
