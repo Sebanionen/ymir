@@ -119,9 +119,14 @@ fi
 # (Measured 2026-10-11: those two lines were the compliance row's whole red.)
 # The exclusion demands the consumer/todo PAIR, so a lone `todo` in shipped code is
 # still caught — see the probe in the same change's fix note.
+# RULES/42 makes `seeded · stub · defaulted · optional · generated` the KIND vocabulary of the home contract. A door
+# that switches on `"$kind"` is reading that vocabulary, not shipping a stub — the same doctrine that already excuses
+# the `consumer:` / `todo:` pair. The exclusion matches the KIND LIST itself (in either separator form: `seeded|stub|defaulted`
+# or `seeded · stub · defaulted · …`), so a line that merely names the vocabulary is excused and a real stub is not.
 mock_hits=$(grep -rnE '\b(mock|stub|placeholder|todo)\b' "$ROOT/bin" 2>/dev/null \
   | grep -viE '^[^:]+:[0-9]+:[[:space:]]*#' \
   | grep -v 'PUBLIC=' \
+  | grep -vE 'seeded[ |·]+(stub|defaulted)|stub[ |·]+defaulted' \
   | grep -vE 'consumer:.*todo:|todo:.*consumer:' || true)
 if [ -z "$mock_hits" ]; then
   add mocks "no mocks in shipped runtime" PASS "bin/ clean"
