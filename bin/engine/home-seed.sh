@@ -21,16 +21,50 @@ ROOT="$(CDPATH='' cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(CDPATH='' cd "$ROOT" && while [ ! -e "$PWD/.pi" ] || [ ! -d "$PWD/RULES" ]; do [ "$PWD" = / ] && break; cd ..; done; pwd)"
 . "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null || true
 
-CHECK=0; REPO=0; YES=0
+CHECK=0; REPO=0; YES=0; LIST=0
 for a in "$@"; do
   case "$a" in
     -h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --list) LIST=1 ;;
     --check) CHECK=1 ;;
     --repo) REPO=1 ;;
     -y|--yes) YES=1 ;;
     *) printf 'error: unknown flag %s\nhelp: home-seed.sh [--check|--repo|--yes]\n' "$a" >&2; exit 2 ;;
   esac
 done
+
+CONTRACT="$ROOT/.agents/home-contract.yaml"
+
+# THE ONE PARSER of the home contract (RULES/42). Every row says where a file goes, whether it is seeded, a
+# stub, defaulted, optional or generated, which template ships it, and which door writes it. Two parsers would be
+# two truths, so bin/gates/checks/home-contract-check.sh calls THIS one with --list.
+contract_rows() {  # prints: path<TAB>kind<TAB>template<TAB>door<TAB>required
+  [ -r "$CONTRACT" ] || return 1
+  python3 - "$CONTRACT" <<'PY2'
+import sys
+try:
+    import yaml
+except Exception:
+    sys.exit(1)
+d = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+for r in d.get("contract") or []:
+    if not isinstance(r, dict):
+        continue
+    path = r.get("path")
+    if not path:
+        continue
+    print("%s\t%s\t%s\t%s\t%s" % (
+        path, r.get("kind", ""), r.get("template", "-"), r.get("door", "-"),
+        "true" if r.get("required") in (True, "true") else "false"))
+PY2
+}
+
+if [ "${LIST:-0}" = "1" ]; then
+  out=$(contract_rows) || { printf 'home-contract-check[1]{finding,detail}:\n  "no contract","%s"\n' "$CONTRACT" >&2; exit 1; }
+  [ -n "$out" ] || { printf 'home-contract-check[1]{finding,detail}:\n  "the contract lists no rows","%s"\n' "$CONTRACT" >&2; exit 1; }
+  printf '%s\n' "$out"
+  exit 0
+fi
 
 home=""
 declare -f ymir_home_root >/dev/null 2>&1 && ymir_home_root home 2>/dev/null
@@ -89,6 +123,33 @@ else
 fi
 
 [ "$CHECK" = 1 ] && exit 0
+
+# ── the shapes the runtime READS: seeded once from the template, never overwritten ──
+if rows=$(contract_rows); then
+  realm=""
+  [ -r "$home/hodd/data/realm.md" ] && realm=$(sed -n 's/^realm:[[:space:]]*//p' "$home/hodd/data/realm.md" | head -1)
+  [ -n "$realm" ] || realm="work"
+  seeded=0; stubbed=0; kept=0
+  while IFS=$'\t' read -r cpath kind tmpl door required; do
+    [ -n "$cpath" ] || continue
+    dest="${cpath//\{realm\}/$realm}"
+    case "$kind" in
+      seeded|stub|defaulted) ;;
+      *) continue ;;                       # generated: a door writes it; optional: no template owed
+    esac
+    [ "$tmpl" = "-" ] && continue
+    if [ -f "$home/$dest" ]; then kept=$((kept+1)); continue; fi
+    if [ ! -f "$ROOT/$tmpl" ]; then
+      printf 'home_seed[1]{missing,template}\n  "%s","%s ships no file — the row promises a shape that is not there"\n' "$dest" "$tmpl"
+      continue
+    fi
+    mkdir -p "$(dirname "$home/$dest")"
+    cp "$ROOT/$tmpl" "$home/$dest"
+    case "$kind" in stub) stubbed=$((stubbed+1)) ;; *) seeded=$((seeded+1)) ;; esac
+  done <<< "$rows"
+  printf 'home_seed[1]{contract,detail}\n  "%s seeded · %s stubs copied · %s already present (never overwritten)"\n' \
+    "$seeded" "$stubbed" "$kept"
+fi
 
 # ── the two documents that answer "what is this?" without a person standing beside the user ──
 if [ ! -f "$home/README.md" ]; then
