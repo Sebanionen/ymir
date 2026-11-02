@@ -461,7 +461,7 @@ bin[669]{file,does,kind,verdict,disposition,callers,lines}:
   "plan-audit.sh","plan-audit.sh — the plan CONTRACT, as a check over the ledger shelf.","tool","wired","keep",1,826
   "plane.sh","plane.sh — THE door to Plane.","tool","wired","keep",0,92
   "plane_reader.py","'''Board reader for the desk — what is assigned to *this person*, read from Plane.","tool","wired","keep",1,124
-  "portability-ratchet.sh","portability-ratchet.sh — the GNU-only callers may go DOWN, never up.","tool","wired","keep",1,91
+  "portability-ratchet.sh","portability-ratchet.sh — the GNU-only callers may go DOWN, never up.","tool","wired","keep",1,102
   "pr-pretest.sh","pr-pretest.sh — the PR-time gate: a REAL npm installation, locally, before","tool","wired","keep",1,59
   "prereq-ensure.sh","prereq-ensure.sh — self-healing prerequisite engine for Ymir.","tool","wired","keep",11,236
   "private-guard.py","'''private-guard — private structure and protected material never cross a surface.'''","tool","wired","keep",1,122

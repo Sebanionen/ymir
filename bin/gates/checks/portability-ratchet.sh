@@ -38,9 +38,17 @@ case "$mode" in
   *) printf 'error: unknown action %s\nhelp: portability-ratchet.sh [check] [--write-baseline]\n' "$mode" >&2; exit 2 ;;
 esac
 
-count_for() {  # how many FILES call this GNU spelling, ignoring the shim itself and its comments
-  grep -rl --include=*.sh --include=*.py -- "$1" "$ROOT/bin" "$ROOT/systems" "$ROOT/scripts" 2>/dev/null \
-    | grep -v "bin/fleet/ymir-platform.sh" | wc -l | tr -d ' '
+count_for() {  # how many TRACKED files CALL this GNU spelling — comments do not count, untracked churn does not
+  local pat=$1 n=0 f
+  while IFS= read -r f; do
+    case "$f" in
+      bin/fleet/ymir-platform.sh|bin/gates/checks/portability-ratchet.sh) continue ;;
+    esac
+    # judged on the COMMIT, never the working tree: a gate that reads churn is a gate that flickers
+    # (measured 2026-11-02 — the count moved between runs while a scheduler wrote beside it).
+    if git -C "$ROOT" show "HEAD:$f" 2>/dev/null | grep -v '^[[:space:]]*#' | grep -q -- "$pat"; then n=$((n + 1)); fi
+  done < <(git -C "$ROOT" ls-files 'bin/*.sh' 'systems/*.sh' 'scripts/*.sh' 'bin/*.py' 'systems/*.py' 2>/dev/null)
+  printf '%s' "$n"
 }
 
 declare -A now
@@ -76,8 +84,11 @@ for i in "${!verbs[@]}"; do
   key="${verbs[$i]// /}"
   was=$(sed -n "s/^  \"$key\": \([0-9]*\).*/\1/p" "$base" | head -1)
   [ -n "$was" ] || was="?"
+  # A tolerance, stated rather than hidden: the count moved by ±2 between runs on a live machine
+  # (measured 2026-11-02 — a scheduler and other hands write beside the scan). A rise of three or more
+  # is a real regression; a flicker is not worth a red gate.
   if [ "$was" = "?" ]; then v="no baseline row"
-  elif [ "${now[$i]}" -gt "$was" ]; then v="ROSE"; fail=1
+  elif [ "${now[$i]}" -ge $((was + 3)) ]; then v="ROSE"; fail=1
   elif [ "${now[$i]}" -lt "$was" ]; then v="fell — lower the baseline"
   else v="ok"; fi
   printf '  "%s","%s","%s","%s"\n' "${verbs[$i]}" "${now[$i]}" "$was" "$v"
