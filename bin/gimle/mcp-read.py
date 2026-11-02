@@ -57,17 +57,19 @@ TOOLS = [
      "inputSchema": {"type": "object", "required": ["query"],
                      "properties": {"query": {"type": "string"}}, "additionalProperties": False}},
     {"name": "read_scene",
-     "description": "The elements of an Excalidraw scene, as data (read-only; the board tracks nothing).",
+     "description": "The elements of an Excalidraw scene that its owner has shared with the house (consented, read-only). A scene that has not been shared answers isError 'not shared' — consent is required before the house can see a board.",
      "inputSchema": {"type": "object", "required": ["scene"],
-                     "properties": {"scene": {"type": "string"}}, "additionalProperties": False}},
+                     "properties": {"scene": {"type": "string", "description": "the scene id its owner shared"}},
+                     "additionalProperties": False}},
 ]
 
 
 class State:
-    def __init__(self, data: str, tokens: str, audit: str):
+    def __init__(self, data: str, tokens: str, audit: str, scenes: str = ""):
         self.data = data
         self.tokens = tokens
         self.audit = audit
+        self.scenes = scenes
         self.lock = threading.Lock()
 
     def load(self) -> dict:
@@ -177,8 +179,31 @@ def call_tool(st: State, subject: str, places_allowed: list[str], name: str, arg
         return result({"error": "AFFiNE is not configured for MCP yet — its GraphQL token is not in the "
                                 "house's hands", "backend": "affine"}, True)
     if name == "read_scene":
-        return result({"error": "Excalidraw scene storage is not configured for MCP yet",
-                       "backend": "excalidraw"}, True)
+        scene_id = str(args.get("scene", "")).strip()
+        if not scene_id:
+            return result({"error": "a scene id is required", "backend": "excalidraw"}, True)
+        # Consented share only: a scene lives under <scenes>/<subject>/<id>.json (the owner's
+        # own shared copy) or <scenes>/<id>.json (a globally shared copy). Anything else is
+        # not shared, and the house refuses to see it rather than reaching past consent.
+        candidates = []
+        if st.scenes:
+            candidates.append(os.path.join(st.scenes, subject, scene_id + ".json"))
+            candidates.append(os.path.join(st.scenes, scene_id + ".json"))
+        for path in candidates:
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    doc = json.load(fh)
+            except (OSError, json.JSONDecodeError):
+                continue
+            return result({"scene": scene_id,
+                           "owner": doc.get("owner", subject),
+                           "shared_at": doc.get("shared_at"),
+                           "elements": doc.get("elements", []),
+                           "element_count": len(doc.get("elements", [])),
+                           "app_state": doc.get("appState")})
+        return result({"error": "scene not shared with the house — consent required before the "
+                                "house can see a board", "scene": scene_id,
+                       "backend": "excalidraw", "consent_required": True}, True)
     return result({"error": f"unknown tool {name}"}, True)
 
 
@@ -250,8 +275,13 @@ def main(argv):
     ap.add_argument("--data", default="/srv/gimle-desk/meetings.json")
     ap.add_argument("--tokens", default="/etc/gimle/mcp-tokens")
     ap.add_argument("--audit", default="/srv/gimle-desk/access.jsonl")
+    ap.add_argument("--scenes", default=None,
+                    help="directory of consented shared Excalidraw scenes (default: <data dir>/../shared-scenes)")
     args = ap.parse_args(argv)
-    Handler.state = State(args.data, args.tokens, args.audit)
+    scenes = args.scenes
+    if not scenes:
+        scenes = os.path.join(os.path.dirname(os.path.abspath(args.data)), "shared-scenes")
+    Handler.state = State(args.data, args.tokens, args.audit, scenes)
     srv = ThreadingHTTPServer((args.bind, args.port), Handler)
     print(f"gimle mcp (read-only) on http://{args.bind}:{args.port}/mcp", flush=True)
     srv.serve_forever()

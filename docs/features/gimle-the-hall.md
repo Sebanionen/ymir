@@ -41,7 +41,11 @@ refused **and recorded**. Tools whose backend is not yet wired (`find_doc`, `rea
 `isError` with the reason instead of pretending.
 
 **Limits, said plainly:** this phase is read-only; Plane's backend is the meeting record until a Plane API
-token is issued; AFFiNE and Excalidraw are not yet reachable from MCP.
+token is issued; AFFiNE is not yet reachable from MCP. Excalidraw scenes are reachable **only when their owner
+has consented to share** one: `read_scene` reads from the house's shared-scenes store, and a scene that has
+not been shared answers an honest `isError` ("scene not shared with the house — consent required"). The
+consent flow (a "Share this scene with the house" button in the panel) is the next piece; until it ships,
+a shared scene is a file dropped under `<data>/shared-scenes/<subject>/<scene>.json`.
 
 **If it does not work.** `systemctl --user status gimle-desk gimle-mcp`; `curl -H "Remote-User: you"
 http://127.0.0.1:8487/` for the desk; `curl -X POST http://127.0.0.1:8489/mcp -H 'Authorization: Bearer …'
