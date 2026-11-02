@@ -32,6 +32,19 @@ able to choose a time — that is what a booking link is for. The administrative
 settings) is the part that belongs behind the gate; do not put the whole hostname behind Authelia or the
 only people who can book are the ones who already have an account.
 
+## Deploying it
+
+The suite runs on one machine (the heart), and a merge reaches it through one door:
+
+```bash
+bin/gimle/deploy.sh --check    # what is running, against origin/main — changes nothing
+bin/gimle/deploy.sh            # move the checkout, link the code, restart, prove every door
+```
+
+A deployment is a version, not a copy: the code lives in a clean checkout beside the private material and is
+**linked** into the run directory, so `git rev-parse HEAD` answers "what is running" from either end. A door
+that does not answer 200 fails the deploy even when systemd says `active`.
+
 ## The mirrored documents
 
 The hourly mirror copies a project's status documents onto the heart; the desk serves them at
