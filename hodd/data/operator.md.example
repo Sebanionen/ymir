@@ -1,0 +1,35 @@
+# Operator — standing preferences
+
+Home-local record of your preferences and working style. Brokk reads this at every
+session start. Inspect-then-update: rewrite and prune, do not append forever.
+
+This file is a **stub**: it is copied to `hodd/data/operator.md` once, on the first
+install, and never touched again. What you write there is yours; this shape is not.
+
+## Voice
+
+- The register you want your agent to speak in, and the words it must never use.
+- How long an answer should be, and where a table or a code block does *not* belong.
+
+## Working style
+
+- What "done" means to you (an artifact? a commit? a picture of it working?).
+- What an agent should do when two of your instructions disagree.
+
+## Standing rules
+
+- The decisions you should not have to repeat. One line each, imperative.
+- What requires your explicit word before an agent acts.
+
+## Do not
+
+- The habits you have already asked once not to see again.
+
+## Secrets and access
+
+Name the **keys** and what they are for. Never a value — values live in
+`hodd/secrets/` and are read through `bin/vault/hodd.sh emit`.
+
+## CHANGE LOG
+
+- **<YYYY-MM-DD>** — stub seeded by `bin/engine/home-seed.sh`; replaced by the operator's own record.

@@ -1,0 +1,55 @@
+# HOOD — this realm's holdings, mapped
+
+The map the session digest prints whole at startup, so the session opens knowing the
+lay of the land. It is a **map, not a store**: it names where things live and points at
+the door into each shelf. A path here that stops existing is a bug in this file — fix
+the map, do not silently drop the line.
+
+This file is a **stub**, copied once to `$YMIR_HOME/svartalfaheim/<realm>/HOOD.md`,
+and never overwritten.
+
+```
+seat  svartalfaheim/<realm>/          the realm seat (this file, the realm env, projects)
+hoard $YMIR_HOME                      the private home — repo-$YMIR_HOME_REPO, private
+tree  <the checkout>                  the public repository
+```
+
+## The hoard — `$YMIR_HOME/hodd/`
+
+```
+hodd/
+├── data/              the operator's working record
+│   ├── operator.md    standing preferences — read at every session start
+│   ├── learnings.md   curated, dated operational facts
+│   ├── machines.md    this operator's own computers
+│   ├── projects.md    the registry, in prose
+│   └── realm.md       pins the active realm
+├── identity/          who and what the house is
+│   ├── companies.yaml   the houses the operator IS
+│   ├── clients.yaml     the companies a house SERVES
+│   ├── projects.yaml    the project registry, with its git block
+│   ├── workspaces.yaml  the realms a project may name
+│   └── seats.yaml       which figure stands on which machine
+├── docs/              the curated knowledge shelf — ONE door: docs/INDEX.md
+├── memory/            the well · the daily log · the chained audit ledger
+├── plans/             live personal working plans
+├── secrets/           by reference only, never read by hand
+└── reference/         retired documents — moved here, never deleted
+```
+
+## Where an output goes
+
+Business and strategy · marketing and social · software specs · personal schedules ·
+daily logs · the global audit ledger — each has its own shelf, and **none of them is
+the public repository**. Private data lives in the home and nowhere else.
+
+## What is deliberately not here
+
+- **No secret values.** This file names shelves; secrets are read through the vault door.
+- **No other realm's business.** A neighbouring realm is named, never read.
+- **No host addresses.** A cross-host path is a tailnet name or a tunnel, resolved at
+  run time — never a LAN address.
+
+## CHANGE LOG
+
+- **<YYYY-MM-DD>** — stub seeded by `bin/engine/home-seed.sh`.

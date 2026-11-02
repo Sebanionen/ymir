@@ -5,3 +5,11 @@
 !README.md
 !*.example
 !*.example.md
+
+# 2026-11-02 (RULES/42) — the sentence above says "*.example shapes", and until today that
+# was true only at the top of hodd/: `*` swallowed the directory itself, so a template could
+# not sit beside the shelf whose file it teaches, and `hodd/data/operator.md.example` was
+# refused by this very guard. The intent was right; the pattern did not implement it. `!*/`
+# lets git look INTO a sub-shelf, where `*` still ignores every file and the two negations
+# above still admit only the shapes.
+!*/

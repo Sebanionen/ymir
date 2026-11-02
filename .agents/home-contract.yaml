@@ -1,0 +1,322 @@
+# home-contract.yaml — every file the runtime READS from the operator's home, and
+# how each one reaches them.
+#
+# WHY THIS FILE EXISTS. RULES/42. A feature that reads a file in `$YMIR_HOME` is only
+# finished when a user's home actually holds that file: a template ships it, an
+# installer seeds it, an update heals it, and a ward proves the three agree. Without one
+# place that says so, a home is assembled from whatever somebody remembered to
+# templatise — measured 2026-11-02: a fresh home had no `operator.md`, no `learnings.md`,
+# no `machines.md`, no `projects.md` and no roster, and the session digest opened with
+# four ABSENT lines.
+#
+# THE SHAPE IS STRICT, ON PURPOSE. Four keys per row, nothing else; `bin/gates/checks/
+# home-contract-check.sh` refuses a row it cannot read, so a helpful hand cannot invent
+# a fifth spelling and a parser cannot silently miss a file.
+#
+#   path      home-relative destination. `{realm}` is resolved at run time (the realm
+#             pin, else the active realm) and is the ONLY substitution allowed.
+#   kind      seeded    · copied once from `template` if absent; an existing file is
+#                         NEVER touched (the operator's record outranks a default)
+#             stub      · the operator's OWN words; `template` is an empty shape with a
+#                         prompt, copied once, never overwritten
+#             defaulted · read from the home, else the shipped `template`; the reader
+#                         MUST say which one answered (RULES/37 — a default that
+#                         silently stands in for a missing file is a home that never
+#                         received it)
+#             optional  · read if present; absence is a clean skip that names its reason
+#                         (RULES/25). No template is owed, and `template` is "-".
+#             generated · written by a door from live facts; never seeded, never
+#                         hand-edited, and `door` names the generator
+#   template  repo-relative path of the shape, or "-" when none is owed
+#   door      repo-relative path of the door that writes it, or "-" when it is the
+#             operator's alone
+#   required  true | false — may the house run without it? A `required: true` row with
+#             no template is a FAIL, not a wish.
+#   why       one line: what breaks when it is absent
+#
+# ADDING A READ IS PART OF THE CHANGE. A script that starts reading a new home path adds
+# its row here in the same commit — the same duty RULES/25 gives a moved path.
+
+version: 1
+contract:
+  # ── the operator's own record: a house with no words in it is a house with no memory ──
+  - path: hodd/data/operator.md
+    kind: stub
+    template: hodd/data/operator.md.example
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "the standing preferences read at every session start"
+  - path: hodd/data/learnings.md
+    kind: stub
+    template: hodd/data/learnings.md.example
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "the curated operational facts the digest prints; absent, every session starts blind"
+  - path: hodd/data/machines.md
+    kind: stub
+    template: hodd/data/machines.md.example
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "this operator's computers — the facts that may never live in the public repo"
+  - path: hodd/data/projects.md
+    kind: stub
+    template: hodd/data/projects.md.example
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "the project registry in prose; the digest reads it before dispatch"
+  - path: hodd/AGENTS.md
+    kind: stub
+    template: hodd/AGENTS.example.md
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "the private home contract an agent reads before working in the hoard"
+  - path: svartalfaheim/{realm}/HOOD.md
+    kind: stub
+    template: svartalfaheim/examples/HOOD.md.example
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "the realm's holdings map that the session digest prints whole"
+
+  # ── the identity registers: one owner per copy, and it is not the installer ──
+  - path: hodd/identity/companies.yaml
+    kind: seeded
+    template: registry/companies.yaml.example
+    door: bin/identity/registers-seed.sh
+    required: true
+    why: "the houses the operator IS; a place that names a house resolves against it"
+  - path: hodd/identity/clients.yaml
+    kind: seeded
+    template: registry/clients.yaml.example
+    door: bin/identity/registers-seed.sh
+    required: true
+    why: "the companies a house SERVES — a different fact from the houses it is"
+  - path: hodd/identity/projects.yaml
+    kind: seeded
+    template: registry/projects.yaml.example
+    door: bin/identity/registers-seed.sh
+    required: true
+    why: "the project registry every forge door resolves a remote from"
+  - path: hodd/identity/workspaces.yaml
+    kind: seeded
+    template: registry/workspaces.yaml.example
+    door: bin/identity/registers-seed.sh
+    required: true
+    why: "the realms a project row may name; an unregistered realm is refused"
+  - path: hodd/identity/seats.yaml
+    kind: stub
+    template: hodd/identity/seats.yaml.example
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "the roster: which figure stands on which machine. Empty is honest; absent is a refusal"
+  - path: hodd/identity/grants.yaml
+    kind: seeded
+    template: .agents/config/grants.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "the mesh's skill grants; absent, a peer call is refused by name (the right refusal)"
+  - path: hodd/identity/collaborators.yaml
+    kind: seeded
+    template: .agents/config/collaborators.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "who may appear on a record; absent, no collaborator is resolvable"
+
+  # ── configuration: read from the home, else the shipped default, and it says which ──
+  - path: config/agents.yaml
+    kind: seeded
+    template: .agents/config/agents.yaml.example
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "each agent's harness and model — the one file that decides what runs"
+  - path: config/cron.yaml
+    kind: defaulted
+    template: .agents/config/cron.yaml.example
+    door: "-"
+    required: true
+    why: "the schedule; absent, the shipped default runs and the operator's edits have nowhere to live"
+  - path: config/model-catalog.yaml
+    kind: defaulted
+    template: .agents/config/model-catalog.yaml.example
+    door: "-"
+    required: false
+    why: "the model fit table; absent, the shipped default answers"
+  - path: config/logretta-stack.yaml
+    kind: defaulted
+    template: .agents/config/logretta-stack.example.yaml
+    door: "-"
+    required: false
+    why: "the council's roster; absent, the shipped default stack sits"
+  - path: config/guardian.yaml
+    kind: defaulted
+    template: .agents/config/guardian.yaml.example
+    door: "-"
+    required: false
+    why: "the guardian's thresholds; absent, the shipped default applies"
+  - path: config/garmr-rules.yaml
+    kind: defaulted
+    template: .agents/config/garmr-rules.example.yaml
+    door: "-"
+    required: false
+    why: "the warden's bite rules; absent, the shipped default applies"
+  - path: config/suite-workspaces.yaml
+    kind: defaulted
+    template: .agents/config/suite-workspaces.example.yaml
+    door: "-"
+    required: false
+    why: "the suite's workspace map; absent, the suite reports it has none"
+  - path: config/tenant-terms.txt
+    kind: defaulted
+    template: .agents/config/tenant-terms.example.txt
+    door: "-"
+    required: false
+    why: "the words a tenant is held to; absent, the shipped default is quoted"
+
+  # ── the home's own map ──
+  - path: .ymir-layout.yaml
+    kind: seeded
+    template: hodd/.ymir-layout.yaml.example
+    door: bin/engine/home-seed.sh
+    required: true
+    why: "the layout map the placement ward validates; stale or absent, private work lands outside the hoard"
+  - path: hodd/data/fleet.json
+    kind: seeded
+    template: .agents/config/fleet.json.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "the fleet registry; absent, this machine is a single seat of one"
+  - path: hodd/config/eindri-dispatch.json
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "dispatch routing rules; absent, dispatch uses its documented order"
+
+  # ── written by a door, never seeded: a generated file that travels is a second truth ──
+  - path: .agents/skills/skills.yaml
+    kind: generated
+    template: "-"
+    door: bin/agents/skill-index.sh
+    required: false
+    why: "the skill index; regenerated from the shelves on this machine, never committed"
+  - path: hodd/identity/names.yaml
+    kind: generated
+    template: "-"
+    door: bin/agents/name-registry.sh
+    required: false
+    why: "the name registry scanned from the tree, read before a seat is named"
+  - path: hodd/memory/kaia.engram
+    kind: generated
+    template: "-"
+    door: bin/records/mimir.sh
+    required: false
+    why: "the well; a seat that has none says so and borrows through its door"
+
+  # ── optional: read when it is there, and a clean skip when it is not ──
+  - path: config/room.yaml
+    kind: optional
+    template: "-"
+    door: bin/room/gladsheim-ensure.sh
+    required: false
+    why: "the fleet room; absent, no room is raised and nothing hangs"
+  - path: config/services.yaml
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "the operator's own service list; absent, nothing is claimed"
+  - path: config/tailscale-sync.yaml
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "which files travel over the tailnet; absent, the sync reports no map"
+  - path: config/tunnel.env
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "named tunnel settings; absent, no tunnel is claimed"
+  - path: config/gimle-desktop.env
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "the suite's desktop settings; absent, the suite layer skips with its reason"
+  - path: config/scrape-sources.yaml
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "the observation sources; absent, the scan skips with its reason"
+  - path: hodd/data/collaboration.yaml
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "the collaboration register; absent, a letter has no address book"
+  - path: hodd/identity/profile.yaml
+    kind: optional
+    template: "-"
+    door: bin/agents/profile.sh
+    required: false
+    why: "the operator's public profile shape; absent, none is offered"
+  - path: hodd/identity/confidential.yaml
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "the protected-material register the guards read; absent, only the shape guards bite"
+  - path: config/forge.env
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "the forge's settings; absent, the forge skips and says so"
+  - path: config/runtime.env
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "per-machine runtime overrides; absent, the documented defaults apply"
+  - path: config/notices.conf
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "what raises a notice and how loudly; absent, the shipped thresholds apply"
+  - path: config/marketing-stack.env
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "the marketing stack's settings; absent, the layer reports it is not configured"
+  - path: hodd/identity/trello-map.yaml
+    kind: optional
+    template: "-"
+    door: "-"
+    required: false
+    why: "board names resolved to ids; absent, a card door refuses by name rather than guessing a board"
+  - path: hodd/identity/assistant/groups.yaml
+    kind: optional
+    template: "-"
+    door: systems/skirnir/services/group-add.sh
+    required: false
+    why: "the rooms the assistant has seen; absent, no room is an audience (the law's own default)"
+  - path: hodd/identity/assistant/rooms.yaml
+    kind: optional
+    template: "-"
+    door: systems/skirnir/services/group-add.sh
+    required: false
+    why: "per-room state; absent, every room is 'when named'"
+  - path: hodd/identity/assistant/banned.yaml
+    kind: optional
+    template: "-"
+    door: systems/skirnir/services/ban.sh
+    required: false
+    why: "banned facts the assistant may never repeat; absent, the ban list is empty and nothing is banned"
+  - path: hodd/identity/places/{realm}/projects/place.yaml
+    kind: optional
+    template: "-"
+    door: .agents/migrations/0012-places-shelf.sh
+    required: false
+    why: "a declared place; absent, the board doors answer 'no place profile' — correctly, and uselessly"
