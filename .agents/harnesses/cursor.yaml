@@ -1,0 +1,24 @@
+name: cursor
+binary: cursor-agent
+detect:
+  process: ["cursor", "cursor-agent"]
+  env: []
+launch: "cursor-agent"
+inject: "cursor-agent -p <prompt>"
+transcript:
+  shape: sqlite              # per-chat store.db (full fidelity); JSONL export is lossy
+  root: ~/.cursor
+  path: "chats/<uuid>/<uuid>/store.db; projects/<project>/agent-transcripts/*.jsonl (lossy)"
+extensions:
+  global_dir: ~/.cursor
+  project_dir: .cursor
+  format: "rules files and directories"
+  dedupe: "rules are merged; IDE chats and CLI chats keep separate stores"
+instructions:
+  global: ~/.cursor/rules
+  project: AGENTS.md + .cursor/rules
+config: ~/.cursor/*
+capabilities:
+  streaming: full
+  hooks: absent
+  resume: partial            # CLI resumes by chat id; IDE and CLI stores do not sync

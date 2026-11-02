@@ -30,7 +30,21 @@ PI_GLOBAL="${HOME}/.pi/agent/agents"
 # seated. This loader therefore DEPLOYS NOTHING: it keeps the global home free of any
 # extension that also stands in the project tree, and writes the root record the
 # extensions read back.
+# A pinned runtime wins over the working tree (RULES/02 §7): the extensions a harness loads must be the ones
+# a deployment proved, never whatever branch an agent left checked out. $YMIR_HOME/config/runtime.env names it.
+_pin=""
+_hoard="${YMIR_HOME:-}"
+if [ -z "$_hoard" ] && [ -r "$ROOT/bin/vault/hoard-lib.sh" ]; then
+  . "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null || true
+  command -v ymir_home_root >/dev/null 2>&1 && ymir_home_root _hoard 2>/dev/null || true
+fi
+if [ -n "$_hoard" ] && [ -r "$_hoard/config/runtime.env" ]; then
+  _pin=$(sed -n 's/^YMIR_RUNTIME_DIR="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$_hoard/config/runtime.env" | head -1)
+fi
+unset _hoard
+[ -n "$_pin" ] && [ -d "$_pin/.pi/extensions" ] && PI_EXT_SRC="${PI_EXT_SRC:-$_pin/.pi/extensions}"
 PI_EXT_SRC="${PI_EXT_SRC:-$ROOT/.pi/extensions}"
+unset _pin
 PI_EXT_HOME="${PI_EXT_HOME:-${HOME}/.pi/agent/extensions}"
 PI_SETTINGS="${PI_SETTINGS:-${HOME}/.pi/agent/settings.json}"
 OC_LOCAL="$ROOT/.opencode/agents"

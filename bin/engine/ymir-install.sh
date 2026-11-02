@@ -357,6 +357,11 @@ step_home() {
     return
   fi
   if [ "$ASSUME_YES" = 1 ] || [ ! -t 0 ]; then
+    # Lay the home out before anything else reads it: a fresh operator who was told "everything private lives in
+    # your home" should not then be handed an empty directory to design (his word, 2026-11-02).
+    if [ "$CHECK" = 0 ] && [ -x "$ROOT/bin/engine/home-seed.sh" ]; then
+      YMIR_HOME="$YMIR_HOME" bash "$ROOT/bin/engine/home-seed.sh" --yes ${ASSUME_YES:+} >/dev/null 2>&1 || true
+    fi
     if ymir_home_record_set "$YMIR_HOME" 2>/dev/null; then
       add home OK "home: $YMIR_HOME (default recorded — change it any time with YMIR_HOME=<path> bin/engine/ymir-install.sh)"
     else
@@ -372,6 +377,10 @@ step_home() {
   [ -n "$chosen" ] && YMIR_HOME="${chosen/#\~/$HOME}"
   if [ -e "$YMIR_HOME" ]; then
     printf 'using %s — what is already there is kept; nothing is deleted.\n' "$YMIR_HOME"
+  fi
+  # Lay the home out now that it has a name, rather than leaving an empty directory to be designed.
+  if [ "$CHECK" = 0 ] && [ -x "$ROOT/bin/engine/home-seed.sh" ]; then
+    YMIR_HOME="$YMIR_HOME" bash "$ROOT/bin/engine/home-seed.sh" ${ASSUME_YES:+} || true
   fi
   # Re-resolve the roots the choice moved: the hoard within the home, and the
   # workspace tree beneath it. A second run finds the record and never asks again.

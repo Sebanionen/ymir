@@ -1,130 +1,234 @@
 #!/usr/bin/env bash
-# home-seed.sh — give a home the files it is missing, from the ONE contract.
+# home-seed.sh — make a home that a fresh user can understand, and offer to keep it in git.
 #
-#   home-seed.sh            # seed every absent `seeded` / `stub` row whose door is this script
-#   home-seed.sh --check    # say what a real run would seed; write nothing
-#   home-seed.sh --list     # print the contract's rows, tab-separated — the ONE parser
+#   bin/engine/home-seed.sh                 explain, create the skeleton, print what it made
+#   bin/engine/home-seed.sh --check         say what is missing, change nothing
+#   bin/engine/home-seed.sh --repo          also `git init` it as a PRIVATE repository
+#   bin/engine/home-seed.sh --yes           never prompt (takes --repo only when given)
 #
-# WHY (RULES/42). A file the runtime reads and a user's home does not hold is a feature
-# only its author has. Measured 2026-11-02: a fresh home had no `operator.md`, no
-# `learnings.md`, no `machines.md`, no `projects.md` and no roster — the session digest
-# opened with four ABSENT lines and the seat could not be named.
+# WHY (his word, 2026-11-02): *"if the users are missing ymir home it hsoule make the folders and repo if the
+# users wanna. rigtnow it seems like he done understands on a fresch install what ymir home are."*
 #
-# `.agents/home-contract.yaml` is the single list: one row per home file the runtime
-# READS, with its kind, its template and the door that writes it. This script walks that
-# list and copies the shape of the rows it owns. It is ONE of the doors — the identity
-# registers are `bin/identity/registers-seed.sh`, and the generated files belong to their
-# generators — so it skips every row whose `door` is not itself. One owner per copy, or
-# two sources of one truth drift by construction.
+# A new operator is told "everything private lives in your home" and then meets an empty directory they were
+# expected to design. This door answers the three questions plainly — WHAT the home is, WHERE it lives, WHAT
+# goes in it — creates the skeleton the rest of the house expects, writes the two documents that explain it,
+# and offers to make it a private git repository so the home can follow the user to another machine.
 #
-# What it never does:
-#   · overwrite — a home file that exists is the operator's record, not a default
-#   · invent   — a `generated` row is a door's output, not a seed
-#   · guess    — a missing template is a loud failure naming the row
-#
-# Exit: 0 ok (seeded, or nothing to do) · 1 a template named by the contract is missing.
+# It never deletes and never overwrites: a file that exists is left exactly as it is.
 set -uo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR" && while [ ! -e "$PWD/.pi" ] || [ ! -d "$PWD/RULES" ]; do
-  [ "$PWD" = / ] && break; cd ..; done; pwd)"
+ROOT="$(CDPATH='' cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(CDPATH='' cd "$ROOT" && while [ ! -e "$PWD/.pi" ] || [ ! -d "$PWD/RULES" ]; do [ "$PWD" = / ] && break; cd ..; done; pwd)"
+. "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null || true
 
-# The home is resolved, never assumed (RULES/07, RULES/22).
-if [ -z "${YMIR_HOARD_LIB_LOADED:-}" ]; then
-  for _c in "$SCRIPT_DIR/../vault/hoard-lib.sh" "$SCRIPT_DIR/../../bin/vault/hoard-lib.sh"; do
-    [ -r "$_c" ] && { . "$_c"; YMIR_HOARD_LIB_LOADED=1; break; }
-  done
-  unset _c
-fi
-if [ -z "${YMIR_HOME:-}" ] && command -v ymir_home_root >/dev/null 2>&1; then
-  ymir_home_root YMIR_HOME
-fi
-CHECK=0
-case "${1-}" in
-  -h|--help|help) sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-  "") CHECK=0 ;;
-  --check) CHECK=1 ;;
-  --list) CHECK=2 ;;
-  *) printf 'error: unknown flag %s\nhelp: home-seed.sh [--check]\n' "$1" >&2; exit 2 ;;
-esac
-
-die() { printf 'home-seed: %s\n' "$*" >&2; exit 1; }
+CHECK=0; REPO=0; YES=0; LIST=0
+for a in "$@"; do
+  case "$a" in
+    -h|--help) sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --list) LIST=1 ;;
+    --check) CHECK=1 ;;
+    --repo) REPO=1 ;;
+    -y|--yes) YES=1 ;;
+    *) printf 'error: unknown flag %s\nhelp: home-seed.sh [--check|--repo|--yes]\n' "$a" >&2; exit 2 ;;
+  esac
+done
 
 CONTRACT="$ROOT/.agents/home-contract.yaml"
-[ -r "$CONTRACT" ] || die "no contract at $CONTRACT — the list of home files is missing from this checkout"
-# --list is a reading of the SHAPE, not an act on a home: it must answer on a machine
-# with no home at all, because the ward that judges this contract runs in CI.
-[ "$CHECK" = 2 ] || [ -n "${YMIR_HOME:-}" ] || die "the home is unresolved — set YMIR_HOME or record the choice at installation"
-SELF="bin/engine/home-seed.sh"
 
-# The realm a `{realm}` path resolves to: the pin first, then the active realm.
-REALM="${BROKK_REALM:-}"
-if [ -z "$REALM" ] && [ -r "${YMIR_HOME:-}/hodd/data/realm.md" ]; then
-  REALM="$(head -n 1 "${YMIR_HOME:-}/hodd/data/realm.md" 2>/dev/null | tr -d '[:space:]')"
+# THE ONE PARSER of the home contract (RULES/42). Every row says where a file goes, whether it is seeded, a
+# stub, defaulted, optional or generated, which template ships it, and which door writes it. Two parsers would be
+# two truths, so bin/gates/checks/home-contract-check.sh calls THIS one with --list.
+contract_rows() {  # prints: path<TAB>kind<TAB>template<TAB>door<TAB>required
+  [ -r "$CONTRACT" ] || return 1
+  python3 - "$CONTRACT" <<'PY2'
+import sys
+try:
+    import yaml
+except Exception:
+    sys.exit(1)
+d = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+for r in d.get("contract") or []:
+    if not isinstance(r, dict):
+        continue
+    path = r.get("path")
+    if not path:
+        continue
+    print("%s\t%s\t%s\t%s\t%s" % (
+        path, r.get("kind", ""), r.get("template", "-"), r.get("door", "-"),
+        "true" if r.get("required") in (True, "true") else "false"))
+PY2
+}
+
+if [ "${LIST:-0}" = "1" ]; then
+  out=$(contract_rows) || { printf 'home-contract-check[1]{finding,detail}:\n  "no contract","%s"\n' "$CONTRACT" >&2; exit 1; }
+  [ -n "$out" ] || { printf 'home-contract-check[1]{finding,detail}:\n  "the contract lists no rows","%s"\n' "$CONTRACT" >&2; exit 1; }
+  printf '%s\n' "$out"
+  exit 0
 fi
-if [ -z "$REALM" ] && [ -r "$ROOT/bin/skuld/realm-lib.sh" ]; then
-  # shellcheck source=bin/skuld/realm-lib.sh
-  . "$ROOT/bin/skuld/realm-lib.sh"
-  ymir_active_realm "$ROOT" REALM 2>/dev/null || true
+
+home=""
+declare -f ymir_home_root >/dev/null 2>&1 && ymir_home_root home 2>/dev/null
+# No guessed home (RULES/07): env → the resolver → the ONE documented default, stated as a decision.
+if [ -z "$home" ]; then
+  home="${YMIR_HOME:-}"
 fi
-REALM="${REALM:-default}"
+if [ -z "$home" ]; then
+  printf 'home_seed[1]{finding,detail}\n  "no home resolved","set YMIR_HOME (or install with bin/engine/ymir-install.sh, which records it)"\n' >&2
+  exit 2
+fi
 
-# The contract is read by ONE parser, here; the ward calls this script in --check mode
-# rather than growing a second one. A row it cannot read is refused, never skipped.
-rows="$(awk '
-  function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); sub(/^"/, "", s); sub(/"$/, "", s); return s }
-  /^  - path:/      { if (p != "") print p "\t" k "\t" t "\t" d "\t" r; p = trim(substr($0, index($0, ":") + 1)); k = ""; t = ""; d = ""; r = ""; next }
-  /^    kind:/      { k = trim(substr($0, index($0, ":") + 1)); next }
-  /^    template:/  { t = trim(substr($0, index($0, ":") + 1)); next }
-  /^    door:/      { d = trim(substr($0, index($0, ":") + 1)); next }
-  /^    required:/  { r = trim(substr($0, index($0, ":") + 1)); next }
-  END               { if (p != "") print p "\t" k "\t" t "\t" d "\t" r }
-' "$CONTRACT")"
-[ -n "$rows" ] || die "the contract at $CONTRACT lists no rows — nothing can be seeded from it"
-[ "$CHECK" = 2 ] && { printf '%s\n' "$rows"; exit 0; }
+# The skeleton the rest of the house reads. Nothing exotic — every one of these is named by a door.
+DIRS="
+hodd
+hodd/identity
+hodd/data
+hodd/memory
+hodd/memory/daily
+hodd/plans
+hodd/secrets
+hodd/state
+hodd/docs
+hodd/workspaces
+hodd/reference
+config
+state
+"
 
-seeded=0; kept=0; skipped=0; missing=""
-hint_roster=0
-while IFS="$(printf '\t')" read -r path kind template door required; do
-  [ -n "$path" ] || continue
-  case "$kind" in
-    seeded|stub) ;;
-    *) skipped=$((skipped+1)); continue ;;   # defaulted · optional · generated: not this door's to write
-  esac
-  [ "$door" = "$SELF" ] || { skipped=$((skipped+1)); continue; }
-  dest="$YMIR_HOME/${path//\{realm\}/$REALM}"
-  tpl="$ROOT/$template"
-  if [ -f "$dest" ]; then kept=$((kept+1)); continue; fi
-  if [ -z "$template" ] || [ "$template" = "-" ] || [ ! -f "$tpl" ]; then
-    missing="$missing $path"; continue
-  fi
-  if [ "$CHECK" = 1 ]; then
-    printf 'home-seed: would seed %s from %s\n' "$path" "$template"
-    seeded=$((seeded+1))
-    continue
-  fi
-  mkdir -p "$(dirname "$dest")"
-  if cp "$tpl" "$dest"; then
-    case "$dest" in *.md) chmod 644 "$dest" ;; *) chmod 600 "$dest" ;; esac
-    printf 'home-seed: seeded %s from %s\n' "${dest#"$YMIR_HOME"/}" "$template"
-    seeded=$((seeded+1))
-    case "$path" in hodd/identity/seats.yaml) hint_roster=1 ;; esac
-  else
-    missing="$missing $path"
-  fi
-done <<<"$rows"
+printf 'home[1]{what}\n'
+printf '  "Your home is the ONE private place Ymir keeps: identity, memory, plans, secrets, documents and the\n'
+printf '   workspaces you own. It is NOT the code tree and never inside it — the code is public, the home is\n'
+printf '   yours. It can be moved, backed up, or kept in a private git repository; nothing here is deleted\n'
+printf '   by an update."\n'
+printf 'home[1]{where}\n'
+printf '  "%s"\n' "$home"
 
-[ -n "$missing" ] && die "no usable template for:$missing — the shelf the contract names is incomplete (bin/gates/checks/home-contract-check.sh names the row)"
+missing=()
+for d in $DIRS; do
+  [ -d "$home/$d" ] || missing+=("$d")
+done
 
-if [ "$seeded" -eq 0 ]; then
-  printf 'home-seed: %d file(s) already stand, %d row(s) belong to another door — nothing touched\n' "$kept" "$skipped"
+if [ "${#missing[@]}" -eq 0 ]; then
+  printf 'home_seed[1]{state,detail}\n  "complete","every directory the house expects is already here"\n'
 else
-  printf 'home-seed: %d file(s) seeded, %d already stood, %d row(s) belong to another door\n' "$seeded" "$kept" "$skipped"
+  printf 'home_seed[%s]{missing,action}\n' "${#missing[@]}"
+  for d in "${missing[@]}"; do printf '  "%s","create"\n' "$d"; done
+  if [ "$CHECK" = 1 ]; then
+    printf 'home_seed[1]{state}\n  "incomplete","run bin/engine/home-seed.sh without --check to lay it out"\n'
+    exit 0
+  fi
+  mkdir -p "$home"
+  for d in "${missing[@]}"; do mkdir -p "$home/$d"; done
+  printf 'home_seed[1]{state,detail}\n  "created","%s director%s under %s"\n' "${#missing[@]}" \
+    "$([ "${#missing[@]}" -eq 1 ] && echo y || echo ies)" "$home"
 fi
 
-# An empty roster is honest, and useless until the operator names the seat (RULES/02 §4:
-# a name is never a script's invention). Say the one command; do not invent a figure.
-if [ "$hint_roster" = 1 ]; then
-  printf 'home-seed: the roster is empty — name this seat: bin/agents/seat-identity.sh set %s brokk\n' "$(hostname -s 2>/dev/null || printf '<this-host>')"
+[ "$CHECK" = 1 ] && exit 0
+
+# ── the shapes the runtime READS: seeded once from the template, never overwritten ──
+if rows=$(contract_rows); then
+  realm=""
+  [ -r "$home/hodd/data/realm.md" ] && realm=$(sed -n 's/^realm:[[:space:]]*//p' "$home/hodd/data/realm.md" | head -1)
+  [ -n "$realm" ] || realm="work"
+  seeded=0; stubbed=0; kept=0
+  while IFS=$'\t' read -r cpath kind tmpl door required; do
+    [ -n "$cpath" ] || continue
+    dest="${cpath//\{realm\}/$realm}"
+    case "$kind" in
+      seeded|stub|defaulted) ;;
+      *) continue ;;                       # generated: a door writes it; optional: no template owed
+    esac
+    [ "$tmpl" = "-" ] && continue
+    if [ -f "$home/$dest" ]; then kept=$((kept+1)); continue; fi
+    if [ ! -f "$ROOT/$tmpl" ]; then
+      printf 'home_seed[1]{missing,template}\n  "%s","%s ships no file — the row promises a shape that is not there"\n' "$dest" "$tmpl"
+      continue
+    fi
+    mkdir -p "$(dirname "$home/$dest")"
+    cp "$ROOT/$tmpl" "$home/$dest"
+    case "$kind" in stub) stubbed=$((stubbed+1)) ;; *) seeded=$((seeded+1)) ;; esac
+  done <<< "$rows"
+  printf 'home_seed[1]{contract,detail}\n  "%s seeded · %s stubs copied · %s already present (never overwritten)"\n' \
+    "$seeded" "$stubbed" "$kept"
 fi
+
+# ── the two documents that answer "what is this?" without a person standing beside the user ──
+if [ ! -f "$home/README.md" ]; then
+  cat > "$home/README.md" <<'EOF'
+# My Ymir home
+
+This is the **one private place** Ymir keeps on this machine: my identity, memory, plans, secrets, documents and
+workspaces. It is deliberately **outside** the Ymir code tree — the code is public, this is mine.
+
+```
+README.md       this page
+hodd/           the hoard: everything private, by shelf
+  identity/       who I am, my companies, my collaborators and projects
+  data/           what this machine knows: fleet, machines, operator preferences
+  memory/         the well, the daily log, the runes ledger
+  plans/          my own working plans (personal only)
+  secrets/        the vault — encrypted; referenced by path, never inlined
+  docs/           the curated knowledge shelf (docs/INDEX.md is the door)
+  state/          what is running right now
+  workspaces/     the work itself
+config/         per-machine configuration (agents, runtime, services)
+state/          locks and queue files
+AGENTS.md       my private contract — optional; the public one is in the code tree
+```
+
+**Keep it private.** If this home is a git repository, make it a **private** one. Never commit a decrypted
+secret; `hodd/secrets/platform.env.age` may be committed, a plaintext `platform.env` may not.
+
+**Move it, do not delete it.** An update never removes anything here; to carry it to another machine, copy the
+whole directory (or push the private repository) and point `YMIR_HOME` at it.
+EOF
+  printf 'home_seed[1]{wrote,file}\n  "README.md","plain words for a person who has just arrived"\n'
+fi
+
+if [ ! -f "$home/.gitignore" ]; then
+  cat > "$home/.gitignore" <<'EOF'
+# Never commit a secret in the clear. The encrypted form (*.age) may be committed; these may not.
+hodd/secrets/*.env
+hodd/secrets/*.plain
+hodd/secrets/age.key
+hodd/secrets/*.key
+# Runtime churn
+state/
+*.lock
+*.pid
+*.log
+# Editor and OS noise
+.DS_Store
+__pycache__/
+*.pyc
+EOF
+  printf 'home_seed[1]{wrote,file}\n  ".gitignore","the small list that keeps a secret out of a commit"\n'
+fi
+
+# ── the optional private repository ──────────────────────────────────────────
+if [ "$REPO" = 1 ] || { [ "$YES" = 0 ] && [ -t 0 ]; }; then
+  if [ ! -d "$home/.git" ] && command -v git >/dev/null 2>&1; then
+    want=0
+    if [ "$REPO" = 1 ]; then want=1
+    else
+      printf '\nKeep this home in a git repository, so it can follow you to another machine?\n'
+      printf 'It must be a PRIVATE repository — the home is not public. [y/N]: '
+      IFS= read -r answer || true
+      case "${answer:-}" in y|Y|yes|YES) want=1 ;; esac
+    fi
+    if [ "$want" = 1 ]; then
+      ( cd "$home" && git init -q && git add README.md .gitignore 2>/dev/null && \
+        git -c user.name="$(git config user.name 2>/dev/null || echo ymir)" \
+            -c user.email="$(git config user.email 2>/dev/null || echo ymir@localhost)" \
+            commit -q -m "the home: private, and explained" 2>/dev/null ) \
+        && printf 'home_seed[1]{repo,detail}\n  "initialised","%s — commit the shelves as you fill them, and PUSH IT PRIVATE"\n' "$home" \
+        || printf 'home_seed[1]{repo,detail}\n  "skipped","git init ran but the first commit did not; the directory is ready"\n'
+    else
+      printf 'home_seed[1]{repo,detail}\n  "declined","no repository — the home is still usable, and --repo will make one later"\n'
+    fi
+  elif [ -d "$home/.git" ]; then
+    printf 'home_seed[1]{repo,detail}\n  "already a repository","%s"\n' "$home"
+  fi
+fi
+
+printf 'home_seed[1]{next,detail}\n  "point Ymir at it","YMIR_HOME=%s — the installer records this so later runs need not ask"\n' "$home"
 exit 0

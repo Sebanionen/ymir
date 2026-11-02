@@ -1,0 +1,23 @@
+name: grok
+binary: grok
+detect:
+  process: ["*grok*"]
+  env: ["GROK_AGENT", "GROK_HOOK_EVENT"]   # a hook process carries the event names, not GROK_AGENT
+launch: "grok"
+inject: ""
+transcript:
+  shape: unknown
+  root: ""
+  path: "not yet measured — the descriptor says so rather than guessing"
+extensions:
+  global_dir: ~/.grok
+  project_dir: .grok
+  format: "hooks (GROK_HOOK_* markers verified from a live process, 2026-08-07)"
+instructions:
+  global: ~/.grok/AGENTS.md
+  project: AGENTS.md
+config: ~/.grok/*
+capabilities:
+  streaming: partial
+  hooks: partial
+  resume: unknown
