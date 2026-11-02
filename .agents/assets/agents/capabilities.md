@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",657
+  "shell doors (bin/*.sh)",661
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -289,6 +289,7 @@ capabilities[5]{surface,count}:
 | ymir-style.sh | ymir-style.sh — the cloth of the terminal halls. | tested+named | keep (a human or a cron row must run it) |
 | autoboot-lib.sh | autoboot-lib.sh — the boot policy: fleet roles → the Ymir programs t | tested+named | keep (a human or a cron row must run it) |
 | hermes-ensure.sh | hermes-ensure.sh — ensure the Hermes agent runtime is present. | tested+named | keep (a human or a cron row must run it) |
+| home-seed.sh | home-seed.sh — make a home that a fresh user can understand, and offer | tested+named | keep (a human or a cron row must run it) |
 | prereq-ensure.sh | prereq-ensure.sh — self-healing prerequisite engine for Ymir. | tested+named | keep (a human or a cron row must run it) |
 | prove-install.sh | prove-install.sh — THE INSTALL CLAUSE, proven or NAMED as a gap. | tested | keep (a human or a cron row must run it) |
 | runtime-deploy.sh | runtime-deploy.sh — move the PINNED runtime checkout to the merged tre | tested | keep (a human or a cron row must run it) |
@@ -337,6 +338,7 @@ capabilities[5]{surface,count}:
 | contracts-check.sh | contracts-check.sh — the typed surfaces' proof, in one command. | tested | keep (a human or a cron row must run it) |
 | design-check.sh | design-check.sh — one identity, two renderers: they must agree. | tested | keep (a human or a cron row must run it) |
 | extension-api-check.sh | extension-api-check.sh — a Ymir extension must speak Pi's ACTUAL tool  | tested+named | keep (a human or a cron row must run it) |
+| home-contract-check.sh | home-contract-check.sh — the contract that raises a home is itself che | tested | keep (a human or a cron row must run it) |
 | home-index-check.sh | home-index-check.sh — every shelf in the home has an index, and the in | tested | keep (a human or a cron row must run it) |
 | model-alias-check.sh | model-alias-check.sh — does every alias a body names resolve in the fl | tested+named | keep (a human or a cron row must run it) |
 | portability-ratchet.sh | portability-ratchet.sh — the GNU-only callers may go DOWN, never up. | tested | keep (a human or a cron row must run it) |
@@ -372,6 +374,7 @@ capabilities[5]{surface,count}:
 | fleet-version-guard.sh | fleet-version-guard.sh — the three labels and the two trees must agree | tested | keep (a human or a cron row must run it) |
 | git-clobber-guard.sh | git-clobber-guard.sh — no command that throws away uncommitted work. | tested | keep (a human or a cron row must run it) |
 | hoard-guard.sh | hoard-guard.sh — the ward for the PRIVATE HOME repo ($YMIR_HOME). | tested+named | keep (a human or a cron row must run it) |
+| home-contract-guard.sh | home-contract-guard.sh — the contract that raises a user's home is che | tested | keep (a human or a cron row must run it) |
 | inventory-guard.sh | inventory-guard.sh — a register that runs in no gate is a capability t | tested | keep (a human or a cron row must run it) |
 | path-ledger-guard.sh | path-ledger-guard.sh — Rule 25: a path that MOVED may not be reference | tested | keep (a human or a cron row must run it) |
 | people-guard.sh | people-guard.sh — the public tree holds no people. | tested | keep (a human or a cron row must run it) |
@@ -476,6 +479,7 @@ capabilities[5]{surface,count}:
 | gladsheim-ensure.sh | gladsheim-ensure.sh — seat the fleet room, whatever shape this machine | tested | keep (a human or a cron row must run it) |
 | gladsheim.sh | gladsheim.sh — the door to Gladsheim, the fleet room. | tested | keep (a human or a cron row must run it) |
 | harness-contract-install.sh | harness-contract-install.sh — every harness reads ONE contract, and an | tested | keep (a human or a cron row must run it) |
+| harness-extensions-install.sh | harness-extensions-install.sh — every harness gets the house's extensi | tested | keep (a human or a cron row must run it) |
 | herdr-ensure.sh | herdr-ensure.sh — Þjazi: guarantee the terminal backend Ymir needs. | tested+named | keep (a human or a cron row must run it) |
 | herdr-run.sh | herdr-run.sh — raise an Eindri in herdr, by the grain that fits the er | tested+named | keep (a human or a cron row must run it) |
 | valknut-load.sh | valknut-load.sh — Valknut, the knot that binds the repo distro into ea | tested+named | keep (a human or a cron row must run it) |
