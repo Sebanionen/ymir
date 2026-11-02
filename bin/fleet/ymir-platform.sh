@@ -314,3 +314,22 @@ ymir_read_lines() {  # <array-name> <file> — mapfile where bash has it, a whil
     eval "$__name+=(\"\$__line\")"
   done <"$__file"
 }
+
+# `ymir_stat_c <gnu-format> <path...>` — the call sites already say `stat -c '%s:%Y'`, and 33 files say it.
+# Rather than rewrite every format, this accepts the GNU spelling and translates the specifiers that appear
+# in the tree on a BSD host. On Linux it IS `stat -c` — no translation, no risk.
+ymir_stat_c() {
+  local fmt=$1; shift
+  case "$(ymir_os)" in
+    macos|msys)
+      # translate the GNU specifiers actually used here into BSD ones, in one pass
+      local out="" i c
+      local bsd=""
+      # a specifier-by-specifier walk keeps this readable and honest about what it supports
+      bsd=$(printf '%s' "$fmt" | sed -e 's/%s/%z/g' -e 's/%Y/%m/g' -e 's/%a/%Lp/g' \
+                                -e 's/%d/%d/g' -e 's/%i/%i/g' -e 's/%h/%l/g' -e 's/%F/%HT/g' -e 's/%f/%Hd/g')
+      stat -f "$bsd" "$@" ;;
+    *)
+      stat -c "$fmt" "$@" ;;
+  esac
+}
