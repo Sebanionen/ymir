@@ -91,3 +91,45 @@ Law, unchanged and restated: edit the **canonical** card in `.agents/agents/` an
 re-run `bin/seat/valknut-load.sh --all`; **never** edit the harness directories by
 hand. The judge's card keeps `edit: deny` / `write: deny` — the spine only ever
 reads the branch it judges.
+
+## 7. The runtime is a pinned checkout, never a working tree (appended 2026-11-02)
+
+His question this day: *"what happends if one agent are changing from one branch to another forr ymir systems? do we
+need to run some things in containers or something to make it more stable."*
+
+**The measurement that prompted it.** On this seat, **ten systemd user units execute files from
+`/home/heimdall/ymir`** — the same directory agents check branches out in:
+
+```
+units[10]{unit,what}
+  "nornir","the scheduler — every cron row spawns a job from this tree"
+  "mimir","the well bridge"
+  "bifrost","the model bridge"
+  "mcp-gateway","the MCP face"
+  "housewatch","the watcher"
+  "calendar-watch","the calendar poller"
+  "garmr-brain","the warden's brain"
+  "skirnir-telegram","the Allfather's assistant"
+  "skirnir-timer","the stop-rule timer"
+  "ymir-syn-watch","the supervision watcher"
+```
+
+While this very rule was being written, that tree stood on an **unmerged branch** (`rules/platforms-and-tiers`) —
+my own — which means the scheduler, the well, the model bridge, the MCP face, the watcher and the assistant were all
+executing unmerged code, with the Allfather's own approval nowhere in the path. Earlier the same day another hand
+switched the same tree to `feat/brokk-tool-calls` mid-session, and a `git pull --ff-only` failed underneath a
+running agent.
+
+**The law.**
+
+```
+pinned_runtime[5]{rule,why}
+  "A unit executes from a PINNED CHECKOUT, never from a working tree","a checkout that only ever stands on the default branch; the working tree agents switch on is their own business"
+  "A DEPLOY MOVES THE PINNED CHECKOUT AND PROVES IT","one verb (the shape bin/gimle/deploy.sh already proves): fetch, move to origin/<default>, restart, and report the commit that is running"
+  "AN AGENT WORKS IN A WORKTREE (Yggdrasil), NEVER IN THE PINNED ONE","isolation by default; the main hall is a place to think, not a place to leave a branch checked out"
+  "CONTAINERS ARE NOT THE FIX FOR THIS","a container running the same mounted working tree inherits the same drift; containers belong where isolation of UNTRUSTED code is the point (Utgard), not where version discipline is"
+  "A RUNNING VERSION IS READABLE","every long-running unit reports the commit it runs, so 'what is deployed' is answered by asking the machine, never by memory"
+```
+
+This is the same sentence the Gimlé suite learned the hard way on 2026-11-02: a deployment is a version, not a copy.
+The suite was fixed first because its drift was visible in the desk; the runtime has been drifting where nobody looks.

@@ -23,7 +23,7 @@ _root() {
 ROOT="$(_root)"
 
 # ONE list. A new tree ward appears here or it does not run anywhere.
-WARDS=(runtime-guard defaults-guard app-folder-guard app-functional-guard rules-number-guard inventory-guard fleet-version-guard subsystem-docs-guard path-ledger-guard cron-guard features-guard vault-guard confidential-guard dead-code-guard docs-claims-guard pkill-guard)
+WARDS=(runtime-guard runtime-pinned-guard defaults-guard app-folder-guard app-functional-guard rules-number-guard inventory-guard fleet-version-guard subsystem-docs-guard path-ledger-guard cron-guard features-guard vault-guard confidential-guard dead-code-guard docs-claims-guard pkill-guard)
 
 case "${1-}" in
   -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;

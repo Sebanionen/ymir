@@ -11,7 +11,7 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 `disposition` says what happens to it: `keep`, `migrate → src/…` where the
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
-bin[665]{file,does,kind,verdict,disposition,callers,lines}:
+bin[668]{file,does,kind,verdict,disposition,callers,lines}:
   "README.md","`bin/` — every file, what it does, and whether it is alive","data","tested","keep",21,-
   "README.md","Gróa — the updater, one per install","data","tested","keep",21,-
   "README.md","collab — Vingólf, the assembly hall","data","tested","keep",21,-
@@ -88,7 +88,7 @@ bin[665]{file,does,kind,verdict,disposition,callers,lines}:
   "daily-log.sh","daily-log.sh — the day's work, recorded where the contract says it lives.","tool","wired","keep",3,104
   "dead-code-guard.sh","dead-code-guard.sh — code that exists and is never reached is a claim that a feature exists.","tool","wired","keep",0,256
   "defaults-guard.sh","defaults-guard.sh — ONE PLACE KNOWS WHERE THINGS LIVE.","data","tested","keep",1,171
-  "deploy.sh","deploy.sh — put a merged tree on the desk host, and prove which commit is running.","tool","wired","keep",2,147
+  "deploy.sh","deploy.sh — put a merged tree on the desk host, and prove which commit is running.","tool","wired","keep",4,147
   "design-check.sh","design-check.sh — one identity, two renderers: they must agree.","tool","wired","keep",0,93
   "design-icon.sh","design-icon.sh — every app wears its own rune.","tool","wired","keep",2,299
   "desk.py","'''desk.py — Gimlé's desk: the page behind the door.","tool","wired","keep",3,341
@@ -328,6 +328,7 @@ bin[665]{file,does,kind,verdict,disposition,callers,lines}:
   "handoff-check-wrapper.sh","handoff/check.sh — the stable door for the baton, in any project.","data","wired","keep",1,12
   "handoff-check.py","'''handoff/check.sh — the baton: is it there, complete, fresh, and honest about the paths it names?","tool","wired","keep",1,147
   "harden.sh","harden.sh — Vörðr's hands: the MENDS, written out, and the safe ones applied.","tool","tested","keep",5,151
+  "harness-contract-install.sh","harness-contract-install.sh — every harness reads ONE contract, and an update keeps it true.","tool","wired","keep",0,81
   "heimdall-ensure.sh","heimdall-ensure.sh — ensure the Heimdall SSH-key ward is present and armed.","tool","wired","keep",4,134
   "heimdall-ssh-keys.sh","heimdall-ssh-keys.sh — Heimdall's SSH-keys surface.","tool","wired","keep",1,382
   "herdr-agents.py","'''herdr-agents.py — list the agents standing in this herdr session, as TOON.","tool","wired","keep",1,45
@@ -339,7 +340,7 @@ bin[665]{file,does,kind,verdict,disposition,callers,lines}:
   "hnitbjorg-ensure.sh","hnitbjorg-ensure.sh — ensure the vault's tooling stands and its path is sound.","tool","wired","keep",2,111
   "hnitbjorg.sh","hnitbjorg.sh — Hnitbjörg: the encrypted document vault.","tool","wired","keep",3,250
   "hoard-guard.sh","hoard-guard.sh — the ward for the PRIVATE HOME repo ($YMIR_HOME).","tool","wired","keep",2,150
-  "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",181,116
+  "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",184,116
   "hodd-set.sh","hodd-set.sh — set ONE key in an age-encrypted secret file, with guards that make a","tool","wired","keep",1,106
   "hodd.sh","hodd.sh — the Allfather's private hoard: path, init, ls, load, tenant.","tool","tested","keep",13,120
   "home-index-check.sh","home-index-check.sh — every shelf in the home has an index, and the index is honest.","tool","wired","keep",1,82
@@ -353,7 +354,7 @@ bin[665]{file,does,kind,verdict,disposition,callers,lines}:
   "inbox-watch.sh","inbox-watch.sh — notice when someone answers, without a human opening a mail client.","tool","wired","keep",0,114
   "inbox.sh","inbox.sh — read the mail that matters to a collaborator, and prove you can answer it.","tool","tested","keep",2,121
   "init.sh","init.sh — put the collaboration shelf into a repository, or check the one it has.","tool","wired","keep",4,124
-  "install.sh","install.sh — seat Gná's desk on THIS machine.","data","tested","keep",33,82
+  "install.sh","install.sh — seat Gná's desk on THIS machine.","data","tested","keep",34,82
   "inventory-guard.sh","inventory-guard.sh — a register that runs in no gate is a capability that is silently absent.","data","wired","keep",1,54
   "inventory.sh","inventory.sh — the honest index of the two shelves nobody can read.","tool","wired","keep",7,273
   "jira_adapter.py","bin/time/snotra/jira_adapter.py -> systems/snotra/services/cron/jira_adapter.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
@@ -499,7 +500,9 @@ bin[665]{file,does,kind,verdict,disposition,callers,lines}:
   "rules.py","'''rules.py — the judgement, deterministic and first (plan 98 §4.2).","tool","wired","keep",1,102
   "runes-append.sh","runes-append.sh — the append-only Runes ledger, a THIN SHIM.","tool","tested","keep",23,117
   "runes-project.sh","runes-project.sh — the DAG projector, regenerates runes_audit.md from events.","tool","wired","keep",0,65
+  "runtime-deploy.sh","runtime-deploy.sh — move the PINNED runtime checkout to the merged tree, and prove what is running.","tool","wired","keep",1,96
   "runtime-guard.sh","runtime-guard.sh — THE TREE IS NOT A RUNTIME.","data","wired","keep",0,125
+  "runtime-pinned-guard.sh","runtime-pinned-guard.sh — a unit that executes from a WORKING tree is a machine running whatever branch","tool","wired","keep",0,68
   "saga-session-start.sh","saga-session-start.sh - the one-command Brokk session start.","tool","tested","keep",3,288
   "saga-sessionstart-run.sh","saga-sessionstart-run.sh - session-open entry point for run-tier harnesses.","tool","wired","keep",0,91
   "saga-wake-drain.sh","saga-wake-drain.sh - present durable Brokk wakes, or acknowledge them.","tool","wired","keep",5,122
@@ -678,6 +681,6 @@ bin[665]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=426, tested=239
+**Tally.** verdict: wired=429, tested=239
 
-**Tally.** disposition: keep=651, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=654, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
