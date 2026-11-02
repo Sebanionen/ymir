@@ -51,13 +51,22 @@ ROOT="$(cd "$SCRIPT_DIR" && while [ ! -e "$PWD/.pi" ] || [ ! -d "$PWD/RULES" ]; 
 
 # ── the ONE resolver (Rule 07: configuration is never hardcoded) ───────────────
 if [ -z "${YMIR_HOARD_LIB_LOADED:-}" ]; then
-  _yh="$SCRIPT_DIR"
-  for _i in 1 2 3 4 5; do
-    [ -n "$_yh" ] || break
-    if [ -r "$_yh/hoard-lib.sh" ]; then . "$_yh/hoard-lib.sh"; YMIR_HOARD_LIB_LOADED=1; break; fi
-    _yh="$(cd "$_yh/.." 2>/dev/null && pwd)"
-  done
-  unset _yh _i
+  # The resolver lives at bin/vault/hoard-lib.sh — the walk below looked for `hoard-lib.sh` at each
+  # ancestor ROOT and so never found it after the move into bin/vault/ (measured 2026-11-02: the gate
+  # refused with "bin/vault/hoard-lib.sh is missing" while the file sat exactly there). Look in the
+  # canonical place first, then fall back to the walk.
+  if [ -r "$ROOT/bin/vault/hoard-lib.sh" ]; then
+    . "$ROOT/bin/vault/hoard-lib.sh"; YMIR_HOARD_LIB_LOADED=1
+  else
+    _yh="$SCRIPT_DIR"
+    for _i in 1 2 3 4 5; do
+      [ -n "$_yh" ] || break
+      if [ -r "$_yh/bin/vault/hoard-lib.sh" ]; then . "$_yh/bin/vault/hoard-lib.sh"; YMIR_HOARD_LIB_LOADED=1; break; fi
+      if [ -r "$_yh/hoard-lib.sh" ]; then . "$_yh/hoard-lib.sh"; YMIR_HOARD_LIB_LOADED=1; break; fi
+      _yh="$(cd "$_yh/.." 2>/dev/null && pwd)"
+    done
+    unset _yh _i
+  fi
 fi
 command -v ymir_home_root >/dev/null 2>&1 || {
   printf 'doc-sweep: bin/vault/hoard-lib.sh is missing — the home is never guessed\n' >&2; exit 2; }
