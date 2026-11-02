@@ -114,7 +114,7 @@ def places_for(person: str, data_path: str) -> list[str] | None:
     return []
 
 
-def render(person: str, data: dict, allowed: list[str] | None = None) -> str:
+def render(person: str, data: dict, allowed: list[str] | None = None, docs: list | None = None) -> str:
     today = datetime.date.today()
     horizon = today + datetime.timedelta(days=7)
     actions, decisions, questions = [], [], []
@@ -180,6 +180,15 @@ def render(person: str, data: dict, allowed: list[str] | None = None) -> str:
         except Exception as exc:                       # noqa: BLE001
             board_cards, board_detail = [], f"the board did not answer ({exc.__class__.__name__})"
 
+    rows = []
+    for group in docs or []:
+        links = "".join(
+            f'<li><a href="/desk/docs/{html.escape(group["project"])}/{html.escape(n)}">{html.escape(n)}</a></li>'
+            for n in group["files"][:8])
+        rows.append(f'<h2>{html.escape(group["title"])} <span class="meta">— mirrored</span></h2>'
+                    f'<div class="card"><ul>{links}</ul></div>')
+    docs_html = "".join(rows)
+
     tiles = "".join(f'<a class="tile" href="{html.escape(url)}"><b>{html.escape(name)}</b>'
                     f'<span>{html.escape(desc)}</span></a>' for name, url, desc in TILES)
 
@@ -195,9 +204,80 @@ def render(person: str, data: dict, allowed: list[str] | None = None) -> str:
 {section("Due this week", mine_actions, due_row)}
 {section("Last decisions", decisions[:5], plain_row)}
 {section("Questions waiting on me", mine_questions, plain_row)}
+{docs_html}
 <h2>The places</h2><div class="tiles">{tiles}</div>
 <footer>Gimlé — the hall that outlives the fire · on Zerwiz&rsquo;s own hardware · <a href="/manual.html" style="color:inherit;border-bottom:1px solid rgba(201,151,79,.4)">user manual</a></footer>
 </div></body></html>"""
+
+
+DOC_ROOTS = ("md", "html", "txt")
+
+
+def doc_path(data_path: str, project: str, name: str) -> str | None:
+    """A mirrored document, or None. The mirror writes into data/docs/<project>/; until this door
+    existed those files were written and never read, and `/docs/...` through the hall answered 200
+    with the login page — a green that showed nothing (Rule 37). Only a flat file name is accepted:
+    no separators, no dots leading, no traversal, and only the three suffixes a mirrored record uses.
+    """
+    if not project or not name or "/" in name or "\\" in name or name.startswith("."):
+        return None
+    if ".." in project or "/" in project or project.startswith("."):
+        return None
+    if name.rsplit(".", 1)[-1].lower() not in DOC_ROOTS:
+        return None
+    root = os.path.join(os.path.dirname(data_path), "docs", project)
+    path = os.path.join(root, name)
+    real = os.path.realpath(path)
+    if not real.startswith(os.path.realpath(root) + os.sep):
+        return None
+    return real if os.path.isfile(real) else None
+
+
+def may_read_doc(allowed: list[str] | None, project: str) -> bool:
+    """The same membership rule as the record: None means the operator (everything), a list means
+    the places that person may see, and a project not named in it is not theirs to read."""
+    if allowed is None:
+        return True
+    return any(str(a).lower() in project.lower() or project.lower() in str(a).lower() for a in allowed)
+
+
+def docs_for(data_path: str, allowed: list[str] | None) -> list[dict]:
+    """The mirrored documents this person may read, newest first.
+
+    The mirror writes into `<data>/docs/<project>/`; this is how a person *finds* them without knowing a
+    URL. The rule is the same one the door uses (`may_read_doc`): a place not granted is not listed and
+    not served. A `index.md` beside them supplies the project's title, because a mirror should say what
+    it is a mirror of.
+    """
+    root = os.path.join(os.path.dirname(data_path), "docs")
+    out = []
+    try:
+        projects = sorted(p for p in os.listdir(root) if os.path.isdir(os.path.join(root, p)))
+    except OSError:
+        return out
+    for project in projects:
+        if not may_read_doc(allowed, project):
+            continue
+        title = project
+        index = os.path.join(root, project, "index.md")
+        try:
+            with open(index, encoding="utf-8") as fh:
+                for line in fh:
+                    if line.startswith("# "):
+                        title = line[2:].strip()
+                        break
+        except OSError:
+            pass
+        files = []
+        try:
+            for name in sorted(os.listdir(os.path.join(root, project))):
+                if doc_path(data_path, project, name):
+                    files.append(name)
+        except OSError:
+            files = []
+        if files:
+            out.append({"project": project, "title": title, "files": files})
+    return out
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -209,8 +289,27 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, "text/plain", b"ok")
         person = self.headers.get("Remote-User", "") or self.headers.get("X-Forwarded-User", "")
         allowed = places_for(person, self.data_path)
-        body = render(person, load(self.data_path), allowed).encode("utf-8")
+        if self.path.startswith("/desk/docs/") or self.path.startswith("/docs/"):
+            return self._serve_doc(person, allowed)
+
+        body = render(person, load(self.data_path), allowed,
+                      docs_for(self.data_path, allowed)).encode("utf-8")
         self._send(200, "text/html; charset=utf-8", body)
+
+    def _serve_doc(self, person: str, allowed):
+        rest = self.path.split("/docs/", 1)[-1].split("?")[0]
+        parts = [p for p in rest.split("/") if p]
+        if len(parts) != 2:
+            return self._send(404, "text/plain", b"not found")
+        project, name = parts
+        if not may_read_doc(allowed, project):
+            return self._send(403, "text/plain", b"not yours to read")
+        path = doc_path(self.data_path, project, name)
+        if not path:
+            return self._send(404, "text/plain", b"not found")
+        ctype = "text/markdown; charset=utf-8" if path.endswith(".md") else "text/plain; charset=utf-8"
+        with open(path, "rb") as fh:
+            return self._send(200, ctype, fh.read())
 
     def _send(self, code: int, ctype: str, body: bytes):
         self.send_response(code)
