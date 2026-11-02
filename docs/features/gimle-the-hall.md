@@ -14,6 +14,7 @@ the same record answers the MCP.
 | the door (hall) | https://gimle.zerwiz.org |
 | the portal (Authelia) | https://auth.zerwiz.org |
 | the board (Plane) | https://board.zerwiz.org |
+| code (Forgejo) | https://forgejo.zerwiz.org |
 | documents (AFFiNE) | https://affine.zerwiz.org |
 | whiteboard (Excalidraw) | https://whiteboard.zerwiz.org |
 | book a time (Cal.com) | https://book.zerwiz.org |

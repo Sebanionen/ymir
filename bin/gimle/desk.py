@@ -67,6 +67,7 @@ footer{margin-top:40px;font-family:var(--f-mono);font-size:10.5px;color:var(--ym
 
 TILES = [
     ("Board", "https://board.zerwiz.org", "projects and tasks — Plane"),
+    ("Code", "https://forgejo.zerwiz.org", "repositories and pull requests — Forgejo"),
     ("Documents", "https://affine.zerwiz.org", "pages and databases — AFFiNE"),
     ("Whiteboard", "https://whiteboard.zerwiz.org", "drawing and mind maps — Excalidraw"),
     ("Meetings", "https://affine.zerwiz.org", "the record of what was said and decided"),
