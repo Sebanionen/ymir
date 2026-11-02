@@ -91,7 +91,7 @@ bin[665]{file,does,kind,verdict,disposition,callers,lines}:
   "deploy.sh","deploy.sh — put a merged tree on the desk host, and prove which commit is running.","tool","wired","keep",2,147
   "design-check.sh","design-check.sh — one identity, two renderers: they must agree.","tool","wired","keep",0,93
   "design-icon.sh","design-icon.sh — every app wears its own rune.","tool","wired","keep",2,299
-  "desk.py","'''desk.py — Gimlé's desk: the page behind the door.","tool","wired","keep",3,340
+  "desk.py","'''desk.py — Gimlé's desk: the page behind the door.","tool","wired","keep",3,341
   "desktop-place.sh","desktop-place.sh — put the Ymir apps on their own Hyprland desktops.","tool","tested","keep",8,320
   "desktop-verify.sh","desktop-verify.sh — the INSTALL-time guarantee: every desktop surface can run,","tool","wired","keep",2,199
   "dispatch-profile.sh","dispatch-profile.sh — decide which Eindri dispatch profile is ACTIVE, and","tool","tested","keep",2,277
