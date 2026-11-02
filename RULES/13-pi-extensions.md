@@ -182,3 +182,34 @@ the tree you are standing in, so a human and a test ask the same door;
 
 An existing worktree is never rewritten. One that is not sparse keeps working, reports
 `shared-copy`, and is repaired by its owner with the line the gate prints.
+
+## 2026-11-02 (appended) — Pi is the first harness, not the only one
+
+His word this day, while the platform claim was being audited:
+
+> *"opencodes packets need to have the same functionality as the extentions for pi. and we need make more harnesses
+> like claude and codex and others in the future. they need to be installed in root for the harnesses and the
+> agents.md that the tools are reading needs to be updated on ymir installts and updates. so ymir works globally on
+> their computers."*
+
+This rule governs **the extension surface of one harness**. It now governs **the harness surface of the house**, and
+the measurement behind that sentence is in `hodd/docs/audits/2026-11-02-harness-and-os-support-audit.md` in the home.
+
+**What is already true.** `bin/backend/fm-harness.sh` identifies nine harnesses — claude · codex · opencode · grok ·
+kimi · muse · pi · pi-signed · cursor — by ancestry and hook markers. Detection is not the gap.
+
+**What the rule now demands:**
+
+```
+harness_law[6]{rule,what_it_means}
+  "ONE CONTRACT, MANY HARNESSES","a harness is described by a descriptor — binary, launch, inject, read a transcript, list sessions, install a hook, global dirs, instruction file, capability flags — never by an `if pi` branch in a door"
+  "THE TRANSCRIPT IS NORMALISED","five harnesses store history in three incompatible ways (Pi: JSONL tree; Claude and Codex: flat JSONL; OpenCode v2 and Cursor: SQLite). Every reader parses ONE house shape, produced by one normalizer, never a vendor's file directly"
+  "PARITY IS NAMED, NOT ASSUMED","every capability the house ships for one harness is `full · partial · absent` for every other, with the reason. Absent is a pass only when it is written down; a silent gap is a lie"
+  "GLOBAL INSTALL, NOT A CHECKOUT","extensions/plugins and the instruction file each tool actually reads (AGENTS.md · CLAUDE.md · .cursor/rules · codex AGENTS.md) are written into the USER'S OWN home on install AND re-verified on update — a house that only loads inside its own repo does not work on their computer"
+  "NO VENDOR TELEMETRY DEPENDENCY","only one harness documents OTEL; the record that matters is the house's own ledger and its own transcript index"
+  "A HARNESS CHANGE UPDATES THE MATRIX","adding or changing a harness updates the capability matrix and the install in the same change, or the matrix is drift (the twin of Rule 05's platform duty)"
+```
+
+**Why one home still matters.** This rule's original subject — one home per extension, `index.ts` per multi-file
+extension, `valknut-load --check` as the gate — was written to stop two load paths seating nobody. The same fault
+returns at a larger scale: two *harness* paths, one of them undocumented, is two halves of the house that never meet.
