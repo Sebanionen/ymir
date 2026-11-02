@@ -133,6 +133,15 @@ printf 'reread-Brokk: %s\n' "$reread"
 # Galdr owns the assets; when the instruction surface moved she must be reflected
 # in the same pass (the code/plan/asset agreement law).
 printf 'galdr-reread: %s\n' "$reread"
+# A check must not redeploy harnesses, migrate the home or restart services.
+# The Codex checker proves the source, enabled registration and installed cache.
+if [ "$CHECK" = 1 ]; then
+  if command -v codex >/dev/null 2>&1; then
+    command -v node >/dev/null 2>&1 || { printf 'FAIL — node is required to check the Codex plugin.\n' >&2; exit 1; }
+    node "$ROOT/bin/seat/codex-plugin-install.mjs" --check || exit 1
+  fi
+  exit 0
+fi
 # The seat's name is part of the update surface: scan the collision registry and
 # report a drifted seat instead of silently keeping the old identity.
 if [ -x "$SCRIPT_DIR/../agents/name-registry.sh" ]; then
@@ -166,6 +175,17 @@ if [ -x "$SCRIPT_DIR/eir-doctor.sh" ]; then
   else
     eir_broken="$(printf '%s' "$eir_out" | sed -n '2s/.*,\([0-9][0-9]*\)$/\1/p')"
     printf 'eir: %s surface(s) need mending — bin/agents/eir-doctor.sh (the row above names them)\n' "${eir_broken:-?}"
+  fi
+fi
+
+# Codex uses the SAME deployment door as first setup. A failed refresh fails the
+# update; a source file existing in the repo is not proof that Codex loads it.
+if command -v codex >/dev/null 2>&1; then
+  if command -v node >/dev/null 2>&1 && node "$ROOT/bin/seat/codex-plugin-install.mjs"; then
+    printf 'codex plugin: refreshed and verified\n'
+  else
+    printf 'FAIL — the Codex plugin could not be refreshed; this update is NOT complete.\n' >&2
+    seat_failed=1
   fi
 fi
 

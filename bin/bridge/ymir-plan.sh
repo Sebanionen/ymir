@@ -335,6 +335,15 @@ apps_phase() {
 
 # ── phase 6 · wire — the way in, and the agent set ──────────────────────────
 wire_phase() {
+  if ! have codex; then
+    emit 6 wire codex-plugin SKIP "Codex is not installed on this host"
+  elif ! have node; then
+    emit 6 wire codex-plugin BLOCKED "Node.js is required to install the Ymir Codex plugin"
+  elif node "$ROOT/bin/seat/codex-plugin-install.mjs" --check >/dev/null 2>&1; then
+    emit 6 wire codex-plugin SKIP "Ymir's Codex plugin is installed, enabled and current"
+  else
+    emit 6 wire codex-plugin DO "register the local Ymir marketplace and install or refresh its Codex tools"
+  fi
   local door="none"
   if [ -x "$ROOT/bin/engine/ymir-setup-auth.sh" ]; then
     door="$(bash "$ROOT/bin/engine/ymir-setup-auth.sh" status 2>/dev/null | sed -n '2p' | cut -d, -f1 | tr -d ' "')"

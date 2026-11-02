@@ -1,0 +1,8 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ymir",
+  "version": "0.1.0",
+  "description": "Ymir shared runtime tools for Codex: memory, errands, diagnostics, updates and private home placement.",
+  "repository": "https://github.com/zerwiz/ymir",
+  "license": "Apache-2.0"
+}

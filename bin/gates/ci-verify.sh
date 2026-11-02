@@ -65,6 +65,14 @@ gate units      "systemd reads every key in every unit template" bash "$ROOT/bin
 gate ext-api    "extensions speak Pi's real tool API"          bash "$ROOT/bin/gates/checks/extension-api-check.sh" --quiet
 gate ext-smoke  "every Ymir tool ANSWERS when called like Pi calls it" \
                node --experimental-strip-types "$ROOT/tools/extension-smoke.mjs"
+codex_checks() {
+  local door
+  for door in bin/engine/ymir-install.sh bin/agents/groa-update.sh bin/bridge/ymir-plan.sh; do
+    bash -n "$ROOT/$door" || return 1
+  done
+  node --test "$ROOT/tests/test_codex_plugin.mjs" "$ROOT/tests/test_codex_install.mjs"
+}
+gate codex-plugin "the Codex tool catalog, shell syntax, install and refresh contract" codex_checks
 if [ "$FAST" = 1 ]; then
   printf '  "%s","SKIP","%s"\n' pr-pretest "skipped by --fast"
 else
