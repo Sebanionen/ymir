@@ -93,3 +93,39 @@ and the clean-skip convention, which stays law for a layer that genuinely does n
 never allowed to stand in for a capability the fleet still needs.
 
 **The sentence to carry forward:** *a skip is honest; a skip where the capability was needed is not done.*
+
+## 2026-11-02 (appended) — not every device runs every capability, and the core is what everyone runs
+
+His word this day, while the platform claim was being audited:
+
+> *"all users might not run all features that gimle can do. like if they have a fleet or not. if they have a
+> server or not. ymir home and basis ymir runtimes and templetes, extentions to pi, packets to opencode and other
+> agent harnesses and logic are the improtant."*
+
+That is a second axis, and this rule did not have it. The first axis asks *"does it work on this device?"*; this
+one asks *"should this device have it at all?"* — and the answer is a **tier**, declared, not guessed.
+
+```
+tiers[4]{tier,what_it_is,what_it_needs of the host}
+  "0 · core","the home (hodd: identity, memory, plans, secrets, daily), the baseline runtime (the portable shell + python3 + git core), the templates and principles (the agent contracts), the skills, and the harness integrations — Pi extensions, the OpenCode package, and the shims for Claude Code / Codex / Cursor","a POSIX shell, python3 and git — nothing else. No fleet, no server, no GPU, no desktop"
+  "1 · desk","the local desktop layer: launchers, themes, voice, window rules, placement, crash sense","a desktop session and the layer's own packaging"
+  "2 · suite","Gimlé: the gate, Plane, AFFiNE, the whiteboard, Book, the desk, the mirror","a server, containers, and a hostname — one machine that stays up"
+  "3 · fleet","roles (heart · forge · dev · hand), the heart's doors, A2A grants, dispatch","two or more machines that can reach each other"
+```
+
+**The law that follows, and it bites where the installer already drifted:**
+
+- **Tier 0 installs and passes its gates on a machine with nothing else on it.** If the core needs a role, a
+  server, a fleet or a GPU to be *declared* before it will install, the tiering is wrong. Today
+  `bin/engine/ymir-install.sh` requires `--role heart|forge|dev|hand`, which is a tier-3 word doing tier-0 work.
+- **A higher tier is a named, gated addition.** It detects its own preconditions and reports SKIP with the reason
+  when they are absent (a clean skip is a pass), never a silent half-install and never a FAIL for a capability
+  the user never asked for.
+- **The installer and the updater are profile-aware.** One verb, one flag: `--profile core|desk|suite|fleet`,
+  defaulting to `core`; `--role` becomes what it always was — a fleet-tier detail.
+- **A feature names its tier where it is documented**, so a reader knows before installing whether they are being
+  asked for a laptop, a server or a fleet.
+
+**Why this is the important half of the rule.** The house has spent months making capabilities work on every
+*device* while assuming every user wants every *capability*. A person who wants an agent with a home, memory and
+a set of principles should not have to answer a question about the heart's role to get one.
