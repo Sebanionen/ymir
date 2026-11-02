@@ -65,3 +65,52 @@ does not. A rule that contradicts this rule must change the rule first
 
 **Related:** `RULES/04-hoard.md` (what is private), `AGENTS.md` (the contract),
 `.agents/skills/galdr-ymirsystem/assets/installation.md` (the install procedure).
+
+## 2026-11-02 — appended: measured against the tree, not against intent
+
+The law above is unchanged. What follows is the measurement of how far the tree actually obeys it, so the next
+change has a true starting point instead of a hopeful one.
+
+**How to run on a given host, as it stands today:**
+
+```
+hosts[5]{host,how,what_actually_runs}
+  "Omarchy / Arch","bin/engine/ymir-install.sh","first-class; verified"
+  "other Linux (Ubuntu · Fedora · Debian)","bin/engine/ymir-install.sh","the core; the Omarchy layer skips cleanly — believed, not recently verified in CI"
+  "SteamOS","bin/engine/ymir-install.sh --role dev","verified 2026-10-19"
+  "Android (Termux)","the curl bootstrap","partial by design: a `hand` — pi, the hoard, the heart's doors; no record, no rail, no bun"
+  "macOS","bin/host/bootstrap-macos.sh","a **Linux VM** (Lima) is the host; Ymir runs inside it, not on the Mac"
+  "Windows","bin/host/bootstrap-windows.ps1","a **Linux VM** (WSL2 + Ubuntu) is the host; Ymir runs inside it, not on Windows"
+```
+
+**So: Ymir runs on Linux, and on macOS and Windows by hosting Linux.** That is a legitimate answer — it is the
+one the README already gives — but it is not the same claim as "runs on any operating system", and the rule
+must not pretend the two are equal.
+
+**The portability debt, counted:**
+
+```
+debt[8]{idiom,files,note}
+  "stat -c","43","BSD/macOS stat takes -f; the shim has no ymir_stat yet"
+  "sha256sum","43","macOS ships shasum -a 256 instead"
+  "systemctl","27","26 systemd units are shipped and no launchd unit at all; the service surface is Linux-shaped"
+  "path /proc/","17","absent on macOS and Windows"
+  "readlink -f","10","BSD readlink has no -f"
+  "flock","10","absent on macOS; mkdir-lock is the portable fallback"
+  "mapfile","7","bash 4+ only; macOS ships bash 3.2"
+  "setsid, nproc, loginctl, sed -i (4), md5sum (3), date -d (1)","5–6 each","same class: GNU-only, no shim"
+```
+
+**Only 24 of 667 shell scripts source `bin/fleet/ymir-platform.sh`.** The shim is the right idea and is not the
+road actually taken.
+
+**The installer and updater layer:** `packaging/` builds an NSIS `.exe` and a macOS `.pkg`
+(`packaging/build.sh`), with `packaging/macos/Ymir Installer.command` and `packaging/windows/ymir-setup.nsi`;
+`.github/workflows/ymir-installers.yml` builds both in CI. There is **no** `.deb`, `.rpm`, `.pkg.tar.zst`,
+Homebrew formula, winget/scoop manifest or Termux package, and the installer workflow has not run since
+2026-09-16. Gróa (the updater) is a bash+git door whose schedule is a **systemd timer** — so the updater has no
+launchd or Task Scheduler equivalent.
+
+**What the rule therefore demands of the next change:** a platform claim is made only for a layer that has been
+*run* in the last thirty days, and every new core script that touches a host facility goes through
+`bin/fleet/ymir-platform.sh` — not through a GNU tool name.
