@@ -41,6 +41,8 @@ skills[29]{skill,does,owner}:
   "bragi-translation","translation — speech→text (whisper.cpp) + text→text (the llama router); carries words between tongues","bragi"
   "elder-home","the keeper — home records: the plan ledger, documentation, and memory (Reginn, the keeper who remembers)","elder"
   "snotra-meeting-outcomes","meeting record — transcript to minutes, decision log, owned actions, per-person briefs, Trello payloads","snotra"
+  "vingolf","the assembly hall — who collaborates with the house, the six rungs, the baton shelf, the letter, the ship door","ursula"
+  "maestro-video","the video forge — Maestro over REST: t2v, i2v, music, voice, and the provision road for a seat","volundr"
 ```
 
 The control-plane UI guide is not a standalone skill: **hlidskjalf-ui** and its
