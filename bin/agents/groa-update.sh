@@ -189,6 +189,24 @@ if [ -x "$SCRIPT_DIR/../seat/valknut-load.sh" ]; then
     fi
   fi
 
+  # The harness CONTRACTS and the OpenCode plugin: an update that leaves a user's agent reading last
+  # month's law, or running without the house's tools, is not an update (RULES/13, 2026-11-02).
+  if [ -x "$SCRIPT_DIR/../seat/harness-contract-install.sh" ]; then
+    if bash "$SCRIPT_DIR/../seat/harness-contract-install.sh" --check >/dev/null 2>&1; then
+      printf 'harness contracts: current\n'
+    else
+      bash "$SCRIPT_DIR/../seat/harness-contract-install.sh" >/dev/null 2>&1 \
+        && printf 'harness contracts: relinked to the seat contract\n' \
+        || { printf 'FAIL — a harness contract is stale and could not be relinked.\n' >&2; seat_failed=1; }
+    fi
+  fi
+  if [ -f "$SCRIPT_DIR/../.opencode/plugins/ymir-tools.ts" ] && command -v opencode >/dev/null 2>&1; then
+    mkdir -p "$HOME/.config/opencode/plugins"
+    if ! diff -q "$SCRIPT_DIR/../.opencode/plugins/ymir-tools.ts" "$HOME/.config/opencode/plugins/ymir-tools.ts" >/dev/null 2>&1; then
+      cp "$SCRIPT_DIR/../.opencode/plugins/ymir-tools.ts" "$HOME/.config/opencode/plugins/" \
+        && printf 'opencode plugin: redeployed (the tools changed this update)\n'
+    fi
+  fi
   if "$SCRIPT_DIR/../seat/valknut-load.sh" --all --global >/dev/null 2>&1; then
     printf 'rebound (agents · skills · pi extensions)\n'
   else

@@ -1239,6 +1239,49 @@ step_loaders() {
   else add loaders SKIP "no valknut-load.sh"; fi
 }
 
+# ── opencode V2 plugin: Ymir tools as first-class OpenCode tools & commands (Plan 109)
+step_opencode_v2_plugin() {
+  # Tier 0, not a dev privilege: the harness integration is what makes Ymir exist for an OpenCode user
+  # (RULES/25, 2026-11-02 — the tiers). Gate on the harness being installed, never on a fleet role.
+  have opencode || { add opencode-v2-plugin SKIP "no opencode on this host — nothing to integrate with"; return 0; }
+  local plugin_dir="$ROOT/.opencode/plugins"
+  local target_dir="${HOME}/.config/opencode/plugins"
+  local tool_file="ymir-tools.ts"
+  local pkg_file="package.json"
+  
+  if [ ! -f "$plugin_dir/$tool_file" ] || [ ! -f "$plugin_dir/$pkg_file" ]; then
+    add opencode-v2-plugin SKIP "source plugin not found in $plugin_dir"
+    return
+  fi
+  
+  if [ "$CHECK" = 1 ]; then
+    if [ -f "$target_dir/$tool_file" ] && [ -f "$target_dir/$pkg_file" ]; then
+      # Verify they're identical
+      if diff -q "$plugin_dir/$tool_file" "$target_dir/$tool_file" >/dev/null 2>&1 && \
+         diff -q "$plugin_dir/$pkg_file" "$target_dir/$pkg_file" >/dev/null 2>&1; then
+        add opencode-v2-plugin OK "V2 plugin deployed and current"
+      else
+        add opencode-v2-plugin WARN "V2 plugin deployed but stale (run without --check to update)"
+      fi
+    else
+      add opencode-v2-plugin WARN "V2 plugin not deployed (run without --check to deploy)"
+    fi
+    return
+  fi
+  
+  # Deploy to global plugin directory
+  mkdir -p "$target_dir"
+  cp "$plugin_dir/$tool_file" "$target_dir/"
+  cp "$plugin_dir/$pkg_file" "$target_dir/"
+  
+  # Verify deployment
+  if [ -f "$target_dir/$tool_file" ] && [ -f "$target_dir/$pkg_file" ]; then
+    add opencode-v2-plugin OK "V2 plugin deployed to ~/.config/opencode/plugins/"
+  else
+    add opencode-v2-plugin FAIL "could not deploy V2 plugin"
+  fi
+}
+
 # ── 6b. delivery gates (git hooks) ───────────────────────────────────────────
 #
 # Rule 08: work leaves by PR, and every push carries a fix note. The
@@ -1657,7 +1700,8 @@ run_step step_smidja "the smithy"
 run_step step_spa "the spa"
 run_step step_omarchy "omarchy layer"
 run_step step_loaders "loaders"
-run_step step_council "the council of models"
+  run_step step_opencode_v2_plugin "opencode V2 plugin"
+  run_step step_council "the council of models"
 run_step step_vault "the vault"
 run_step step_garmr "the hound"
 run_step step_gates "gates"

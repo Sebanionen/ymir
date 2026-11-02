@@ -317,7 +317,7 @@ bin[668]{file,does,kind,verdict,disposition,callers,lines}:
   "google-auth.sh","bin/time/snotra/google-auth.sh -> systems/snotra/services/calendar/google-auth.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new door…","tool","wired","keep",0,16
   "graphics-lib.sh","graphics-lib.sh — the machine's graphics truth, shared by every reader.","lib","wired","keep",3,167
   "groa-agent.sh","groa-agent.sh — Gróa's body on a schedule: the updater, leashed, one per install.","tool","wired","keep",1,100
-  "groa-update.sh","groa-update.sh — Gróa, the völva who renews.","tool","wired","keep",7,220
+  "groa-update.sh","groa-update.sh — Gróa, the völva who renews.","tool","wired","keep",7,238
   "group-add.sh","bin/assistant/group-add.sh -> systems/skirnir/services/group-add.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "group-allow.sh","bin/assistant/group-allow.sh -> systems/skirnir/services/group-allow.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says…","tool","wired","keep",0,16
   "guards.sh","guards.sh — every TREE ward, in one command.","tool","wired","keep",7,59
@@ -663,7 +663,7 @@ bin[668]{file,does,kind,verdict,disposition,callers,lines}:
   "ymir-engine-ensure.sh","ymir-engine-ensure.sh — materialize the engine's private python home.","tool","tested","keep",2,67
   "ymir-engine.sh","ymir-engine.sh — the DOOR to the engine (`src/ymir_runtime/`).","tool","wired","keep",4,61
   "ymir-fleet.sh","ymir-fleet.sh — FLEET MODE, one command for npm users.","tool","wired","keep",0,19
-  "ymir-install.sh","ymir-install.sh — THE FIRST SETUP.","tool","tested","keep",26,1710
+  "ymir-install.sh","ymir-install.sh — THE FIRST SETUP.","tool","tested","keep",26,1754
   "ymir-invite.sh","ymir-invite — hand someone a way in to your Ymir, and take it back.","tool","wired","keep",3,113
   "ymir-isolation.sh","ymir-isolation.sh — capability-probed confinement for a single agent command.","data","wired","keep",0,89
   "ymir-marketing-stack.sh","ymir-marketing-stack.sh — the marketing stack, provisionable on ANY computer.","tool","wired","keep",1,337
