@@ -276,27 +276,15 @@ step_tree() {
     ( umask 077; : >"$HOARD/secrets/platform.env" )
     created=$((created+1))
   fi
-  if [ ! -f "$HOARD/identity/workspaces.yaml" ]; then
-    cat >"$HOARD/identity/workspaces.yaml" <<'YAML'
-# Workspace registry — single tenant. One operator, many workspaces.
-# kind: work | personal.  company: only for work.  domains: knowledge areas.
-# Add a work workspace of your own, e.g.:
-#   - id: work
-#     name: Work
-#     kind: work
-#     company: your-company
-#     domains: [company, development]
-workspaces:
-  - id: personal
-    name: Personal
-    kind: personal
-    domains: [me, life, development]
-YAML
-    created=$((created+1))
-  fi
-  if [ ! -f "$HOARD/identity/projects.yaml" ]; then
-    cp "$ROOT/registry/projects.yaml.example" "$HOARD/identity/projects.yaml"
-    created=$((created+1))
+  # The files a home must HOLD arrive through their own doors, never from a heredoc here
+  # (RULES/42): the identity registers belong to bin/identity/registers-seed.sh, and every
+  # other shape to bin/engine/home-seed.sh, which walks .agents/home-contract.yaml. Two
+  # writers of one file is how a template and an install drift apart — measured 2026-11-02:
+  # this step wrote `workspaces.yaml` inline, in a shape its own shipped template did not teach.
+  if seeded=$(bash "$SCRIPT_DIR/home-seed.sh" 2>&1); then
+    created=$((created + $(printf '%s' "$seeded" | grep -c '^home-seed: seeded ' || true)))
+  else
+    add tree WARN "the home contract could not be seeded — $(printf '%s' "$seeded" | tail -1)"
   fi
   add tree OK "workspace/{personal} · companies · registries · hoard (outside the repo) (created $created)"
 }

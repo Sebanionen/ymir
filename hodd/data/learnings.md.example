@@ -1,0 +1,28 @@
+# Learnings
+
+Curated, dated, evidence-backed operational facts. Prune often. One entry is one
+thing that was measured and cost something to learn.
+
+This file is a **stub**: it is copied to `hodd/data/learnings.md` once, on the first
+install, and never overwritten.
+
+## The shape of an entry
+
+```
+## <YYYY-MM-DD> — <what it is about>
+
+- **The fault.** What happened, and what it looked like from the outside.
+- **The cause.** The single thing that was wrong, not the symptoms.
+- **The evidence.** The command, the file, the number — something a reader can re-run.
+- **The rule it yields.** The sentence you would tell the next hand.
+```
+
+## An entry is not a log line
+
+A log line says *what was done*. A learning says *what is now known that was not
+known before*, and it survives the session that wrote it. If it would not change
+what the next hand does, it belongs in the session log, not here.
+
+## CHANGE LOG
+
+- **<YYYY-MM-DD>** — stub seeded by `bin/engine/home-seed.sh`.

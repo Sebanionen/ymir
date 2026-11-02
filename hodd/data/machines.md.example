@@ -1,0 +1,37 @@
+# Machines — this operator's own computers
+
+The record of the machines Ymir runs on: what each one is, what it is for, and how it
+is reached. **This file is private, and it is the only place these facts belong** — a
+hostname, an address or a seat name in the public repo is a leak of your topology.
+
+This file is a **stub**: copied to `hodd/data/machines.md` once, on the first install,
+never overwritten.
+
+## One block per machine
+
+```
+<seat-name>
+  role        heart | forge | dev | hand        (see the fleet registry)
+  reaches     <tailnet name or tunnel host>     never a LAN address
+  os          <the operating system and version>
+  hardware    <cpu · ram · gpu · vram>
+  owns        <what only this machine does: the rail, the record, the desktop>
+  never       <what it must never claim to do>
+```
+
+## Two laws this file obeys
+
+- **No local network is assumed.** A cross-host path is a tailnet MagicDNS name or a
+  tunnel, never `192.168.*`, `10.*` or a `.local` name. Loopback means *this* machine.
+- **A capability another machine depends on runs on a server**, never on the laptop
+  that happens to be awake.
+
+## Related
+
+- `hodd/data/fleet.json` — the machine-readable fleet registry (written by a door; do
+  not hand-edit the registry to match this page — correct the page).
+- `hodd/data/operator.md` — who is operating them.
+
+## CHANGE LOG
+
+- **<YYYY-MM-DD>** — stub seeded by `bin/engine/home-seed.sh`.

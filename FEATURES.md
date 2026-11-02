@@ -31,6 +31,7 @@ its row here and write its page (see `AGENTS.md` → *Feature how-tos*).
 | Updates | Gróa (updater) | Fast-forwards Brokk and its homes, then mends forward | [docs/features/groa-and-eir-update-and-heal.md](docs/features/groa-and-eir-update-and-heal.md) |
 | Health | Eir (the healer) | Diagnoses every surface, then mends what is broken | [docs/features/groa-and-eir-update-and-heal.md](docs/features/groa-and-eir-update-and-heal.md) |
 | Gate | The wards (`bin/gates/guards/*`) | secret · private · public · defaults · cron · branch · fixes — the delivery gate | [docs/features/the-wards-the-delivery-gate.md](docs/features/the-wards-the-delivery-gate.md) |
+| Home | **The home contract — every file Ymir reads, a shape that ships** (Rule 42, 2026-11-02) | Your home is raised complete and stays complete: `.agents/home-contract.yaml` names every file the runtime reads (45 rows: `seeded · stub · defaulted · optional · generated`), `bin/engine/home-seed.sh` copies the absent ones once and never overwrites yours, migration `0016` heals a home that predates the contract, and a ward refuses a template that ships to everyone and lands in nobody's home | [docs/features/the-home-contract.md](docs/features/the-home-contract.md) |
 
 ## Memory & secrets
 

@@ -1,0 +1,35 @@
+# Projects — this operator's own registry, in prose
+
+`hodd/identity/projects.yaml` is the **registry** a script reads. This page is the
+same fact a person reads: what the projects are, who they belong to, and where they
+live. Where the two disagree, the YAML is right and this page is corrected.
+
+This file is a **stub**: copied to `hodd/data/projects.md` once, on the first install,
+never overwritten.
+
+## One block per project
+
+```
+<project-id>
+  belongs-to   <the company that owns it, or "personal">
+  code         <the path to the checkout>
+  record       <where its plans and documents live>
+  posture      direct-PR | local-only | no-mistakes
+  status       active | paused | holding
+```
+
+## What a project is not
+
+- It is not a **company**: a company is a realm beside it, and it owns projects.
+- It is not an **app**: an app is something you open, and it lives in `apps/`.
+- It is not a **shelf**: a shelf holds one kind of thing, and a project owns its own
+  `docs/` and `plans/` inside its realm.
+
+## Related
+
+- `hodd/identity/projects.yaml` — the registry the doors read (plan 22 §finding).
+- `hodd/identity/companies.yaml` — the houses these projects belong to.
+
+## CHANGE LOG
+
+- **<YYYY-MM-DD>** — stub seeded by `bin/engine/home-seed.sh`.
