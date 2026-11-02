@@ -1241,7 +1241,9 @@ step_loaders() {
 
 # ── opencode V2 plugin: Ymir tools as first-class OpenCode tools & commands (Plan 109)
 step_opencode_v2_plugin() {
-  role_gate opencode_v2_plugin dev "OpenCode V2 plugin layer" || return 0
+  # Tier 0, not a dev privilege: the harness integration is what makes Ymir exist for an OpenCode user
+  # (RULES/25, 2026-11-02 — the tiers). Gate on the harness being installed, never on a fleet role.
+  have opencode || { add opencode-v2-plugin SKIP "no opencode on this host — nothing to integrate with"; return 0; }
   local plugin_dir="$ROOT/.opencode/plugins"
   local target_dir="${HOME}/.config/opencode/plugins"
   local tool_file="ymir-tools.ts"
