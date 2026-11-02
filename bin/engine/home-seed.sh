@@ -145,7 +145,8 @@ if rows=$(contract_rows); then
     fi
     mkdir -p "$(dirname "$home/$dest")"
     cp "$ROOT/$tmpl" "$home/$dest"
-    case "$kind" in stub) stubbed=$((stubbed+1)) ;; *) seeded=$((seeded+1)) ;; esac
+    # the home contract's kinds (RULES/42) decide how a shape is copied; `stub` means the operator's own words.
+    case "$kind" in seeded|defaulted) seeded=$((seeded+1)) ;; *) stubbed=$((stubbed+1)) ;; esac
   done <<< "$rows"
   printf 'home_seed[1]{contract,detail}\n  "%s seeded · %s stubs copied · %s already present (never overwritten)"\n' \
     "$seeded" "$stubbed" "$kept"
