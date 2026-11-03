@@ -12,9 +12,9 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
 bin[694]{file,does,kind,verdict,disposition,callers,lines}:
-  "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","orphan","retire",0,35
-  "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","orphan","retire",0,32
-  "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","orphan","retire",0,36
+  "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
+  "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
+  "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
   "README.md","`bin/` — every file, what it does, and whether it is alive","data","tested","keep",25,-
   "README.md","Gróa — the updater, one per install","data","tested","keep",25,-
   "README.md","collab — Vingólf, the assembly hall","data","tested","keep",25,-
@@ -483,7 +483,7 @@ bin[694]{file,does,kind,verdict,disposition,callers,lines}:
   "pre-commit","The cheap checks, so a commit never carries a broken tree.","tool","tested","keep",10,19
   "pre-push","Three gates: never push a protected branch, never push a red tree, and never push a behaviour change without its note.","tool","tested","keep",13,38
   "prereq-ensure.sh","prereq-ensure.sh — self-healing prerequisite engine for Ymir.","tool","wired","keep",11,236
-  "private-data.sh","private-data — the repository is public; the operator's machine is not.","tool","wired","keep",1,39
+  "private-data.sh","private-data — the repository is public; the operator's machine is not.","tool","wired","keep",1,40
   "private-guard.py","'''private-guard — private structure and protected material never cross a surface.'''","tool","wired","keep",1,122
   "private-guard.sh","private-guard.sh — private structure and NDA material never cross a surface.","tool","tested","keep",3,10
   "profile.sh","profile.sh — what THIS user's machine actually is, probed not assumed.","tool","tested","keep",4,97
@@ -707,6 +707,6 @@ bin[694]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=446, tested=245, orphan=3
+**Tally.** verdict: wired=449, tested=245
 
-**Tally.** disposition: keep=676, migrate → src/ymir_runtime/send.py=3, retire=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=679, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1

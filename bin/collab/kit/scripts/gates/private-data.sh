@@ -13,6 +13,7 @@ files="$(git diff --cached --name-only --diff-filter=ACM 2>/dev/null)"
 [ -n "$files" ] || exit 0
 
 # paths that belong to one machine; emails that belong to real people
+# allow-home-default: the pattern NAMES a home path in order to refuse one; it does not resolve a home.
 path_pattern='/home/[a-z]+/|/Users/[A-Za-z]+/|Documents/ymirhome'
 mail_pattern='[A-Za-z0-9._%+-]+@(gmail|hotmail|live|outlook|yahoo|icloud)\.[a-z]{2,}'
 
