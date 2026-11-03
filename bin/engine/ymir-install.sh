@@ -889,6 +889,7 @@ step_identity() {
   out="$("$SCRIPT_DIR/../agents/seat-identity.sh" --ensure "$host" 2>&1)"; rc=$?
   # the seat's name is a HOME config; render it into every harness AGENTS.md now
   if [ -x "$SCRIPT_DIR/../seat/seat-surface.sh" ]; then "$SCRIPT_DIR/../seat/seat-surface.sh" >/dev/null 2>&1 || true; fi
+  if [ -x "$SCRIPT_DIR/../records/weave-features.sh" ]; then "$SCRIPT_DIR/../records/weave-features.sh" --install >/dev/null 2>&1 || true; fi
   if [ "$rc" -eq 0 ]; then add identity OK "$out"; else add identity WARN "$out"; fi
 }
 

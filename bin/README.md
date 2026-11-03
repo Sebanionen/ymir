@@ -67,7 +67,7 @@ bin[716]{file,does,kind,verdict,disposition,callers,lines}:
   "calendar-auth.sh","bin/time/snotra/calendar-auth.sh -> systems/snotra/services/calendar/calendar-auth.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new…","tool","wired","keep",0,16
   "calendar-invite.sh","bin/time/snotra/calendar-invite.sh -> systems/snotra/services/calendar/calendar-invite.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the…","tool","wired","keep",2,16
   "calendar-watch.sh","calendar-watch.sh — do not walk into a meeting by accident.","tool","wired","keep",0,81
-  "capabilities.md","What Ymir can do — the capability register","data","wired","keep",4,28
+  "capabilities.md","What Ymir can do — the capability register","data","wired","keep",5,28
   "capabilities.sh","A GENERATED FILE MUST BE A FUNCTION OF CONTENT ALONE (0.1.94/0.1.95/0.1.97 — three","tool","wired","keep",8,246
   "catalog.sh","catalog.sh — THE door to what this machine can serve.","tool","wired","keep",2,77
   "channel_calendar.py","bin/time/snotra/channel_calendar.py -> systems/snotra/services/cron/channel_calendar.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
@@ -332,7 +332,7 @@ bin[716]{file,does,kind,verdict,disposition,callers,lines}:
   "google-auth.sh","bin/time/snotra/google-auth.sh -> systems/snotra/services/calendar/google-auth.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new door…","tool","wired","keep",0,16
   "graphics-lib.sh","graphics-lib.sh — the machine's graphics truth, shared by every reader.","lib","wired","keep",3,167
   "groa-agent.sh","groa-agent.sh — Gróa's body on a schedule: the updater, leashed, one per install.","tool","wired","keep",1,100
-  "groa-update.sh","groa-update.sh — Gróa, the völva who renews.","tool","wired","keep",8,301
+  "groa-update.sh","groa-update.sh — Gróa, the völva who renews.","tool","wired","keep",8,305
   "group-add.sh","bin/assistant/group-add.sh -> systems/skirnir/services/group-add.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "group-allow.sh","bin/assistant/group-allow.sh -> systems/skirnir/services/group-allow.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says…","tool","wired","keep",0,16
   "guards.sh","guards.sh — every TREE ward, in one command.","tool","wired","keep",9,65
@@ -689,7 +689,7 @@ bin[716]{file,does,kind,verdict,disposition,callers,lines}:
   "walls-test.sh","bin/assistant/walls-test.sh -> systems/skirnir/services/walls-test.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "ward-answer.sh","ward-answer.sh — answer a ward decision.","tool","wired","keep",0,82
   "ward-ask.sh","ward-ask.sh — Vörðr reports, then ASKS.","tool","wired","keep",1,82
-  "weave-features.sh","weave-features.sh — FEATURES.md is WOVEN from fragments, never hand-edited.","tool","wired","keep",2,51
+  "weave-features.sh","weave-features.sh — FEATURES.md is WOVEN from fragments, never hand-edited.","tool","wired","keep",4,51
   "wedge-notify.sh","wedge-notify.sh — the Ymir wedge-alarm notifier.","tool","wired","keep",1,62
   "well-door.sh","well-door.sh — the hand's door to the heart's well, raised over SSH.","tool","tested","keep",1,125
   "well-guard.sh","well-guard.sh — the WARD behind RULES/20-the-well-appends.md.","tool","wired","keep",3,206
@@ -711,7 +711,7 @@ bin[716]{file,does,kind,verdict,disposition,callers,lines}:
   "ymir-engine-ensure.sh","ymir-engine-ensure.sh — materialize the engine's private python home.","tool","tested","keep",2,67
   "ymir-engine.sh","ymir-engine.sh — the DOOR to the engine (`src/ymir_runtime/`).","tool","wired","keep",4,61
   "ymir-fleet.sh","ymir-fleet.sh — FLEET MODE, one command for npm users.","tool","wired","keep",0,19
-  "ymir-install.sh","ymir-install.sh — THE FIRST SETUP.","tool","tested","keep",28,1792
+  "ymir-install.sh","ymir-install.sh — THE FIRST SETUP.","tool","tested","keep",28,1793
   "ymir-invite.sh","ymir-invite — hand someone a way in to your Ymir, and take it back.","tool","wired","keep",3,113
   "ymir-isolation.sh","ymir-isolation.sh — capability-probed confinement for a single agent command.","data","wired","keep",0,89
   "ymir-marketing-stack.sh","ymir-marketing-stack.sh — the marketing stack, provisionable on ANY computer.","tool","wired","keep",1,337
