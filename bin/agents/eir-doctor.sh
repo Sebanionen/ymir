@@ -104,7 +104,40 @@ surface_detail_skip() {
 }
 
 # Each surface: `s_<name>` = healthy? (exit 0), `f_<name>` = the repair.
-SURFACES=(floors herdr a2abridge hermes snotra voice council sessrumnir shells graphics well memory mcp harness arm lock gates migrations hoard autoboot vault ward)
+SURFACES=(floors seatpaths hooks packaging herdr a2abridge hermes snotra voice council sessrumnir shells graphics well memory mcp harness arm lock gates migrations hoard autoboot vault ward)
+
+# ── the three surfaces the 2026-11-03 Windows audit found, and the rule they read ──────────
+# A SEAT IS NOT UPDATED BY A PULL. The checkout moves; the installed hooks, the PATH a later
+# shell sees, and the packaging that builds the door do not. These three ask the doors that own
+# those answers, so `eir-doctor check` names the same faults the installer and Gróa heal.
+seat_profile() {  # the profile this operator's shell actually reads (probed, never assumed)
+  case "${SHELL##*/}" in zsh) printf '%s' "$HOME/.zprofile" ;; *) printf '%s' "$HOME/.profile" ;; esac
+}
+s_seatpaths() {
+  local d f; f="$(seat_profile)"
+  for d in "$HOME/.bun/bin" "$HOME/.local/bin"; do
+    [ -d "$d" ] || continue
+    grep -qF "$d" "$f" 2>/dev/null || return 1     # provisioned, but no login shell would find it
+  done
+  return 0
+}
+f_seatpaths() { "$SCRIPT_DIR/../engine/prereq-ensure.sh" --persist-path >/dev/null 2>&1; }
+s_hooks() {
+  local hooks; hooks="$(cd "$ROOT" && git rev-parse --git-path hooks 2>/dev/null || printf '.git/hooks')"
+  case "$hooks" in /*) ;; *) hooks="$ROOT/$hooks" ;; esac
+  [ -x "$hooks/pre-commit" ] && [ -x "$hooks/pre-push" ] || return 1
+  # A hook that BAKES a home path dies when that tree is reclaimed, and takes every ward with it
+  # (the pre-push hook was taught this on 2026-10-20; the pre-commit one still baked a path).
+  ! grep -q "^\"/home/\|^\"/Users/" "$hooks/pre-commit" 2>/dev/null
+}
+f_hooks() {
+  [ -x "$SCRIPT_DIR/../gates/guards/secret-guard.sh" ] && "$SCRIPT_DIR/../gates/guards/secret-guard.sh" --install >/dev/null 2>&1
+  [ -x "$SCRIPT_DIR/../gates/guards/fixes-guard.sh" ] && "$SCRIPT_DIR/../gates/guards/fixes-guard.sh" --install >/dev/null 2>&1
+}
+# The packaged door: every path a shipped installer names must exist, and the host must be able
+# to say what it can build. A broken directive is named by the ward; there is no mending here —
+# it is a code change, so the fix row points at the ward.
+s_packaging() { [ -x "$SCRIPT_DIR/../gates/guards/packaging-guard.sh" ] && "$SCRIPT_DIR/../gates/guards/packaging-guard.sh" check >/dev/null 2>&1; }
 
 s_floors()    { [ -x "$SCRIPT_DIR/../engine/prereq-ensure.sh" ] && "$SCRIPT_DIR/../engine/prereq-ensure.sh" status >/dev/null 2>&1; }
 f_floors()    { "$SCRIPT_DIR/../engine/prereq-ensure.sh" ensure --install >/dev/null 2>&1; }
@@ -456,6 +489,9 @@ detail() { # <name> -> the command that prints one short fact
     shells)    printf '%s\n' 'shell_surfaces | while IFS= read -r s; do d=""; app_dir "$s" d 2>/dev/null || d=""; [ -n "$d" ] && printf "%s %s; " "$s" "$(electron_runtime_state "$d" "$ROOT" "$(app_pkg "$s")" 2>/dev/null)"; done' ;;
     hoard)     printf '%s\n' "printf 'hoard %s' \"\$(_hoard_root)\" ; [ -d \"\$YMIR_HOME/identity\" ] && printf ' +flat-duplicate' ; printf '\n'" ;;
     autoboot)  printf '%s\n' "$SCRIPT_DIR/../engine/ymir-autoboot.sh verify >/dev/null 2>&1 && echo 'boot proven' || echo 'boot gap — bin/engine/ymir-autoboot.sh verify'" ;;
+    seatpaths) printf '%s\n' "printf '%s' \"$(seat_profile)\" ; grep -qF \"$HOME/.bun/bin\" \"$(seat_profile)\" 2>/dev/null && printf ' carries the marked block' || printf ' does not carry ~/.bun/bin — a unit or validator will not find bun'" ;;
+    hooks)     printf '%s\n' "printf 'installed hooks' ; [ -x \"$(cd "$ROOT" && git rev-parse --git-path hooks 2>/dev/null || printf '.git/hooks')/pre-commit\" ] && printf ' present' || printf ' MISSING — a guarded deletion and a staged secret would both pass'" ;;
+    packaging) printf '%s\n' "bash \"$SCRIPT_DIR/../gates/guards/packaging-guard.sh\" check 2>&1 | grep -o 'the File directive names a file that does not exist: [^)]*' | head -1 || printf 'every named input exists'" ;;
   esac
 }
 

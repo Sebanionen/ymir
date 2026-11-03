@@ -81,11 +81,27 @@ ROLE_SET="${ROLE_SET:-dev}"
 role_owns() { case ",$ROLE_SET," in *",$1,"*) return 0 ;; esac; return 1; }
 
 # ── 1. prerequisites present ────────────────────────────────────────────────
+# ASK THE MACHINE, never the PATH it was handed (RULES/25: PROBE, NEVER ASSUME). The
+# installer writes `~/.bun/bin` for the NEXT login shell; a validator that only asked
+# `command -v bun` reported `missing: bun` on a host that had it — measured on a clean
+# Windows/WSL2 seat, 2026-11-03, where the operator was told to fix a working thing.
 miss=""
 for c in git python3 gh; do command -v "$c" >/dev/null 2>&1 || miss="$miss $c"; done
-role_owns dev && { command -v bun >/dev/null 2>&1 || miss="$miss bun"; }
+bun_path=""
+role_owns dev && {
+  bun_path="$(bash "$ROOT/bin/engine/prereq-ensure.sh" resolve bun 2>/dev/null | head -1 || true)"
+  [ -n "$bun_path" ] || miss="$miss bun"
+}
 { role_owns forge || role_owns dev; } && { [ -n "$CONTAINER_ENGINE" ] || miss="$miss docker/podman"; }
-if [ -z "$miss" ]; then add prereqs PASS "git python3 gh present"; else add prereqs FAIL "missing:$miss"; fi
+if [ -z "$miss" ]; then
+  # Name the road that answered: a bun outside PATH is honest to report, not to hide.
+  case "$bun_path" in
+    ""|"$(command -v bun 2>/dev/null)") add prereqs PASS "git python3 gh present" ;;
+    *) add prereqs PASS "git python3 gh present; bun at ${bun_path} (not on this shell's PATH — ~/.profile carries it)" ;;
+  esac
+else
+  add prereqs FAIL "missing:$miss"
+fi
 
 # ── 2. Utgard sandbox image ─────────────────────────────────────────────────
 if ! role_owns forge && ! role_owns dev; then
@@ -136,12 +152,32 @@ fi
 # ── 6. Nornir cron running ──────────────────────────────────────────────────
 # The scheduler's cmdline is `bash -c <body>` and carries no "nornir" token, so
 # ask nornir-cron-start.sh itself (it owns the identity check) instead of pgrep.
+# A scheduler with NO live session lock retires ON PURPOSE (RULES: Nornir is started BY a
+# session, never before one). Reporting that as a failure made a correct install look
+# broken on a fresh seat — measured 2026-11-03 on Windows/WSL2. So: no live lock is a
+# SKIP that names the reason; a live lock with no scheduler is the real FAIL.
+session_lock_live() {
+  local mach lockf owner st
+  if [ -n "${BROKK_MACHINE_STATE_DIR:-}" ]; then mach="$BROKK_MACHINE_STATE_DIR"
+  elif [ -f "$ROOT/state/.lock-path" ]; then
+    mach="$(dirname "$(cat "$ROOT/state/.lock-path" 2>/dev/null || true)")"
+    [ -d "$mach" ] || mach="${XDG_STATE_HOME:-$HOME/.local/state}/ymir"
+  else mach="${XDG_STATE_HOME:-$HOME/.local/state}/ymir"; fi
+  lockf="$mach/brokk.lock"
+  owner="$(tr -d "[:space:]" <"$lockf" 2>/dev/null || true)"
+  [ -n "$owner" ] || return 1
+  st="$(ps -o stat= -p "$owner" 2>/dev/null | tr -d ' ')"
+  [ -d "/proc/$owner" ] || return 1
+  [ "${st#Z}" = "$st" ] && [ "${st#X}" = "$st" ]
+}
 if ! role_owns heart && ! role_owns dev; then
   add cron SKIP "not this machine's role (heart,dev only) — the record's schedule"
 elif [ -x "$ROOT/bin/time/nornir-cron-start.sh" ]; then
   cron_out="$("$ROOT/bin/time/nornir-cron-start.sh" 2>/dev/null || true)"
   if printf '%s' "$cron_out" | grep -q 'cron: running'; then
     add cron PASS "$(printf '%s' "$cron_out" | grep -m1 'cron: running')"
+  elif ! session_lock_live; then
+    add cron SKIP "session-gated by design — the scheduler retires without a live seat; it starts with the next session"
   else
     add cron FAIL "nornir cron not running — run bin/time/nornir-cron-start.sh"
   fi
