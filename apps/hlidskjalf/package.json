@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test:voice": "bun test server/voice.test.ts server/voice-keys.test.ts server/swedish-voice.test.ts",
     "test:voice:browser": "node tests/voice.e2e.mjs",
+    "test:voice:contract": "bun scripts/swedish-contract.integration.ts",
     "desktop": "electron .",
     "prepack": "npm run build"
   },

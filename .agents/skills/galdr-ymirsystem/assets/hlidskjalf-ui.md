@@ -938,3 +938,9 @@ Svenska · Bengt selection, an actual prerecorded Swedish request, real permitte
 Swedish answer and browser-decoded Microsoft Bengt WAV, with zero physical
 capture attempts and zero uncaught errors. This is fresh rendered UI proof,
 not an inference from API speech=true, and does not rerun the broad voice suite.
+## Opt-in voice contract CLI (2026-11-03)
+
+The real Swedish contract proof lives under apps/hlidskjalf/scripts and is
+invoked by npm run test:voice:contract. It is an explicit file-only CLI, not
+an unused server module or an automatically run unit test. Its required
+private home/audio/report settings and synthetic-only boundary are unchanged.

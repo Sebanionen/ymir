@@ -2,7 +2,7 @@
 import { strict as assert } from 'node:assert';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { createVoiceHandler, voiceAccess } from './voice.ts';
+import { createVoiceHandler, voiceAccess } from '../server/voice.ts';
 
 const home = process.env.SKIRNIR_TEST_HOME;
 const audio = process.env.SKIRNIR_TEST_AUDIO_SV;
