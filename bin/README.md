@@ -483,7 +483,7 @@ bin[694]{file,does,kind,verdict,disposition,callers,lines}:
   "pre-commit","The cheap checks, so a commit never carries a broken tree.","tool","tested","keep",10,19
   "pre-push","Three gates: never push a protected branch, never push a red tree, and never push a behaviour change without its note.","tool","tested","keep",13,38
   "prereq-ensure.sh","prereq-ensure.sh — self-healing prerequisite engine for Ymir.","tool","wired","keep",11,236
-  "private-data.sh","private-data — the repository is public; the operator's machine is not.","tool","wired","keep",1,40
+  "private-data.sh","private-data — the repository is public; the operator's machine is not.","tool","wired","keep",1,39
   "private-guard.py","'''private-guard — private structure and protected material never cross a surface.'''","tool","wired","keep",1,122
   "private-guard.sh","private-guard.sh — private structure and NDA material never cross a surface.","tool","tested","keep",3,10
   "profile.sh","profile.sh — what THIS user's machine actually is, probed not assumed.","tool","tested","keep",4,97
