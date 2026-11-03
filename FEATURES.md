@@ -178,3 +178,8 @@ page's *planned* banner is removed **by a new entry citing the old** (Rule 06).
 | Memory | Serving-engine health | Cross-platform and borrowed clients measure the active bridge database; transport, episode count and policy health remain distinct. | [Memory on every role](docs/features/the-well-on-every-role.md) |
 
 - 2026-11-02: Codex Gná bounded arm/status/poll with WSL-safe Windows routing and native thread-heartbeat delivery contract — docs/features/gna-in-codex.md.
+| Voice | Native Windows/WSL file voice and engine control | Existing Whisper/Kokoro engines; verified listener ownership, start/status/stop/restart, WAV validation, language forwarding and explicit refusal of Swedish synthesis. No microphone or external channel enabled. | [Guide](docs/features/voice-files-on-windows.md) |
+
+| Voice | Skírnir – Tala in Hlidskjalf | Explicit consent and click, local Whisper/approved-answer/Kokoro chain, transcript and playback, capture/backend stop, English speech and honest Swedish text-only mode. Separate from Snotra meeting recording. | [Guide](docs/features/talk-to-skirnir.md) |
+
+| Voice | F8/Escape and genuine Swedish speech in Skírnir – Tala | Supersedes the temporary Swedish text-only entry: focused-page F8 starts through consent and finishes; Escape cancels. English uses American female Kokoro af_nicole; Swedish uses the private Bengt/PowerShell 7.6.5 file contract. Verified synthetic ASR and audio in both languages; no global shortcut or invented translation. | [Guide](docs/features/talk-to-skirnir.md) |

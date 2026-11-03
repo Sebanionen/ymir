@@ -55,6 +55,7 @@ export type TaskState =
   | 'AUTH_REQUIRED';
 
 export type GateId =
+  | 'skirnir'
   | 'fleet'
   | 'tasks'
   | 'well'

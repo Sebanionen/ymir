@@ -31,6 +31,7 @@ export const HALL_URL = (() => {
 
 /** Per-gate metadata — every view is a page and declares its own story. */
 export const GATE_META: Record<GateId, PageMeta> = {
+  skirnir: { title: 'Skírnir – Tala', description: 'Tala med assistenten lokalt, med ditt mikrofontillstånd och godkänd kunskap.' },
   fleet: {
     title: 'Fleet',
     description:

@@ -23,3 +23,7 @@ its page here in the same change (see `AGENTS.md` → *Feature how-tos*).
 - **Do it** — the exact commands, in order, each with what you should see.
 - **Notes & limits** — the honest caveats.
 - **If it does not work** — the common failures and their fix.
+
+Voice files on Windows and WSL: [voice-files-on-windows.md](voice-files-on-windows.md).
+
+Talk to Skírnir in Hlidskjalf: [talk-to-skirnir.md](talk-to-skirnir.md).

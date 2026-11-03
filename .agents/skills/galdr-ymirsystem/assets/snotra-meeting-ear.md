@@ -523,3 +523,24 @@ lives on one seat; plan 126 decides which records must ride the vault.
 **Owner docs.** How-to: `docs/features/the-outbound-gate.md` · the gate's own history:
 `docs/fixes/snotra/2026-10-23-the-approval-gate-was-not-in-the-tree.md`,
 `docs/fixes/snotra/2026-10-24-the-gate-is-in-every-door.md` · the shelf: `docs/snotra/the-letters.md`.
+
+## Windows/WSL file voice road (2026-11-02)
+
+Skirnir's services/ear.sh and mouth.sh use native-voice.sh to invoke voice-file.ps1
+and voice-io.py on Windows, keeping Windows loopback local when WSL has a separate
+network namespace. The adapter reuses Whisper inference and Kokoro speech APIs,
+ffmpeg, speech-text.py and WAV validation. Whisper receives the selected language;
+unsupported Swedish synthesis is refused. voice-service.ps1 controls installed
+engines with status/start/stop/restart, loopback, executable and creation-time
+checks, never saved-PID authority. It installs nothing and opens no microphone.
+
+Configuration, defaults and limits: docs/features/voice-files-on-windows.md.
+File-chain verification is separate from microphone/UI/meeting acceptance and
+second-machine fleet proof. voice.sh --no-speak suppresses early and final speech;
+synthesis/playback failures return nonzero.## Windows UTF-8 voice restart (2026-11-03)
+
+The API passes UTF-8 to its Python children. The speech cleaner subprocess now
+also uses explicit UTF-8 for its text pipes: Windows locale encoding otherwise
+encoded accented answer text differently from the child's UTF-8 stdin, failing
+before Kokoro synthesis. A Unicode-answer regression exercises the real cleaner
+under PYTHONIOENCODING=utf-8; ASCII-only smoke cannot prove this boundary.

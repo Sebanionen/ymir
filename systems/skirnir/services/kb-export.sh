@@ -31,6 +31,7 @@ import hashlib, json, os, re, subprocess, sys, time
 
 approved = os.environ["APPROVED_Q"]
 digest = os.environ["DIGEST_Q"]
+os.makedirs(os.path.dirname(digest), exist_ok=True)
 rows, refused = [], []
 for name in sorted(os.listdir(approved) if os.path.isdir(approved) else []):
     if not name.endswith(".md"):
