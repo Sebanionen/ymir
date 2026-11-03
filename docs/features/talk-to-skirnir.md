@@ -113,7 +113,8 @@ file-input flags; it must never be changed to capture a physical microphone.
 
 `server/swedish-voice.test.ts` checks manifest arguments, checksum tampering and
 unsafe flag rejection without starting an interpreter. The opt-in
-`npm run test:voice:contract` runs `scripts/swedish-contract.integration.ts` for a real synthetic Swedish file
+`npm --prefix apps/hlidskjalf run test:voice:contract` runs the opt-in proof at
+`apps/hlidskjalf/scripts/swedish-contract.integration.ts` for a real synthetic Swedish file
 round trip on its own ephemeral loopback port, using explicit private
 `SKIRNIR_TEST_HOME`, `SKIRNIR_TEST_AUDIO_SV` and `SKIRNIR_TEST_REPORT` settings.
 It does not restart the preview or capture a microphone.
