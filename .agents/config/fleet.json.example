@@ -5,7 +5,7 @@
   "rails": ["heart-host", "dev-host"],
   "ear": ["heart-host", "dev-host"],
   "hosts": {
-    "heart-host": { "roles": ["heart", "forge"], "lan": "192.168.1.10", "tailnet": "heart-host.tailnet.ts.net" },
-    "dev-host": { "roles": ["dev"], "lan": "192.168.1.11", "tailnet": "dev-host.tailnet.ts.net" }
+    "heart-host": { "roles": ["heart", "forge"], "lan": "192.0.2.10", "tailnet": "heart-host.<host>.tailnet.ts.net" },
+    "dev-host": { "roles": ["dev"], "lan": "192.0.2.11", "tailnet": "dev-host.<host>.tailnet.ts.net" }
   }
 }

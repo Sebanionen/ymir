@@ -5,6 +5,7 @@
 #   collab.sh ladder                                  the register: rungs, what each person owes, which
 #                                                     projects carry the shelf
 #   collab.sh init <repo> [--from NAME] [--check]     put the baton shelf into a repository, or check it
+#   collab.sh standardise <repo> [--check|--apply]    the baton PLUS the gates, hooks, fix notes and review shelf
 #   collab.sh letter --to <addr> --person "<name>"    render the collaboration letter as a DRAFT (never sent)
 #   collab.sh ship --repo P --branch B --message M --path X ...   branch, commit named paths, merge, push
 #   collab.sh publish <repo> [--project NAME] [--yes]             the baton's next and blocked bullets as
@@ -54,6 +55,7 @@ case "$cmd" in
   who)    exec python3 "$_d/who.py" --register "$register" "$@" ;;
   ladder) ladder ;;
   init)   exec bash "$_d/init.sh" "$@" ;;
+  standardise) exec bash "$_d/standardise.sh" "$@" ;;
   letter) exec bash "$_d/letter.sh" "$@" ;;
   ship)   exec bash "$_d/ship.sh" "$@" ;;
   publish) exec python3 "$_d/publish.py" "$@" ;;

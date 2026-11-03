@@ -1,7 +1,7 @@
 # Snotra — Business Launch Document
 
 **Prepared for:** Reygan Assareh (Synteon Technologies)
-**Prepared by:** Josef Lindbom (Ymir / Whynot Productions)
+**Prepared by:** <the operator> <the operator> (Ymir / Whynot Productions)
 **Date:** 2026-10-31
 **Status:** Draft for partner review
 
@@ -565,3 +565,5 @@ snotra_project, snotra_route, snotra_agenda, snotra_rules, snotra_ingest, snotra
 Snotra's core (pipeline, adapters, rules, routing) is pure Python. The faces (CLI,
 MCP, REST API, Python SDK) are thin wrappers. A new harness integration only
 requires a new face, not a new core. No duplicate implementations.
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

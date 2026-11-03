@@ -31,7 +31,7 @@ allow:
   listen_ports: [22, 3888, 3889, 4602, 8080, 8316, 8317, 7777, 8765, 22000, 8384]
   # remote peers that are expected (tailnet, loopback, the model host)
   # names and loopback only — a LAN address is never a config value (home network law).
-  peer_hosts: [127.0.0.1, "::1", heimdall.tailefab81.ts.net]
+  peer_hosts: [127.0.0.1, "::1", <host>.<host>.tailnet.ts.net]
 
 alert:
   desktop: true                # ymir-say.sh on a HIGH or worse

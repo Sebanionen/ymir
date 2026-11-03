@@ -81,7 +81,7 @@ class StoreScope(unittest.TestCase):
 
     def test_undeclared_account_is_refused(self):
         with self.assertRaises(gna_store.ScopeError):
-            gna_store.latest("someone@elsewhere.com")
+            gna_store.latest("someone@example.com")
 
     def test_message_never_crosses_accounts(self):
         gna_store.append([record()])
@@ -112,7 +112,7 @@ class Judge(unittest.TestCase):
         self.assertIn("craig-martin", verdict["evidence"])
 
     def test_unknown_sender_lands_in_unsure(self):
-        verdict = gna_judge.judge(record(**{"from": {"email": "stranger@nowhere.io"},
+        verdict = gna_judge.judge(record(**{"from": {"email": "someone@example.com"},
                                             "subject": "Hej", "body_text": "Hej pa dig"}), self.people)
         self.assertLess(verdict["confidence"], 0.6)
         self.assertEqual(verdict["classification"], "other")
@@ -179,7 +179,7 @@ class Desk(unittest.TestCase):
         self.assertIn("account scope required", body["error"])
 
     def test_undeclared_account_is_refused(self):
-        status, body = self.get("/queue?account=someone@elsewhere.com")
+        status, body = self.get("/queue?account=someone@example.com")
         self.assertEqual(status, 400)
         self.assertIn("not declared", body["error"])
 

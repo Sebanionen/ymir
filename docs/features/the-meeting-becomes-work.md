@@ -47,7 +47,7 @@ systems/snotra/services/letters/snotra-letter.sh  send     "$M" --approved
 
 systems/snotra/services/approve/snotra-promote.sh list  "$M"      # every candidate: proposed · approved · rejected · held
 systems/snotra/services/approve/snotra-promote.sh check "$M"      # the engine's validator, before anything is written
-systems/snotra/services/approve/snotra-promote.sh set   "$M" DEC-20261022-01 accept --by "Lars-Josef Lindbom" --why "confirmed"
+systems/snotra/services/approve/snotra-promote.sh set   "$M" DEC-20261022-01 accept --by "Lars-<the operator> <the operator>" --why "confirmed"
 systems/snotra/services/approve/snotra-promote.sh log   "$M"      # promotions.jsonl — append-only, who and when
 
 systems/snotra/services/cron/snotra-agenda.sh  plan  "$M"      # the next meeting's points, from the record
@@ -143,3 +143,5 @@ its `DEC-`/`ACT-`/`OQ-` id, and the card is idempotent by `record-key`.
 - `project` says *no board matches* → run `systems/snotra/services/cron/trello-map.sh` to refresh the map.
 - `project verify` reports **misfiled** → a human moved the card; the door will not move it back.
 - `ladder` refuses → there is no verified transcript yet. That refusal is the safety, not a fault.
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

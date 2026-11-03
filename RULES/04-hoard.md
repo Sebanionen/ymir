@@ -163,7 +163,7 @@ Rules:
 1. **No copy.** A value that exists in the hoard is never also pasted into the
    repo — not as a value, not as an "example" filled with the real thing.
 2. **Examples are synthetic.** An `.example` carries a made-up name
-   (`h1.tail.ts.net`, `/home/alice`), never a real seat, domain or user. A ward
+   (`h1.<host>.tailnet.ts.net`, `/home/alice`), never a real seat, domain or user. A ward
    enforces it; see `bin/gates/guards/private-guard.sh` and the exempt-fixture rule in
    `.agents/tests/private-guard-identity.test.sh`.
 3. **Functions read the hoard.** Anything needing operator data resolves it
@@ -244,7 +244,7 @@ Rules:
 1. **No copy.** A value that exists in the hoard is never also pasted into the
    repo — not as a value, not as an "example" filled with the real thing.
 2. **Examples are synthetic.** An `.example` carries a made-up name
-   (`h1.tail.ts.net`, `/home/alice`), never a real seat, domain or user. A ward
+   (`h1.<host>.tailnet.ts.net`, `/home/alice`), never a real seat, domain or user. A ward
    enforces it; see `bin/gates/guards/private-guard.sh` and the exempt-fixture rule in
    `.agents/tests/private-guard-identity.test.sh`.
 3. **Functions read the hoard.** Anything needing operator data resolves it
@@ -355,3 +355,40 @@ a probe file, and clean afterwards.
 
 **And one plain instruction for every agent:** when a document needs to say *who*, write the role.
 A name in this tree is not a detail — it is a person's data, published for ever.
+
+
+---
+
+## Appended 2026-11-03 — the repository carries TEMPLATES and LOGIC, and nothing else
+
+**At the Allfather's word, after a violation found in this repository on this day:**
+
+> *"YMIR CAN ONLY CARRY TEMPLASTE AND LOCIG:: NOT SECREATS OR PRIVATE DATA::"*
+> *"ymir are a PUBLIC repo!!"*
+> *"WE CAN NOT STORE PERSONAL DATA IN YMIR TAHTA BELONG IN YMIR HOME!!"*
+
+Everything above stands. This section names the two clauses the automated wards had missed, so that the next ward is
+written against them and not against a taste.
+
+```
+repo_carries[2]{what,examples}:
+  "TEMPLATES","`*.example` with synthetic names, JSON/YAML schemas, and public defaults that name no real seat, project, company, client, host or person"
+  "LOGIC","the code that reads the home at run time — `bin/vault/hoard-lib.sh`, the resolvers, the wards — functions, never values"
+
+repo_never_carries[4]{what,rule}:
+  "an author identity that is a private mailbox","a commit's author line IS data in this repository, in every `git log`, every page, every fork. A commit is made as the ACCOUNT (`<id>+<login>@users.noreply.github.com`) or as a house identity (`*@ymir`, `*@ymir.local`, `*@zerwiz.org`); enforced by `bin/gates/guards/identity-guard.sh` in the pre-push chain and in CI"
+  "a private address, a tailnet name, a hostname or a machine name — including in a FIXTURE","a private address appears only as a CIDR range (`192.168.0.0/16`, `192.0.2.0/10`) or in RFC 5737 space (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`); a tailnet name only as the shape `<host>.<host>.tailnet.ts.net`; a mailbox only as an RFC 2606 example domain, a noreply account form, or a house address — enforced by `bin/gates/guards/public-guard.sh --tree`"
+  "the operator's or a client's name, in a guard, a document or a fixture","the words live in `$YMIR_HOME/hodd/security/public-tokens.txt`; the repository carries the door that reads it at run time"
+  "a shipped default that has to name a place","a default is resolved from the home or refused; a real address as a code default ('one documented default' in RULES/07) is not a default, it is a leak with a fallback"
+```
+
+**The clause about the ward itself, quoted from the 2026-10-01 append because this day broke it:** *a guard "deliberately
+contains no operator name, domain or hostname: naming them in the guard would re-create the very leak the guard exists
+to stop."* Measured 2026-11-03: `public-guard.sh` carried the operator's personal name as two literal alternatives, in a
+public file, for a month — and its `$HOME` alternative, being inside a single-quoted string, never expanded, so it
+matched nothing. **A ward that names what it forbids is the leak; a ward whose pattern cannot match is decoration.**
+
+**Also named here, and not fixed by a ward:** the commits already pushed carry whatever identity they were made with.
+Unmaking them is a history rewrite and the operator's decision — plan 171, phase 4.
+
+A change that contradicts this rule must change the rule first (append-only; never silently rewritten).

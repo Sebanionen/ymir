@@ -65,6 +65,10 @@ cat >"\$refs"
 # origin/main skips cleanly rather than failing every push.
 if git rev-parse -q --verify origin/main >/dev/null 2>&1; then
   "\$ROOT/bin/no-delete-guard.sh" --base origin/main || exit 1
+  # Rule 04/39 — a commit's author line is DATA IN THIS REPOSITORY, and this repository is public.
+  # Measured 2026-11-03: the operator's personal mailbox was the author of 1,236 commits, because
+  # git records whatever `user.email` says and nothing watched it. This refusal is the watch.
+  "\$ROOT/bin/gates/guards/identity-guard.sh" --base origin/main || exit 1
 fi
 "\$ROOT/bin/gates/branch-current.sh" check || exit 1
 EOF
