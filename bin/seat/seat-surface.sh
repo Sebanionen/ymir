@@ -39,7 +39,8 @@ surfaces() {
     "$HOME/.claude/CLAUDE.md" \
     "$HOME/.codex/AGENTS.md" \
     "$HOME/.cursorrules" \
-    "$HOME/.gemini/GEMINI.md"
+    "$HOME/.gemini/GEMINI.md" \
+    "$HOME/.hermes/AGENTS.md"
 }
 
 render() {

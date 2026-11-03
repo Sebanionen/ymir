@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",690
+  "shell doors (bin/*.sh)",691
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -497,7 +497,8 @@ capabilities[5]{surface,count}:
 | harness-extensions-install.sh | harness-extensions-install.sh — every harness gets the house's extensi | tested | keep (a human or a cron row must run it) |
 | herdr-ensure.sh | herdr-ensure.sh — Þjazi: guarantee the terminal backend Ymir needs. | tested+named | keep (a human or a cron row must run it) |
 | herdr-run.sh | herdr-run.sh — raise an Eindri in herdr, by the grain that fits the er | tested+named | keep (a human or a cron row must run it) |
-| seat-surface.sh | seat-surface.sh — render THIS seat's own name into the AGENTS.md every | tested | keep (a human or a cron row must run it) |
+| hermes-seat.sh | hermes-seat.sh — seat Ymir's tools into Hermes, the same packets the o | tested+named | keep (a human or a cron row must run it) |
+| seat-surface.sh | seat-surface.sh — render THIS seat's own name into the AGENTS.md every | tested+named | keep (a human or a cron row must run it) |
 | valknut-load.sh | valknut-load.sh — Valknut, the knot that binds the repo distro into ea | tested+named | keep (a human or a cron row must run it) |
 | realm-lib.sh | realm-lib.sh — resolve the ACTIVE realm (tenant) without assuming the  | tested+named | keep (a human or a cron row must run it) |
 | registry-lib.sh | registry-lib.sh — the ONE reader for the master project registry's row | tested+named | keep (a human or a cron row must run it) |

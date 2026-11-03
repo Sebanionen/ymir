@@ -17,6 +17,16 @@ This is the reference an agent reads to add a harness adapter or rebuild one fro
 | [`claude-code.md`](claude-code.md) | Claude Code |
 | [`cursor.md`](cursor.md) | Cursor |
 | [`codex.md`](codex.md) | Codex |
+| Hermes (`hermes`, `~/.hermes`) | Nous Research's worker runtime — seated **2026-11-03** |
+
+**Hermes is first-class (2026-11-03).** *"hermes should also be one of the harnesses we
+support like pi, claude, opencode etc … so hermes gets all the tools needed from ymir
+installed."* It wears the same packets from the one list: `bin/seat/hermes-seat.sh` reads
+`~/.pi/agent/mcp-adapter.json` and writes the same `mcp_servers` map into
+`~/.hermes/config.yaml` (merge-preserving, idempotent); `hermes skills trust` makes the one
+skills tree load; `bin/seat/seat-surface.sh` points `~/.hermes/AGENTS.md` at the seat file,
+so Hermes reads this seat's own name and the named operator; `bin/seat/valknut-load.sh
+--hermes` (and `--all`) seats it, and a machine without Hermes reports a clean skip.
 | *(none — not implemented)* | Grok |
 
 Runtime inventory that every adapter calls: [`../runtime-components.md`](../runtime-components.md).
