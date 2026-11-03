@@ -32,7 +32,7 @@ while IFS= read -r file; do
 done <<< "$files"
 
 if [ "$found" = 1 ]; then
-  printf 'private-data refused: a machine path or a real address is in the change.\n  Private data lives under $YMIR_HOME (RULES/04); this repository is public.\n' >&2
+  printf 'private-data refused: a machine path or a real address is in the change.\n  Private data lives in the house's private home; this repository is public.\n' >&2
   exit 1
 fi
 printf 'private-data: clean\n'
