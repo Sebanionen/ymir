@@ -49,9 +49,24 @@ for f in "$ROOT"/docs/features/*.md; do
     missing=$((missing + 1))
   fi
 done
-if [ "$missing" -eq 0 ]; then
-  printf '  "none","","every feature page is catalogued"\n'
+
+# The catalogue is WOVEN (Þættir, plan 174): the file must equal its fragments, and the
+# merge driver must be seated so a conflict is answered by weaving, not by hand.
+stale=0
+if ! bash "$ROOT/bin/records/weave-features.sh" --check >/dev/null 2>&1; then
+  printf '  "the woven catalogue is stale","FEATURES.md","run bin/records/weave-features.sh (fragments live in docs/features/_catalogue/)"\n'
+  stale=$((stale + 1))
+fi
+if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+  driver="$(git -C "$ROOT" config --get merge.regenerate.driver 2>/dev/null || true)"
+  [ -n "$driver" ] || {
+    printf '  "the merge driver is not seated","FEATURES.md","run bin/records/weave-features.sh --install (a woven document without its driver conflicts by hand)"\n'
+    stale=$((stale + 1))
+  }
+fi
+if [ "$missing" -eq 0 ] && [ "$stale" -eq 0 ]; then
+  printf '  "none","","every feature page is catalogued, and the woven catalogue is current"\n'
   exit 0
 fi
-printf 'features-guard: %s feature page(s) are not listed in FEATURES.md\nhelp: add a row to FEATURES.md pointing at the page (Rule 14)\n' "$missing" >&2
+printf 'features-guard: %s finding(s) — %s page(s) uncatalogued, %s stale/driver fault(s)\nhelp: add the row to its section fragment in docs/features/_catalogue/, then run bin/records/weave-features.sh (Rule 14 · Þættir)\n' "$((missing + stale))" "$missing" "$stale" >&2
 exit 1

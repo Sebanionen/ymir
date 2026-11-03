@@ -1,0 +1,4 @@
+---
+section: planned-named-and-designed-not-yet-built
+---
+| Voice | **The voice engines — Kokoro's three doors and one text path** (`systems/skirnir/{voice.sh,speech-text.py,audio-tighten.py}`, `~/.local/bin/{piper-clean-text,kokoro-speak,kokoro-voice}`) | F10 Piper · F11 Kokoro · the assistant's mouth, all sharing one cleaner and one voice source. The cleaner now keeps apostrophes, periods and commas (it had been turning `Allfather's` into `Allfather s` and deleting every pause, which made **every** voice rush and clip). The switcher (SUPER+CTRL+U) is the single source of truth; `audio-tighten.py` closes a model's short mid-word gaps; the server is asked for WAV, not the MP3 it was quietly returning into a `.wav` | [docs/features/the-voice-engines.md](docs/features/the-voice-engines.md) |

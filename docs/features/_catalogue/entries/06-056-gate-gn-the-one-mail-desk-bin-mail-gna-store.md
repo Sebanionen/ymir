@@ -1,0 +1,4 @@
+---
+section: planned-named-and-designed-not-yet-built
+---
+| Gate | **Gná — the one mail desk** (`bin/mail/gna_{store,judge,import,desk}.py` · `bin/time/nornir-job-gna-mail.sh` · Hlidskjalf gate `Gná`) | One page answering "what needs me?" across a scoped mailbox. The store refuses a query without an account and a message through another account's scope; the judge is rules-only, six classes and six actions, and every verdict names the rule **and the word** that fired; the importer reads the Gmail API and **cannot send** (a test fails if a send path appears). Measured over 7 days of the operator's own mailbox: 61 messages → needs you 5 · unsure 1 · waiting 20 · done 35, machine sends 0. Message bodies are git-ignored; schema, scope and retention travel | [docs/features/gna-the-one-mail-desk.md](docs/features/gna-the-one-mail-desk.md) |

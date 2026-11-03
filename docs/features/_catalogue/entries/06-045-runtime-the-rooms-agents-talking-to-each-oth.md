@@ -1,0 +1,4 @@
+---
+section: planned-named-and-designed-not-yet-built
+---
+| Runtime | **The rooms — agents talking to each other** (`systems/skirnir/services/room.sh` · `systems/skirnir/services/room-squad.sh` · `.pi/extensions/room-tap.ts`) | An append-only **record** per room (`the-forge`, `the-elders`, `the-hall` with 28 voices), written only through one door, with speaker · role · addressed · in_reply_to on every line. A non-member is refused. `room-tap` admits exactly ONE turn to a live session for a line addressed to it — the only mechanism on this box that tells a running agent anything without a human typing — with its own-lines, addressed-only, membership and per-room rate-cap refusals. `room-squad.sh ask` answers one line one-shot; `up` raises figures in herdr panes, each tapping under its own name. Models from `config/agents.yaml`; figures default to `opencode-go/deepseek-v4.1-flash`, `--local` forces the rail | [docs/features/the-rooms.md](docs/features/the-rooms.md) |

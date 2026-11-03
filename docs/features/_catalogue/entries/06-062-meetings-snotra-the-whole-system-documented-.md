@@ -1,0 +1,4 @@
+---
+section: planned-named-and-designed-not-yet-built
+---
+| Meetings | **Snotra — the whole system documented** (`docs/snotra/`) | Seven pages that are the specification rather than the how-to: **the pipeline** (one command, the chain, the failure semantics, the runbook, the cron line) · **the doors** (every grammar and exit code) · **the places** (the profile contract; two companies, one door, no code change; a `surface: gimle` place refused) · **the record** (schema, the folder standard, the decision state machine, the coverage honesty rules) · **the letters** (plain-text rules fetched from Campaign Monitor, the WCAG 1.4.3 contrast floor, the approval gate) · **the sound** (the bot's store, the ladder, 590 MiB → 20 MiB) · the map and the nine laws. Written from what was measured on this seat, and it names what is not built | [docs/snotra/README.md](docs/snotra/README.md) |
