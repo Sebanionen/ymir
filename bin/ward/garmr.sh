@@ -140,6 +140,11 @@ arm_senses() {
 
 seat_units() {
   local render="$SCRIPT_DIR/../../tools/mill/systemd"
+  # The units must run the PINNED runtime, never the checkout an agent happens to be
+  # standing in (runtime-pinned-guard). Resolve it once, and fall back to this tree
+  # only when no pinned checkout exists.
+  local unit_root="${YMIR_RUNTIME_DIR:-$HOME/ymir-runtime}"
+  [ -d "$unit_root" ] || unit_root="$ROOT"
   local run=(sudo)
   [ "$dry" = 1 ] && run=(echo "would run:")
   # The hound's two units live in /etc and need root. A sudo that must ask for a
@@ -147,9 +152,9 @@ seat_units() {
   # runs of Groa died here. Probe first; skip the root half with a named refusal and
   # still seat the operator's own brain timer below.
   if [ "$dry" = 1 ] || sudo -n true 2>/dev/null; then
-    sed "s|__YMIR_ROOT__|$ROOT|g" "$render/garmr-hound.service" \
+    sed "s|__YMIR_ROOT__|$unit_root|g" "$render/garmr-hound.service" \
       | "${run[@]}" tee /etc/systemd/system/garmr-hound.service >/dev/null
-    sed "s|__YMIR_ROOT__|$ROOT|g" "$render/garmr-arm.service" \
+    sed "s|__YMIR_ROOT__|$unit_root|g" "$render/garmr-arm.service" \
       | "${run[@]}" tee /etc/systemd/system/garmr-arm.service >/dev/null
     "${run[@]}" systemctl daemon-reload
     "${run[@]}" systemctl enable garmr-arm.service
@@ -159,7 +164,7 @@ seat_units() {
     printf 'garmr: the hound needs root, and sudo is not available without a password here; its two system units were left alone (run: sudo -v, then garmr.sh install)\n' >&2
   fi
   mkdir -p "$HOME/.config/systemd/user"
-  sed "s|__YMIR_ROOT__|$ROOT|g; s|__PYTHON__|$PY|g" "$render/garmr-brain.service" \
+  sed "s|__YMIR_ROOT__|$unit_root|g; s|__PYTHON__|$PY|g" "$render/garmr-brain.service" \
     > "$HOME/.config/systemd/user/garmr-brain.service"
   cp "$render/garmr-brain.timer" "$HOME/.config/systemd/user/garmr-brain.timer"
   as_operator systemctl --user daemon-reload
