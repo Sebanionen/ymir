@@ -155,3 +155,7 @@ The generator writes explicit UTF-8 with LF newlines on every host. The real-gen
 ## Path-ledger byte matching (2026-11-03)
 
 bin/gates/guards/path-ledger-guard.sh performs its initial recursive grep in LC_ALL=C so invalid UTF-8 in legacy generated catalogs cannot replace a matching line with a binary-file summary. Paired old/new migration records retain their line context; old-only references still fail. tests/test_path_ledger_bytes.py exercises the actual guard against invalid and valid UTF-8 fixtures on Git Bash and Linux without waivers or binary-file exclusions.
+
+## Fix-note coverage for outgoing refs (2026-11-03)
+
+bin/gates/guards/fixes-guard.sh judges every outgoing branch independently. A recorded sibling cannot hide an unrecorded branch, regardless of push order. Tag and deletion pointers remain content-free. A branch tip with no commits absent from already-fetched origin refs is an already-public pointer; every other outgoing branch must add a fix note in its own comparison range. A new unrelated history compares against the empty tree. Manual --check keeps its existing branch/base judgment. tests/test_fixes_guard_refs.py exercises actual Git commit graphs and mixed ref batches without override flags.

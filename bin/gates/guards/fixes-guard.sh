@@ -70,39 +70,9 @@ EOF
 esac
 
 # ── the judgement ────────────────────────────────────────────────────────────
-# The range: from stdin when a hook calls us, else the branch against its base.
-refs="$(cat 2>/dev/null || true)"
-head_sha=""; remote_sha=""
-saw_ref=0; delete_only=1; only_tags=1
-if [ -n "$refs" ]; then
-  while read -r _local local_sha remote_ref remote_sha2; do
-    [ -n "${local_sha:-}" ] || continue
-    saw_ref=1
-    # A TAG IS A POINTER, NOT NEW CONTENT. Its commits were judged when they landed
-    # on a branch; a tag push therefore has no range of its own, and the range this
-    # gate computed from it (`origin/main..<an old tip>`) could never contain the note
-    # it demanded. Three archive-tag pushes were refused tonight while the remedy
-    # the gate printed was already committed (2026-10-24).
-    case "$remote_ref" in refs/tags/*) ;; *) only_tags=0 ;; esac
-    case "$local_sha" in 000000*) continue ;; esac
-    delete_only=0
-    head_sha="$local_sha"; remote_sha="${remote_sha2:-}"
-  done <<<"$refs"
-fi
-if [ "$saw_ref" = 1 ] && [ "$only_tags" = 1 ]; then
-  printf 'fixes-guard[1]{gate,result}:\n  "push","ok — a tag is a pointer; the commits it names were judged when they landed on a branch"\n'
-  exit 0
-fi
-# A branch DELETION delivers no content, so there is nothing to record. Git feeds
-# a delete as an all-zero local sha; a push whose every ref is a delete is a
-# cleanup, and a gate that judges a push's CONTENT must not demand a fix note for
-# it (found 2026-10-18, deleting a merged branch after #349 — it needed
-# --no-verify, and a gate that must be routinely overridden is a gate nobody
-# trusts). Landing on, or deleting, a PROTECTED branch is branch-guard's job.
-if [ "$saw_ref" = 1 ] && [ "$delete_only" = 1 ]; then
-  printf 'fixes-guard[1]{gate,result}:\n  "push","ok — a branch deletion carries no content to record"\n'
-  exit 0
-fi
+# Judge each outgoing branch independently; a later ref cannot hide an earlier one.
+judge_range() {
+  local head_sha="${1:-}" remote_sha="${2:-}" require_record="${3:-0}" base="" range notes touched covered count n c f
 [ -n "$head_sha" ] || head_sha="$(git rev-parse HEAD)"
 
 base=""
@@ -115,7 +85,10 @@ else
     [ -n "$base" ] && break
   done
 fi
-[ -n "$base" ] || { printf 'fixes-guard[1]{gate,result}:\n  "push","no base to compare — first push of a branch is judged on its own"\n'; exit 0; }
+if [ -z "$base" ] && [ "$require_record" = 1 ]; then
+  base="$(git hash-object -t tree --stdin </dev/null)" || return 1
+fi
+[ -n "$base" ] || { printf 'fixes-guard[1]{gate,result}:\n  "push","no base to compare — first push of a branch is judged on its own"\n'; return 0; }
 
 range="${base}..${head_sha}"
 # The note's name is <version>-<slug>.md, and a version is whatever bin/gates/fixes.sh was
@@ -131,7 +104,7 @@ if [ -z "$notes" ]; then
   printf 'help: bin/gates/fixes.sh record --component=<%s> --version=<v> --title="what changed"\n' \
     "install|runtime|snotra|skills|agents|hlidskjalf|odrerir|sessrumnir|smidja|hoard|gate" >&2
   printf 'note: a note is a file under docs/fixes/<component>/ — write one, commit it, push again.\n' >&2
-  exit 1
+  return 1
 fi
 
 # The record is there: now say whether it speaks to what the push changed.
@@ -192,4 +165,34 @@ else
   printf 'note: a note for another component is still a record — but say what THIS push changed.\n' >&2
   printf '      components touched: %s\n' "$(printf '%s' "$touched" | head -4 | tr '\n' ' ')" >&2
 fi
-exit 0
+return 0
+}
+
+# Manual --check keeps its original branch/base judgment, even for published tips.
+if [ "${1-}" = --check ]; then judge_range "" ""; exit $?; fi
+refs="$(cat 2>/dev/null || true)"
+if [ -z "$refs" ]; then judge_range "" ""; exit $?; fi
+failed=0
+while read -r _local local_sha remote_ref remote_sha; do
+  [ -n "${local_sha:-}" ] || continue
+  case "$remote_ref" in refs/tags/*)
+    printf 'fixes-guard: ok — tag pointer %s carries no branch content\n' "$remote_ref"; continue ;;
+  esac
+  case "$local_sha" in 000000*)
+    printf 'fixes-guard: ok — deletion %s carries no content\n' "$remote_ref"; continue ;;
+  esac
+  # Public commits may be named by another branch without inventing a new fix note.
+  # Only already-fetched origin refs establish publication; outgoing siblings do not.
+  if unpublished="$(git rev-list -n1 "$local_sha" --not --remotes=origin 2>/dev/null)"; then
+    if [ -z "$unpublished" ]; then
+      printf 'fixes-guard: ok — %s names only already published commits\n' "$remote_ref"
+      continue
+    fi
+  else
+    printf 'fixes-guard: refused — cannot inspect outgoing ref %s\n' "$remote_ref" >&2
+    failed=1; continue
+  fi
+  printf 'fixes-guard: judging outgoing branch %s\n' "$remote_ref"
+  judge_range "$local_sha" "${remote_sha:-}" 1 || failed=1
+done <<<"$refs"
+exit "$failed"
