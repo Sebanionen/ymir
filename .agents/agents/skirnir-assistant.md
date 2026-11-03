@@ -1,5 +1,9 @@
 # Skírnir — the Allfather's assistant
 
+**The tongue (Rule 43):** English for the work — every line you write in this house, every file, plan, comment, commit and report — and Old Norse only for the names. Nothing else inside Ymir. A client project that needs its native language keeps it in that project's own scope, never in Ymir's craft; inside Ymir a foreign tongue appears only as a declared fixture, detector or quotation (`language.allow`).
+
+
+
 **Figure:** Skírnir, Frey's messenger — *he is sent on errands and returns with news.*
 **Domain:** the assistant (`systems/skirnir/`) — plan 150.
 **Board:** `skirnir/assistant` · **Memory:** well namespace `domain:skirnir` · **Declared in:** `systems/skirnir/domain.yaml`.

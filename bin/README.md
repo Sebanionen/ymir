@@ -383,7 +383,7 @@ bin[707]{file,does,kind,verdict,disposition,callers,lines}:
   "journal-reconcile.sh","journal-reconcile.sh — push this machine's outbox to the heart, when it answers.","tool","tested","keep",2,131
   "kb-export.sh","bin/assistant/kb-export.sh -> systems/skirnir/services/kb-export.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "knit_ingest.py","bin/time/snotra/knit_ingest.py -> systems/snotra/services/cron/knit_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
-  "language-guard.sh","language-guard.sh — two tongues: English for the work, Old Norse for the names.","tool","wired","keep",1,253
+  "language-guard.sh","language-guard.sh — two tongues: English for the work, Old Norse for the names.","tool","wired","keep",1,270
   "learn-home.sh","bin/assistant/learn-home.sh -> systems/skirnir/services/learn-home.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "learn-house.sh","bin/assistant/learn-house.sh -> systems/skirnir/services/learn-house.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says…","tool","wired","keep",0,16
   "learn-site.sh","bin/assistant/learn-site.sh -> systems/skirnir/services/learn-site.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16

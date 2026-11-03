@@ -80,3 +80,42 @@ reader, found by the ward on its first run. Corrected to `ᛞ`.
 **Related:** Rule 21 (a company document is plain business English), Rule 04 (the repo ships
 craft; the operator's own words stay his), Rule 11 (never delete — translate), Rule 27 (the
 documents are checked).
+
+---
+
+## Appended 2026-11-03 — the law rides every parchment, and how a native project is served
+
+The Allfather's word: *"make so all agents.md's that gets in to the harness tools
+knows to only talk and use english inside ymir. if projects we're working on are
+needed native language we should be able to handle that. but NOTHING in ymir are
+allowed to be in something else then old norse and english."*
+
+**The propagation.** A law in `RULES/` binds a reader, not a harness. So the two
+tongues are written where every agent actually looks:
+
+- `AGENTS.md` at the repo root (Pi's `~/.pi/agent/AGENTS.md` is a symlink to it),
+- the machine's `~/AGENTS.md`, and the private home's `AGENTS.md`,
+- **every figure brief** under `.agents/agents/*.md` — all 24 carry *The tongue
+  (Rule 43)* in their body, so a dispatched Eindri reads the law before its first
+  word, whichever harness seats it.
+
+**The native project.** A client project may genuinely need its own tongue — a
+Swedish site, a German contract, a Japanese interface. The law does not forbid
+that; it forbids it **inside Ymir**. The handling is scope, not exception:
+
+- the project's native material lives in the **project's own scope** — its
+  repository, its shelf — and never in Ymir's craft, plans, rules or docs;
+- inside Ymir, a foreign tongue appears only as a **declared class** in
+  `language.allow` — `fixture` (the foreign text is the assertion), `detector`
+  (code that recognises a language) or `quotation` (a person's own words) — each
+  with its reason, and a rotten line is itself a finding;
+- a translation is how a foreign work is *described* here (Rule 11: translate,
+  never delete);
+- when a project's brief is dispatched, the brief says which tongue its
+  deliverable is in and where that deliverable lives — the agent then knows it
+  leaves Ymir's tongue at that boundary and nowhere else.
+
+**What is refused:** a Swedish sentence in a plan, a German comment in a door, a
+foreign UI string in an app, a commit message in another tongue. **What is
+allowed:** English for the work, Old Norse for the names — and at the boundary of
+a native project, that project's own tongue, inside its own walls.

@@ -5,9 +5,9 @@ same labelled button in the top bar. This is the assistant. **Start listening**
 beside it still belongs to Snotra's separate room/meeting record.
 
 Choose **English · Nicole (USA, kvinna)** or **Svenska · Bengt (sv-SE)**.
-Tick the microphone consent box, then press **F8** or click **Börja tala**.
+Tick the microphone consent box, then press **F8** or click **Begin speaking**.
 Your browser asks for permission if it has not already been granted. Ask one
-question, then press **F8 again** or click **Avsluta frågan**. Capture ends before
+question, then press **F8 again** or click **Finish question**. Capture ends before
 transcription and the answer. After 30 seconds the question ends automatically.
 
 **Escape** cancels capture, a pending answer or playback, like **Stoppa**.
@@ -56,14 +56,14 @@ A Host header alone is never peer proof. This is not a shared remote voice API.
 - Wait while **ansluter lokalt…** is shown. The existing gate can take time to
   finish its other runtime probes on a cold start. A failed connection offers
   **Anslut igen**.
-- **Svenska · kontrollerar röst…** means its status has not arrived yet, not
-  that the voice is missing. **Kontrollera röster** reads current availability
+- **Swedish · checking voice…** means its status has not arrived yet, not
+  that the voice is missing. **Check voices** reads current availability
   without opening a microphone. Returning focus to the page also refreshes it;
   while Swedish speech is unconfirmed, a visible idle page rechecks every five
   seconds so an installation finishing after page load is picked up. Only a
   confirmed available voice enables **Svenska · Bengt (sv-SE)**.
 - Permission denied leaves the microphone off. You decide whether to change
-  the browser's microphone permission and click **Börja tala** again.
+  the browser's microphone permission and click **Begin speaking** again.
 - A backend failure is shown. Its diagnostic details stay in private runtime
   logs; a failed turn does not display a fabricated answer.
 - **Prova med en ljudfil utan mikrofon** accepts an audio file up to 8 MiB and

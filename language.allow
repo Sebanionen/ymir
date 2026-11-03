@@ -46,3 +46,7 @@ docs/fixes/gate/0.1.53-node-test-with-a-directory-is-not-stable-across-majors.md
 RULES/43-two-tongues.md | specimen | the rule names the foreign letters it refuses, so a reader knows what is meant
 docs/fixes/gates/2026-11-02-two-tongues-and-the-khmer-rune.md | specimen | the fix note names those letters too, and quotes the Khmer character it found
 bin/gates/guards/language-guard.sh | detector | the ward's own stopword lists and planted faults are matching data — the Swedish it detects must be in it
+apps/hlidskjalf/scripts/swedish-contract.integration.ts | fixture | the Swedish-contract test: the Swedish strings ARE the assertion
+apps/hlidskjalf/tests/swedish-selection.e2e.mjs | fixture | the Swedish selection test: the accented text is the thing being selected
+apps/hlidskjalf/tests/voice.e2e.mjs | fixture | the voice test speaks Swedish samples; the Swedish text is the input under test
+systems/skirnir/services/test_voice_language.py | fixture | the language-selection test: Swedish speech and its function words are the assertion
