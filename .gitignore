@@ -200,3 +200,6 @@ bin/state/
 # operator's home in a public repo, which is exactly what private-guard catches.
 # They are outputs, not templates: nothing reads them back. Keep them out.
 bin/data/
+
+# The seat identity Hermes loads (machine-local; never published)
+.hermes.md
