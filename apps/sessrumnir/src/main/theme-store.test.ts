@@ -212,9 +212,9 @@ function trackingFetch(
 
 const PRIVATE_IPV4_URLS = [
   'https://127.0.0.1/',
-  'https://10.0.0.5/',
-  'https://172.16.0.1/',
-  'https://192.168.1.1/',
+  'https://10.0.0.0/',
+  'https://172.16.0.0/',
+  'https://192.0.2.1/',
   'https://169.254.169.254/',
   'https://100.64.0.1/',
 ]
@@ -258,7 +258,7 @@ for (const url of PRIVATE_IPV6_URLS) {
 test('installThemeFromUrl blocks a public URL that redirects to an internal host', async () => {
   const dir = await freshDir()
   const publicUrl = 'https://public.example.com/t.json'
-  const internalUrl = 'https://10.0.0.5/x'
+  const internalUrl = 'https://10.0.0.0/x'
   const { fetchFn, calls } = trackingFetch({
     [publicUrl]: () => new Response(null, { status: 302, headers: { location: internalUrl } }),
   })

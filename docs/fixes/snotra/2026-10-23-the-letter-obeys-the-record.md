@@ -12,7 +12,7 @@ things"* and then *"update the machinery … FOLLOW THE MEETINGS RULES"*. He was
 |---|---|---|
 | "confirm or correct this record by **2026-10-26** (2 business days)" | `ACT-20261022-03` is due **2026-10-24** | the date was **computed from a cadence** instead of read from the record |
 | "Silence is recorded as provisional acceptance, not as agreement." | nothing of the kind exists; the record's own caveat is `RSK-20261022-02` — *"grade and approver are provisional until confirmed"* | **an invented policy** attributed to a room that never agreed to it |
-| "Ask Reygan and Craig to confirm…" addressed to Reygan | it is **Lars-Josef's** action, not hers | the recipient was told to ask herself |
+| "Ask Reygan and Craig to confirm…" addressed to Reygan | it is **Lars-<the operator>'s** action, not hers | the recipient was told to ask herself |
 | "— **Reygan Assareh**" as the signature | the letter leaves from the operator's mailbox | the chair was signing for the sender |
 
 ### What the machinery does now
@@ -30,12 +30,14 @@ things"* and then *"update the machinery … FOLLOW THE MEETINGS RULES"*. He was
 ```
 subject   Sync — Reygan, Craig — your actions and the record · confirm by 2026-10-24
 ask       "Ask Reygan and Craig to confirm or correct this record within two business days."
-          — ACT-20261022-03, owned by Lars-Josef Lindbom · Done when: Both have replied confirm or objection · By: 2026-10-24
+          — ACT-20261022-03, owned by <the operator> · Done when: Both have replied confirm or objection · By: 2026-10-24
 note      RSK-20261022-02: grade and approver are provisional until confirmed.
-signed    — Lars-Josef Lindbom        (Reygan, as chair, holds the register.)
-sent      to josef@way-of.com only; the other two remain drafts
+signed    — <the operator>        (Reygan, as chair, holds the register.)
+sent      to <the operator's address> only; the other two remain drafts
 ```
 
 **The law this earns:** *a letter may not contain a sentence the record cannot cite.* Every non-header line in
 a Snotra letter is now either the record's own words, its ids, or a neutral label — and a test letter is the
 cheapest way to find the ones that are not.
+
+**2026-11-03 (correction, appended):** the operator's name and address were redacted from this note. They are personal data: they belong in the home, and a public fix note may say *the operator* and nothing more (RULES/04, RULES/06 — the correction is recorded, not the leak).

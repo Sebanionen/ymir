@@ -6,13 +6,13 @@
 
 Twenty-three files called the operator **Odin** — in the naming law, in the asset that teaches the naming law, in
 the app READMEs, and in a fix note about the model's own priors. The operator's words: *"we should never use odin
-anywhere within ymir .. im not odin"*, and then *"my name are zerwiz online and Lars-Josef normally"*.
+anywhere within ymir .. im not odin"*, and then *"my name are zerwiz online and Lars-<the operator> normally"*.
 
 Two things follow, and they are different:
 
 1. **In this house's voice the operator is the Allfather** — a role, not a borrowed god. `(Odin)` was a gloss that
    turned a role into a name, and the name was never his.
-2. **A person's own names are theirs.** `zerwiz` online, `Lars-Josef` in person. They belong in a repository's
+2. **A person's own names are theirs.** `zerwiz` online, `Lars-<the operator>` in person. They belong in a repository's
    `.agents/identity.json`, where the person states them — not in a lore paragraph, and never inferred.
 
 ## What changed
@@ -32,3 +32,5 @@ is quoted rather than corrected.
 
 A document that must name a developer takes the name from `.agents/identity.json`; the log file uses the stable
 `id`; and the house voice uses the role. No file assumes a particular name, so a second operator needs no edit.
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

@@ -32,9 +32,28 @@ case "${1:-}" in
   -v|-V|--version) printf '1.0.0\n'; exit 0 ;;
   -h|--help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
   --install)
-    hook="$ROOT/.git/hooks/pre-commit"
+    # `git rev-parse --git-path hooks` resolves the hooks dir for a clone AND for a worktree,
+    # where `$ROOT/.git` is a FILE — an installer that assumed a directory could seat no ward at
+    # all in the place all the work happens (found 2026-11-03, installing from a worktree).
+    hook="$(cd "$ROOT" && git rev-parse --git-path hooks 2>/dev/null || printf '%s/.git/hooks' "$ROOT")/pre-commit"
+    case "$hook" in /*) ;; *) hook="$ROOT/$hook" ;; esac   # git may answer absolute or relative
     mkdir -p "$(dirname "$hook")" || exit 1
-    printf '#!/usr/bin/env bash\n"%s/public-guard.sh" "$@" || exit 1\n"%s/docs-guard.sh" "$@" || exit 1\n"%s/private-guard.sh" "$@" || exit 1\nif [ -x "%s/vault-guard.sh" ]; then "%s/vault-guard.sh" "$@" || exit 1; fi\nif [ -x "%s/confidential-guard.sh" ]; then "%s/confidential-guard.sh" "$@" || exit 1; fi\nexec "%s/secret-guard.sh" "$@"\n' "$SCRIPT_DIR" "$SCRIPT_DIR" "$SCRIPT_DIR" "$SCRIPT_DIR" "$SCRIPT_DIR" "$SCRIPT_DIR" "$SCRIPT_DIR" "$SCRIPT_DIR" >"$hook"
+    # ROOT IS RESOLVED AT RUN TIME. A hook written with this machine's absolute path dies the
+    # day that tree is reclaimed — and it takes every ward in it with the hook (the pre-push
+    # hook was taught this on 2026-10-20; the pre-commit one still baked a path until now).
+    cat >"$hook" <<'HOOK'
+#!/usr/bin/env bash
+# pre-commit — the wards that judge a STAGED change. Installed by bin/gates/guards/secret-guard.sh --install.
+set -u
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+G="$ROOT/bin/gates/guards"
+for w in public-guard docs-guard private-guard vault-guard confidential-guard; do
+  [ -x "$G/$w.sh" ] && { "$G/$w.sh" "$@" || exit 1; }
+done
+# Rule 11 — never delete, only move (RULES/11). A guarded deletion is logged, never silent.
+[ -x "$ROOT/bin/no-delete-guard.sh" ] && { "$ROOT/bin/no-delete-guard.sh" --staged || exit 1; }
+exec "$G/secret-guard.sh" "$@"
+HOOK
     chmod +x "$hook"
     printf 'secret-guard[1]{action,path}:\n  "install","%s"\n' "$hook"
     exit 0 ;;

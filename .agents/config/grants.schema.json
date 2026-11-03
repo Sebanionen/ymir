@@ -64,7 +64,16 @@
           "description": "the company namespace this grant opens — the unit Skuld stores rows under and the journal scopes entries to"
         },
         "role": { "enum": ["reader", "member", "writer", "admin"] },
-        "state": { "enum": ["active", "revoked"] },
+        "state": {
+          "enum": ["pending", "active", "revoked"],
+          "description": "pending: signed by one party and awaiting the other's countersignature — it may not be used until active; revoked: withdrawn, kept as the record"
+        },
+        "skills": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "the skills of plan 172's road: the capability ids this grant opens, as the grantee's agent card declares them. Absent means the grant is a plan-58 namespace share, not a skill road"
+        },
         "issued": { "type": "string", "description": "ISO 8601 instant the grantor issued the grant" },
         "expires": { "type": "string", "description": "ISO 8601 instant the grant lapses; empty/absent means no expiry" },
         "grantor": { "$ref": "#/$defs/party" },

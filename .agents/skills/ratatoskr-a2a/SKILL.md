@@ -170,3 +170,26 @@ tools[4]{tool,does}:
   "bin/bridge/a2a-talk.sh agents|send <peer> \"<text>\"","Brokk-side A2A talk"
   "bin/bridge/a2a-serve.py <pane> <name> <port>","per-Eindri A2A server: inject task -> read reply"
 ```
+
+## The constellation road — between two independent fleets (2026-11-03, plan 172)
+
+A2A is how two agents *talk*. It is not how two houses *trust*. When the peer is another
+operator's Ymir — Sebastian's, say, with its own hoard, gate and law — the road is three objects and
+one door:
+
+```
+road_door[4]{object,where,door}:
+  "the card","published by its own house into a registry both read (or exchanged by hand)","`bin/bridge/constellation.sh publish|list|show`"
+  "the grant","written in the RECEIVING house's own hoard: peer · skills[] · expiry · one signature per house. `pending` until both sign","`grant` → `countersign` → `activate` (or `revoke`)"
+  "the token","EdDSA JWT: `aud` the peer, minutes, `scope` = the granted skills, `kid` the sender's key","`mint` … `verify --aud … --skill …`"
+  "the ward","a grant may not name a skill the peer's card does not declare, and an expired active grant is a closed road","`bin/bridge/constellation.sh guard` (`bin/gates/guards/constellation-grant-guard.sh`)"
+```
+
+**MCP is not this road.** Gimlé's MCP read face is a tool surface *inside* a house: give it a place scope
+and it is the guest half — a person of another house reading only the places that house shares — but it never
+connects two fleets' agents. The road carries a request and its answer; the suite carries the record.
+
+Two laws that bite here: **a collaborator is never a seat** (nothing may enrol a foreign hall in the fleet
+registry, the seats map or an ensure script), and **reachability is not trust** (an address that answers, a
+port reachable over the tailnet, an agent that knew the URL: none of these is a grant — RULES/24's appended
+section). Every cross-house message is filed as a rune on both sides.

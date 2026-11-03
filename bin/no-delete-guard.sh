@@ -36,9 +36,12 @@ cd "$ROOT" || exit 2
 MODE="${1:---staged}"
 BASE="${2:-}"
 case "$MODE" in
-  --staged)      deleted=$(git diff --cached --name-status 2>/dev/null | awk '$1 ~ /^D/ {print $2}') ;;
+  # --name-only for the DELETED set, not a `--name-status | awk $2`: a path with a space was
+  # logged as its first word (`Wed` for a file named `Wed 2026-09-30 …`), and a truncated path
+  # in the deleted-on-purpose log is a record that cannot be read back (measured 2026-11-03).
+  --staged)      deleted=$(git diff --cached --diff-filter=D --name-only 2>/dev/null) ;;
   --base)        [ -n "$BASE" ] || { echo "no-delete-guard: --base needs a ref" >&2; exit 2; }
-                 deleted=$(git diff --name-status "$BASE"...HEAD 2>/dev/null | awk '$1 ~ /^D/ {print $2}') ;;
+                 deleted=$(git diff --diff-filter=D --name-only "$BASE"...HEAD 2>/dev/null) ;;
   -h|--help)     sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
   *)             echo "usage: no-delete-guard.sh [--staged | --base <ref>]" >&2; exit 2 ;;
 esac

@@ -53,3 +53,22 @@ kill_law[3]{rule,why}:
 
 The same law covers `killall`. `--scan` audits the tree and tells an invocation apart from a mention
 (a comment, a vendored banned-pattern list, the tool's own name).
+
+## Appended 2026-11-03 — a road between houses is a grant, never a reachability
+
+Written while building the constellation road (plan 172, `bin/bridge/constellation.sh`). The ward above governs
+doors into *this* house. A door *between* houses needs one more sentence, because the temptation is always to
+confuse it with network access:
+
+```
+cross_house_law[5]{rule,why}:
+  "a card is public metadata","name · endpoint · protocol · skills · public key — validated against the one shared agent-card contract, and REFUSED if it carries a secret. A card is a sign on a door, never a share of the house"
+  "a grant lives in the house that may be ASKED","per pair, per skill, with an expiry, signed by each house's own key. It is written in the receiving house's hoard, and revoking is deleting a line — the next token fails"
+  "a token is short and narrow","EdDSA, an audience, an expiry in minutes, a scope of the skills the grant names; verified against the public key already on the sender's card, so no shared secret exists anywhere between the houses"
+  "reachability confers nothing","an address, a DNS name, a port that answers, an agent that 'knew the URL' — none of these is trust, and none may be treated as one"
+  "nothing else crosses","not the hoard, not the well or its index, not a calendar or Google grant, not a secret, not a fleet membership. A person of another house is a GUEST with a place-scoped token, never a member of the team group"
+```
+
+Two houses that share nothing still each keep their own gate, their own suite and their own law. The road
+carries the one request a grant names and its answer, and both sides file the same message as a rune — a road
+with one ledger is a rumour.

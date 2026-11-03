@@ -59,6 +59,17 @@ cat >"\$refs"
 "\$ROOT/bin/gates/guards.sh" || exit 1
 "\$ROOT/bin/gates/guards/branch-guard.sh" <"\$refs" || exit 1
 "\$ROOT/bin/gates/guards/fixes-guard.sh" <"\$refs" || exit 1
+# Rule 11 — a tracked file is MOVED, never deleted. RULES/11 said this ran "in the pre-commit
+# and pre-push chains and in CI"; on 2026-11-03 it ran in none of them, and a collaborator's
+# deletion walked through a green tree. Judged against the merged base; a repo with no
+# origin/main skips cleanly rather than failing every push.
+if git rev-parse -q --verify origin/main >/dev/null 2>&1; then
+  "\$ROOT/bin/no-delete-guard.sh" --base origin/main || exit 1
+  # Rule 04/39 — a commit's author line is DATA IN THIS REPOSITORY, and this repository is public.
+  # Measured 2026-11-03: the operator's personal mailbox was the author of 1,236 commits, because
+  # git records whatever `user.email` says and nothing watched it. This refusal is the watch.
+  "\$ROOT/bin/gates/guards/identity-guard.sh" --base origin/main || exit 1
+fi
 "\$ROOT/bin/gates/branch-current.sh" check || exit 1
 EOF
     chmod +x "$H"
