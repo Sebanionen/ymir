@@ -35,7 +35,18 @@ OUT=".agents/assets/agents/capabilities.md"
 MODE="${1:-write}"
 
 # The live signals, taken from the surfaces themselves — never asserted.
-shells=$(find bin \( -name '*.sh' -o -name '*.py' \) -not -path '*/.git/*' 2>/dev/null | wc -l | tr -d ' ')
+#
+# The door counts TRACKED files, not whatever is lying in the directory. `find bin`
+# counted a colleague's untracked scratch door, so a clean main read STALE on a
+# working tree and a well-meaning `generate` would have committed a register
+# describing files nobody else has — which is worse than stale, exactly as the
+# comment below says about undercounting. Inventory has always counted tracked
+# files; this now matches it, and falls back to `find` outside a git tree.
+if git -c safe.directory='*' rev-parse --git-dir >/dev/null 2>&1; then
+  shells=$(git -c safe.directory='*' ls-files 'bin/*.sh' 'bin/*.py' | wc -l | tr -d ' ')
+else
+  shells=$(find bin \( -name '*.sh' -o -name '*.py' \) -not -path '*/.git/*' 2>/dev/null | wc -l | tr -d ' ')
+fi
 pys=$(find src/ymir_runtime -name '*.py' 2>/dev/null | wc -l | tr -d ' ')
 skills=$(git -c safe.directory='*' ls-files '.agents/skills/*/SKILL.md' | cut -d/ -f3 | LC_ALL=C sort -u | wc -l | tr -d ' ')
 # Enumerate the extension tree the way PI enumerates it (Rule 13 §3): a direct `.ts`,
