@@ -79,6 +79,14 @@ Ymir a foreign tongue appears only as a declared `fixture`, `detector` or
 `quotation` in `language.allow`, each with its reason.
 `bin/gates/guards/language-guard.sh` is the ward; its findings are red gates.
 
+**No agent is named Brokk (Rule 44) — and every agent says whose it is.** Brokk is the counsellor's
+ROLE, never an agent's name: a fleet of Brokks cannot be told apart, and the operator cannot tell
+which house spoke. Every machine names its own agents (the seat primary inside Ymir; the machine
+agent that keeps the computer), and every agent declares **house · fleet · machine · Allfather**
+when it introduces itself. An unsealed name is rendered as *unnamed*, never invented. The renderer is
+`bin/seat/seat-surface.sh`, run by **install and by every update**; the names come from the operator's
+own config (`hodd/identity/seats.yaml`, `operator.yaml`), never from a shipped default.
+
 **The operator is named.** He is the Allfather — and in a federated hall
 (Brimir, plan 74) a bare "Allfather" names nobody: every fleet's operator is named
 in its own home (`hodd/identity/operator.yaml`), and the seat render puts that name
@@ -476,7 +484,7 @@ gate by another door, once `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` are set.
 `RULES/` holds the numbered house law. Read the rule that governs the task:
 
 ```
-rules[12]{file,governs}:
+rules[13]{file,governs}:
   "RULES/01-domains.md","domains (Greinar) · houses · Eindri"
   "RULES/02-agents.md","agents: .agents/agents is canonical; harness dirs are symlinks; no mock"
   "RULES/03-houses.md","a house is a company (WayOf); domains are never houses"
@@ -489,6 +497,7 @@ rules[12]{file,governs}:
   "RULES/20-the-well-appends.md","the well appends: an episode is never replaced, rebuilt-over or lost to a restore; the count never falls"
   "RULES/23-no-code-in-app-folders.md","an application lives in apps/; bin/ holds function-named machine tools — never an application's name in a path"
   "RULES/43-two-tongues.md","the tongue: English for the work, Old Norse for the names — nothing else inside Ymir; a native project keeps its tongue in its own scope"
+  "RULES/44-no-agent-is-brokk.md","no agent is Brokk — every machine names its own agents, and every agent declares house · fleet · machine · Allfather; unsealed means unnamed"
 ```
 
 A change that contradicts a rule must change the rule first (append-only). The

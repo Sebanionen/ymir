@@ -23,7 +23,7 @@ knew nothing of Ymir; the seat file at `~/.hermes/AGENTS.md` was inert (not a ca
   house identity arrives on every installation and every update.
 
 ### Proven
-- `~/.hermes/SOUL.md` carries *Allfather Josef* and *sindri on nidavellir*; `.hermes.md` is
+- `~/.hermes/SOUL.md` carries *Allfather <name>* and *the seat primary on this host*; `.hermes.md` is
   written and gitignored (`git check-ignore` confirms).
 - `hermes`' own loader reads `~/.hermes/SOUL.md` (prompt_builder) and `.hermes.md` (context
   candidates, priority 1) — verified in the installed package.
