@@ -66,32 +66,35 @@ render_hermes_md() {
 # ~/.hermes/SOUL.md - never the working directory. It is where the house voice and the
 # seat's own name belong if they must follow the agent everywhere.
 render_hermes_soul() {
-  local soul="$HOME/.hermes/SOUL.md" name role
+  local soul="$HOME/.hermes/SOUL.md" name role tpl
   [ -d "$HOME/.hermes" ] || return 0
+  tpl="$ROOT/bin/seat/assets/hermes-soul.md.in"
+  [ -r "$tpl" ] || { printf 'seat-surface: no SOUL template at %s\n' "$tpl" >&2; return 1; }
   name="$(bash "$SID" "$HOST" 2>/dev/null || true)"
   [ -n "$name" ] || return 0
   role="$(sed -n 's/^role=//p' "$HOME/.pi/agent/extensions/.ymir-seat" 2>/dev/null)"
-  local block
-  block="$(cat <<EOF
-<!-- ymir-seat:begin - written by bin/seat/seat-surface.sh on install and every update -->
-You are **$name**, the primary agent of the **$HOST** seat in the Ymir fleet${role:+ ($role)}.
-
-**The house voice.** You are Ymir's counsellor: Norse-natural, telegraphic, the old words where
-they carry meaning - *delve, forge, smith, ward, weave, hoard, rune, well, seat, hall, raven, wolf,
-fate, omen, unmade*. One Norsed line beats three padded ones. Never let flavour bury a fact.
-Code, commands and numbers stay literally exact - the voice never enters a variable, a flag or a path.
-
-**The law of tongues (Rule 43).** English for the work; Old Norse for the names; nothing else
-inside Ymir. A client project that needs its native language keeps it in that project's own scope.
-
-**The operator of this fleet is ${OPERATOR:-the Allfather}.** Address him directly, by that name,
-in every response - never zero direct address. In a federated hall a bare "Allfather" names nobody.
-
-**Your contract.** The house's shared contract is \`AGENTS.md\` in the Ymir repository: the laws,
-the mandate, the voice, the naming law. Read it as the craft. Where it says "Brokk", read the
-counsellor's role - your own name is **$name**.
-<!-- ymir-seat:end -->
-EOF
+  block="$(python3 - "$tpl" "$YMIR_HOME" "$HOST" "$name" "$role" "$ROOT" "${OPERATOR:-}" <<'PY2'
+import os, sys
+tpl, home, host, seat, role, root, operator = sys.argv[1:8]
+import yaml
+cfg = yaml.safe_load(open(os.path.join(home, 'hodd', 'identity', 'seats.yaml'))) or {}
+seat_cfg = (cfg.get('seats') or {}).get(host) or {}
+ma = seat_cfg.get('machine_agent') or {}
+mname = (ma.get('name') or '').strip()
+mrole = (ma.get('role') or "the machine's counsellor").strip()
+if mname:
+    machine = mname
+else:
+    machine = "unnamed (the roster has not sealed a machine-agent name for this host — ask the Allfather for it)"
+text = open(tpl).read()
+for k, v in {
+    '__HOST__': host, '__MACHINE_AGENT__': machine, '__MACHINE_ROLE__': mrole,
+    '__SEAT_NAME__': seat, '__OPERATOR__': operator or '<the operator, unnamed in the config>',
+    '__ROOT__': root, '__YMIR_HOME__': home,
+}.items():
+    text = text.replace(k, v)
+print(text, end='')
+PY2
 )"
   if [ ! -f "$soul" ]; then
     printf '%s\n' "$block" > "$soul"
@@ -100,7 +103,7 @@ EOF
 import re, sys
 p, block = sys.argv[1], sys.argv[2]
 s = open(p).read()
-s = re.sub(r'<!-- ymir-seat:begin.*?<!-- ymir-seat:end -->', block, s, flags=re.S)
+s = re.sub(r'<!-- ymir-seat:begin.*?<!-- ymir-seat:end -->', block.rstrip('\n'), s, flags=re.S)
 open(p, 'w').write(s)
 PY2
   else
@@ -152,6 +155,10 @@ case "${1:-}" in
       [ -L "$f" ] && [ "$(readlink -f "$f")" = "$(readlink -f "$SEAT")" ] && continue
       printf 'seat-surface: %s does not resolve to the seat file\n' "$f"; bad=1
     done < <(surfaces)
+    if [ -f "$HOME/.hermes/SOUL.md" ]; then
+      grep -q 'ymir-seat:begin' "$HOME/.hermes/SOUL.md" 2>/dev/null && printf 'seat-surface: SOUL.md carries the house identity ✓\n' || { printf 'seat-surface: SOUL.md lacks the ymir-seat block\n'; bad=1; }
+    fi
+    [ -f "$ROOT/.hermes.md" ] && printf 'seat-surface: .hermes.md is written ✓\n' || { printf 'seat-surface: .hermes.md is missing (Hermes reads it first)\n'; bad=1; }
     [ "$bad" -eq 0 ] && printf 'seat-surface: every harness reads %s on %s\n' "$NAME" "$HOST"
     exit "$bad" ;;
   ""|--apply|apply)
