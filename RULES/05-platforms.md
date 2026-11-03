@@ -131,3 +131,17 @@ exist and the ratchet holds the line, but 33 tracked files still call `stat -c`,
 5 `flock`, 3 `sed -i`, 1 `nproc`, and the service surface is still 26 systemd units with no launchd or Windows
 rendering. A rule that says "runs on Linux, macOS and Windows" while all of that is true is a rule that needs this
 paragraph attached to it — which is what this is.
+
+## 2026-11-03 (appended) — the Windows layer was run, and the thirty-day claim now has an answer
+
+The 2026-11-02 append demanded that a platform claim be made only for a layer **run** in the last
+thirty days. That demand has one answer now, and it is on record in
+`docs/fixes/platforms/2026-11-03-the-windows-door-was-run.md`: a Windows 11 host with WSL2
+(Ubuntu 26.04.1, systemd) took a 0.1.52 seat to the merged head through the documented path —
+pinned runtime at `~/ymir-runtime`, `bin/engine/ymir-install.sh --role dev --yes`, the units
+re-pointed, and `bin/engine/ymir-validate.sh` green on everything but the session-gated cron row.
+
+What that proves, and what it does not, in one breath: **the bootstrapper-and-clone door works on
+Windows**; the **packaged** door does not exist yet — no tagged `.exe`, no signed artefact, and the
+winget/scoop manifests still carry placeholder hashes. The installer workflow has still never run
+in CI, so the honest table above gains a row that is true as of today and expires in thirty days.
