@@ -5,7 +5,7 @@ UI, and agents obey it, and a change that contradicts a rule must first change
 the rule (append-only; never silently rewritten).
 
 ```
-rules_index[39]{file,subject}:
+rules_index[40]{file,subject}:
   "01-domains.md","domains (Greinar) · houses · Eindri"
   "02-agents.md","agents: home, kinds, profile contract, no mock"
   "03-houses.md","houses = companies; ownership, records, boundaries"
@@ -110,3 +110,4 @@ Keep each rule short and unambiguous; reference it from code where it bites.
 | # | Rule | In one line |
 |---|---|---|
 | 43 | [Two tongues](43-two-tongues.md) | **The house writes in English and names itself in Old Norse; there is no third tongue.** Code, comments, commits, plans, docs, UI strings, error messages and answers are English; a figure, shelf, hall or rune is Old Norse, and its orthography (á é í ó ú ý þ ð æ ö ǫ ę œ) and the Runic block are allowed wherever a name is carved. A name is not a licence for a sentence. Four exceptions are legal and each is **declared with a reason** in `language.allow` — a *fixture* (a test whose assertion is the foreign text), a *detector* (code that recognises a language; the words are matching data), a *quotation* (a person's words or a program's output, kept as it came), and a *table* (a transliteration, where the letters are the subject). `bin/gates/guards/language-guard.sh` refuses any letter that is not English, Old Norse or runic — one test that catches Han, Kana, Hangul, Cyrillic, Arabic, Hebrew, Thai, Devanagari and every foreign Latin letter — and catches a diacritic-free foreign prose by its function words on prose lines only; `--self-test` plants four faults and requires them all refused. On its first run it found a **Khmer letter sitting where a rune belonged** in an asset's Futhark array. |
+| 44 | [No agent is Brokk](44-no-agent-is-brokk.md) | **Brokk is a ROLE, never a name.** No machine, seat, fleet or user's install may name an agent `Brokk` — several Brokks from different fleets cannot be told apart. Every machine names its own agents (the seat primary inside Ymir; the machine agent that keeps the computer — `norse-naming.md` §3.1b), and every agent declares **house · fleet · machine · Allfather** when it introduces itself. An unsealed name renders as *unnamed*, never invented. `bin/seat/seat-surface.sh` refuses a roster that names an agent `brokk` and fails a surface that omits the four lines; the names come from the operator's own config, and the identity is written by the **install** and by **every update** (Rule 05, one core every platform). |
