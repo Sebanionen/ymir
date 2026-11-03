@@ -59,3 +59,9 @@ real branch leaving *that* repository through a pull request, with a gate refusi
 
 Files: `bin/collab/kit/**` · `bin/collab/standardise.sh` · `bin/collab/collab.sh` · `docs/collaboration.md` ·
 `bin/records/developers.sh` · `bin/README.md` · `.agents/backend/README.md`
+
+## Correction, appended 2026-11-02
+
+This note said the missing pull-request guard in Growth Agent was "fixed in that repository (PR #23)". **That number was a guess made
+before the pull request existed, and it was wrong.** The fix is committed on `deploy/2026-11-03` and is **PR #22** there; **#23** is a
+later, unrelated change (the three source adapters). A number in a note is a citation — it is written after the thing exists, never before.
