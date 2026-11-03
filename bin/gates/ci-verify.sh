@@ -88,6 +88,11 @@ gate home-index "the home's shelves are navigable"             bash "$ROOT/bin/g
 gate usage      "no door became unused since the baseline"    bash "$ROOT/bin/gates/checks/usage-ratchet.sh"
 gate portability "GNU-only callers may fall, never rise (RULES/05)"    bash "$ROOT/bin/gates/checks/portability-ratchet.sh" check
 gate inventory  "the bin/backend index is current"            bash "$ROOT/bin/gates/inventory.sh" --check
+# plan 175 §3 — CI keeps the LAST word on the weaver. The pre-commit hook is CONVENIENCE (it can be
+# bypassed with --no-verify) and the ward runs where the tree is pushed; this row judges the merge
+# the host builds, so a stale index is refused even when no hook on any machine ever fired.
+gate weave      "every index names every rule, plan and feature page (plan 175)" \
+               bash "$ROOT/bin/records/weave.sh" --check
 gate workflows  "every Actions workflow parses"               bash "$ROOT/bin/gates/checks/workflow-check.sh" --quiet
 gate units      "systemd reads every key in every unit template" bash "$ROOT/bin/gates/checks/unit-template-check.sh" --quiet
 gate ext-api    "extensions speak Pi's real tool API"          bash "$ROOT/bin/gates/checks/extension-api-check.sh" --quiet

@@ -43,9 +43,36 @@ case "${1:-}" in
     # hook was taught this on 2026-10-20; the pre-commit one still baked a path until now).
     cat >"$hook" <<'HOOK'
 #!/usr/bin/env bash
-# pre-commit — the wards that judge a STAGED change. Installed by bin/gates/guards/secret-guard.sh --install.
+# pre-commit — the weaver first, then the wards that judge a STAGED change.
+# Installed by bin/gates/guards/secret-guard.sh --install.
 set -u
 ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+# ── CONVENIENCE, NOT THE LAW (plan 175 §3) ────────────────────────────────────────────────────
+# Weave the documents this commit would otherwise leave stale, PRINT what was written, and stage
+# ONLY those files. A hook may write and stage a WOVEN file and nothing else: the list below is by
+# PATH, never by content, because a hook that rewrote hand-authored prose would be worse than the
+# collision it saves. The ward (bin/gates/guards/weave-guard.sh) is what REFUSES drift; CI keeps
+# the last word. A weave that fails does not block here — the ward says its piece at push and CI.
+WOVEN="FEATURES.md bin/README.md .agents/backend/README.md .agents/assets/agents/capabilities.md"
+wov_hash() { git hash-object -- "$ROOT/$1" 2>/dev/null || printf 'absent'; }
+weave_woven_files() {
+  local f was now pre=""
+  [ -f "$ROOT/bin/records/weave.sh" ] || return 0
+  for f in $WOVEN; do pre="$pre$(printf '%s=%s\n' "$f" "$(wov_hash "$f")")"; done
+  bash "$ROOT/bin/records/weave.sh" >/dev/null 2>&1 || true
+  for f in $WOVEN; do
+    [ -f "$ROOT/$f" ] || continue
+    now="$(wov_hash "$f")"
+    was="$(printf '%s' "$pre" | awk -v k="$f" 'index($0, k "=") == 1 { print substr($0, length(k) + 2); exit }')"
+    [ "$now" = "$was" ] && continue
+    git -C "$ROOT" add -- "$f" || exit 1
+    printf 'weave: wove and staged %s (a woven file — the only kind a hook may write)\n' "$f"
+  done
+  return 0
+}
+weave_woven_files
+
 G="$ROOT/bin/gates/guards"
 for w in public-guard docs-guard private-guard vault-guard confidential-guard; do
   [ -x "$G/$w.sh" ] && { "$G/$w.sh" "$@" || exit 1; }
