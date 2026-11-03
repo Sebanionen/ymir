@@ -55,7 +55,7 @@ refuses a secret is machinery and lives here.
 
 ```
 carried[2]{repo,state,note}:
-  "`zerwiz/nordic-global-solutions-fundraising`","**15 of 16 present**, one file differs","`scripts/gates/private-data.sh` differs — the local copy skips the gate's own directory, which the kit's does not"
+  "`zerwiz/nordic-global-solutions-fundraising`","**15 of 16 present**, one file differs","its `private-data` gate differs from the kit's — the local copy skips the gate's own directory"
   "`zerwiz/investready`","**10 of 16 present**","six rules and docs are absent, because it was standardised before `RULES/15–17` existed; three files differ, each a local decision"
 ```
 
