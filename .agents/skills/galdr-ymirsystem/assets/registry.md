@@ -149,3 +149,5 @@ Law: `RULES/36-the-run-is-visible.md` · detail: `assets/smidja.md`.
 `bin/gates/inventory.sh` derives executable status from Git index mode `100755`, not host `os.access(X_OK)`. It reads `git ls-files --stage -z` so whitespace in tracked paths is preserved. Directory walks use an explicit relative POSIX path sort key, avoiding Windows case-folded Path ordering. Filesystem permission changes must not alter the generated public register when the index is unchanged.
 
 `tests/test_inventory_git_mode.py` runs the actual generator in a small Git repository, inverts working-tree executable bits without changing index modes, and checks complete output stability, data/tool classification, whitespace paths and case-sensitive row ordering. Run it on Windows and Linux when changing inventory classification. Regenerate the full registers only after all intended source changes are staged.
+
+The generator writes explicit UTF-8 with LF newlines on every host. The real-generator regression asserts LF output on Windows and Linux. Previously generated register data was retained exactly, with Git text normalization changing CRLF to LF only.

@@ -275,7 +275,7 @@ for shelf, rows in shelves.items():
         else:
             print(f"inventory --check: {target.relative_to(ROOT)} is current ({len(rows)} files)")
     else:
-        target.write_text(body)
+        target.write_text(body, encoding="utf-8", newline="\n")
         print(f"wrote {target.relative_to(ROOT)} — {len(rows)} files · verdict: {tally(rows,'verdict')} · disposition: {tally(rows,'disposition')}")
 
 sys.exit(1 if fail else 0)

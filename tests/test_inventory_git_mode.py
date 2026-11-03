@@ -46,6 +46,8 @@ class InventoryGitModeTest(unittest.TestCase):
             (root/'bin/tool.sh').chmod(0o644)
             render()  # settle the output's own header, which is inventoried too
             first = render()
+            for output in first:
+                self.assertNotIn(b"\r", output, "registers must use canonical LF on every host")
             rows = {}
             for line in first[0].decode().splitlines():
                 if line.startswith('  "'):
