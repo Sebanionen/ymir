@@ -24,7 +24,7 @@ check "stop lowers the room" "$DOOR" stop
 check "status says down" bash -c "'$DOOR' status | grep -qP 'room\tdown'"
 
 check "start in tailnet mode" "$DOOR" start --port 3011 --mode tailnet
-check "tailnet url is https magicdns" bash -c "'$DOOR' url | grep -q '^https://.*tailnet.ts.net'"
+check "tailnet url is https magicdns" bash -c "'$DOOR' url | grep -q '^https://.*<host>.tailnet.ts.net'"
 check "claim is refused without a raised room after stop" bash -c "'$DOOR' stop >/dev/null; '$DOOR' claim >/dev/null 2>&1; test \$? -ne 0"
 check "start for claim" "$DOOR" start --port 3011 --mode local
 check "claim records the host" "$DOOR" claim

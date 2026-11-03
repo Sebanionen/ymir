@@ -25,7 +25,9 @@
 ```
 approved  r-5050758689714317056   sha fcd5507d…
 check     approved
-sent      Lars-Josef Lindbom → josef@way-of.com   (the operator's own address, on his word)
-status    Lars-Josef: sent · Reygan: draft · Craig: draft
+sent      <the operator> → <the operator's address>   (the operator's own address, on his word)
+status    Lars-<the operator>: sent · Reygan: draft · Craig: draft
 ```
 One letter left the house; the other two stayed drafts, which is the point of `--to`.
+
+**2026-11-03 (correction, appended):** the operator's name and address were redacted from this note. They are personal data: they belong in the home, and a public fix note may say *the operator* and nothing more (RULES/04, RULES/06 — the correction is recorded, not the leak).

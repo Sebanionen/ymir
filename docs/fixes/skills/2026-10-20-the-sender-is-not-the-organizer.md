@@ -8,7 +8,7 @@ follow-up: **the operator**. The record now carries `meeting.sender`, rendered i
 the signature (falling back to organizer), and the schema allows it.
 
 The pilot record was regenerated: participants and action owners use the full name
-`the operator`, and the per-person brief is `briefs/lars-josef-lindbom.md`.
+`the operator`, and the per-person brief is `briefs/<the operator>.md`.
 
 ### Verified
 
@@ -19,3 +19,5 @@ The pilot record was regenerated: participants and action owners use the full na
 ### Not verified
 
 - No test asserts the signature yet; add `sender` to the render test.
+
+**2026-11-03 (correction, appended):** the operator's name and address were redacted from this note. They are personal data: they belong in the home, and a public fix note may say *the operator* and nothing more (RULES/04, RULES/06 — the correction is recorded, not the leak).

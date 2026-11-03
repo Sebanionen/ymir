@@ -48,7 +48,7 @@ gmail(){
 # A letter to a domain with no mail exchanger is not sent; it is thrown away slowly, and the sender
 # learns of it hours later from a delivery notification that names a stranger's domain. Measured
 # 2026-11-01: `thegleemachine.com` publishes no MX at all (its A record is 127.0.0.1), so every
-# message to craig@thegleemachine.com was delayed and lost. The register already knows how to ask
+# message to <a personal address> was delayed and lost. The register already knows how to ask
 # DNS; this is the send path asking it before the letter leaves.
 guard_recipients(){
   local to="${1-}" rc=0 addr domain

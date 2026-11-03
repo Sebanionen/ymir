@@ -18,7 +18,7 @@ Two changes, and one measured trap:
 
 ### Verified
 
-- `ss -ltn` now shows `100.88.238.83:8008` and `100.88.238.83:8090` — the tailnet, and no
+- `ss -ltn` now shows `<tailnet-ip>:8008` and `<tailnet-ip>:8090` — the tailnet, and no
   `0.0.0.0`.
 - tailnet → **200**; LAN address → **000 (refused)**.
 - **The fleet still speaks**: heimdall's Eitri posted *"…after the LAN was shut, the tailnet

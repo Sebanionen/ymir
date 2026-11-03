@@ -42,8 +42,8 @@ plant() {
 }
 
 plant "an operator home path"   'log in as /home/realoperator/x'      home
-plant "a tailnet hostname"      'the heart is h1.tail.ts.net'         tailnet
-plant "a CGNAT address"         'bind 100.101.102.103'               cgnat
+plant "a tailnet hostname"      'the heart is h1.<host>.tailnet.ts.net'         tailnet
+plant "a CGNAT address"         'bind 100.64.0.1'               cgnat
 
 # The blessed public way must PASS: a placeholder teaches without naming.
 f="probe-public.md"
