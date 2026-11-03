@@ -11,7 +11,8 @@ and report it truthfully*:
    upstream so a port can be checked against it. **Provenance, not Ymir's own.**
 2. **The model bridges** — Ymir's own files. They are why this index exists:
 
-backend[175]{file,does,kind,verdict,disposition,callers,lines}:
+backend[176]{file,does,kind,verdict,disposition,callers,lines}:
+  "README.md","`.agents/backend/` — the backend layer, file by file","data","tested","keep",25,-
   "cmux.sh","bin/backends/cmux.sh - the cmux session-provider adapter (EXPERIMENTAL).","data","tested","keep",1,650
   "fm-afk-launch.sh","fm-afk-launch.sh - the single owner of the away-mode daemon TERMINAL lifecycle:","provenance","tested","keep",5,655
   "fm-afk-return.sh","fm-afk-return.sh - deterministic away-mode return catch-up gate.","provenance","tested","keep",3,242
@@ -188,4 +189,4 @@ backend[175]{file,does,kind,verdict,disposition,callers,lines}:
   "tmux.sh","bin/backends/tmux.sh - the tmux session-provider adapter.","data","tested","keep",4,358
   "zellij.sh","bin/backends/zellij.sh - the zellij session-provider adapter (EXPERIMENTAL).","data","tested","keep",1,701
 
-**Tally.** verdict: tested=163, wired=12
+**Tally.** verdict: tested=164, wired=12
