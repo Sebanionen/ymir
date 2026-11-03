@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",664
+  "shell doors (bin/*.sh)",670
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -254,11 +254,13 @@ capabilities[5]{surface,count}:
 | a2abridge-ensure.sh | a2abridge-ensure.sh — ensure the A2A mesh engine (a2abridge) is presen | tested+named | keep (a human or a cron row must run it) |
 | bifrost-bridge.sh | bifrost-bridge.sh — raise/lower the model bridge (Bifrost: the bridge  | tested | keep (a human or a cron row must run it) |
 | bifrost-ingress.sh | bifrost-ingress.sh — raise/lower the ingress stack (Bifrost · Heimdal | tested | keep (a human or a cron row must run it) |
+| constellation.sh | constellation.sh — the A2A road between two Ymir fleets, as one door. | tested+named | keep (a human or a cron row must run it) |
 | mcp-config.sh | mcp-config.sh — generate the harness MCP config: ONE local gateway doo | tested+named | keep (a human or a cron row must run it) |
 | mcp-gate.sh | mcp-gate.sh — arm/disarm an on-call MCP server in the seat's pi mcp-ad | tested | keep (a human or a cron row must run it) |
 | mcp-gateway.sh | mcp-gateway.sh — the body's ONE local door in front of the record MCPs | tested+named | keep (a human or a cron row must run it) |
 | mimir-bridge.sh | mimir-bridge.sh — raise/lower the well bridge (Mimirsbrunn on :4602). | tested+named | keep (a human or a cron row must run it) |
 | ratatoskr.sh | ratatoskr.sh — Ymir's front door to the A2A engine (`a2abridge`). | tested+named | keep (a human or a cron row must run it) |
+| test_constellation.sh | test_constellation.sh — the road's proof: a card, a grant, a token, an | tested | keep (a human or a cron row must run it) |
 | ymir-plan.sh | ymir-plan.sh — THE INSTALL PLAN. Probe this machine, print what would  | tested+named | keep (a human or a cron row must run it) |
 | collab.sh | collab.sh — Vingólf, the assembly hall: who collaborates with the hou | tested+named | keep (a human or a cron row must run it) |
 | init.sh | init.sh — put the collaboration shelf into a repository, or check the  | tested | keep (a human or a cron row must run it) |
@@ -364,6 +366,7 @@ capabilities[5]{surface,count}:
 | app-functional-guard.sh | app-functional-guard.sh — AN UPDATE THAT LEAVES AN APP UNRUNNABLE IS N | tested | keep (a human or a cron row must run it) |
 | branch-guard.sh | branch-guard.sh — Rule 08: no push may land on a protected branch. | tested+named | keep (a human or a cron row must run it) |
 | confidential-guard.sh | confidential-guard.sh — while a confidential session is live, nothing  | tested | keep (a human or a cron row must run it) |
+| constellation-grant-guard.sh | constellation-grant-guard.sh — the road's own ward. | tested+named | keep (a human or a cron row must run it) |
 | cron-guard.sh | cron-guard.sh — the shipped tree must satisfy its own schedule. | tested | keep (a human or a cron row must run it) |
 | dead-code-guard.sh | dead-code-guard.sh — code that exists and is never reached is a claim  | tested | keep (a human or a cron row must run it) |
 | defaults-guard.sh | defaults-guard.sh — ONE PLACE KNOWS WHERE THINGS LIVE. | tested+named | keep (a human or a cron row must run it) |
@@ -436,6 +439,8 @@ capabilities[5]{surface,count}:
 | no-delete-guard.sh | no-delete-guard.sh — Rule 11, ENFORCED. A tracked file is never delete | tested | keep (a human or a cron row must run it) |
 | approve.sh | approve.sh — one gesture answers one question. | tested+named | keep (a human or a cron row must run it) |
 | send.sh | send.sh — THE HOTLINE: one door a system calls when it has something t | tested+named | keep (a human or a cron row must run it) |
+| telegram-buttons.sh | telegram-buttons.sh — make a Telegram button that actually renders. | uncalled | **decide** — unnamed and untested: move it to src/ or hodd/reference/ (Rule 11), never delete |
+| test_telegram_buttons.sh | test_telegram_buttons.sh — the button grammar, proved both ways. | uncalled | **decide** — unnamed and untested: move it to src/ or hodd/reference/ (Rule 11), never delete |
 | collaborators.sh | collaborators.sh — the people we work with: clients, collaborators, ad | tested | keep (a human or a cron row must run it) |
 | inbox-watch.sh | inbox-watch.sh — notice when someone answers, without a human opening  | tested | keep (a human or a cron row must run it) |
 | inbox.sh | inbox.sh — read the mail that matters to a collaborator, and prove you | tested | keep (a human or a cron row must run it) |
