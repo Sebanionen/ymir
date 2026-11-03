@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# A commit says what and why; "wip" does not.
+set -u
+message_file="${1:-}"
+[ -r "$message_file" ] || exit 0
+subject=$(head -1 "$message_file" | tr -d '\r')
+words=$(printf '%s' "$subject" | wc -w)
+
+case "$subject" in
+  Merge*|Revert*|fixup!*|squash!*) exit 0 ;;
+esac
+
+if [ "$words" -lt 3 ]; then
+  printf 'commit-msg refused: "%s" is too short.\nhelp: say what changed and why — one imperative line, then a paragraph.\n' "$subject" >&2
+  exit 1
+fi
+if printf '%s' "$subject" | grep -qiE '^(wip|update|updates|changes|fix|fixes|misc|temp|test)$'; then
+  printf 'commit-msg refused: "%s" says nothing a reader can use.\n' "$subject" >&2
+  exit 1
+fi
+exit 0
