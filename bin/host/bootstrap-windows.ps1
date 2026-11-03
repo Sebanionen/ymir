@@ -7,8 +7,8 @@
 # Run elevated (WSL needs it). Expect ONE reboot on a machine that has never had
 # WSL — the script says so plainly and tells you the single command to run after.
 #
-#   powershell -ExecutionPolicy Bypass -File bin\bootstrap-windows.ps1
-#   powershell -ExecutionPolicy Bypass -File bin\bootstrap-windows.ps1 -Check
+#   powershell -ExecutionPolicy Bypass -File bin\host\bootstrap-windows.ps1
+#   powershell -ExecutionPolicy Bypass -File bin\host\bootstrap-windows.ps1 -Check
 #
 # Gated on its host (Rule 05): off Windows it skips cleanly.
 
@@ -75,7 +75,7 @@ if (-not ($hasWsl -and $hasDistro)) {
   Write-Host ""
   Write-Host "WSL + $Distro are being installed. A REBOOT may be required." -ForegroundColor Yellow
   Write-Host "After the reboot, finish with:" -ForegroundColor Yellow
-  Write-Host "  powershell -ExecutionPolicy Bypass -File bin\bootstrap-windows.ps1"
+  Write-Host "  powershell -ExecutionPolicy Bypass -File bin\host\bootstrap-windows.ps1"
   exit 0
 }
 
