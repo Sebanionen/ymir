@@ -50,6 +50,34 @@ gate() {  # <name> <description> <command...>
 }
 
 gate ward        "the tree wards (runtime, defaults)"   bash "$ROOT/bin/gates/guards.sh"
+# RULES/04 — the public tree carries TEMPLATES and LOGIC. The ward is in the list above; this is
+# the proof that it BITES (a ward never seen to refuse is decoration, and this one wore that coat).
+gate public-data "RULES/04 — a secret, a name, a topology or a mailbox is refused, and the ward is proved to refuse" \
+     bash "$ROOT/bin/gates/checks/public-data-ward.test.sh"
+
+# Rule 11 — a tracked file is MOVED, never deleted. RULES/11 says the ward runs here; until
+# 2026-11-03 nothing in this file called it, so a deletion passed CI unseen. The range is the
+# PR's base when there is one, and an honest SKIP (not a green) when this checkout has no base.
+nodelete_base() {
+  local b=""
+  if [ -n "${GITHUB_BASE_REF:-}" ] && git rev-parse -q --verify "origin/${GITHUB_BASE_REF}" >/dev/null 2>&1; then
+    b="origin/${GITHUB_BASE_REF}"
+  elif git rev-parse -q --verify origin/main >/dev/null 2>&1; then
+    b="origin/main"
+  fi
+  [ -n "$b" ] || return 1
+  printf '%s' "$b"
+}
+if nd_base="$(nodelete_base)"; then
+  gate no-delete "Rule 11 — a tracked file is moved, never deleted (against $nd_base)" \
+       bash "$ROOT/bin/no-delete-guard.sh" --base "$nd_base"
+  # `--check`, not `--base`: on a pull request the checkout is the host's merge commit, and the
+  # ward's merge-aware path (HEAD^1..HEAD^2) is the only range that is the contributor's own.
+  gate identity  "Rule 04/39 — a commit publishes an account, never a private mailbox" \
+       bash "$ROOT/bin/gates/guards/identity-guard.sh" --check
+else
+  printf '  "%s","SKIP","%s"\n' "no-delete" "no base ref in this checkout — judged by the pre-push hook and on a PR"
+fi
 gate compliance  "the 15 governance gates"              bash "$ROOT/.agents/skills/galdr-ymirsystem/scripts/compliance-check.sh"
 gate contracts   "the typed surfaces (one contract, two consumers)" bash "$ROOT/bin/gates/checks/contracts-check.sh"
 gate queue       "the derived work queue is current"              bash "$ROOT/bin/gates/queue.sh" --check
@@ -58,12 +86,21 @@ gate plan-ledger  "every plan carries the contract (his words, a measure, proven
 gate capability "the capability register is current"           bash "$ROOT/bin/gates/capabilities.sh" --check
 gate home-index "the home's shelves are navigable"             bash "$ROOT/bin/gates/checks/home-index-check.sh"
 gate usage      "no door became unused since the baseline"    bash "$ROOT/bin/gates/checks/usage-ratchet.sh"
+gate portability "GNU-only callers may fall, never rise (RULES/05)"    bash "$ROOT/bin/gates/checks/portability-ratchet.sh" check
 gate inventory  "the bin/backend index is current"            bash "$ROOT/bin/gates/inventory.sh" --check
 gate workflows  "every Actions workflow parses"               bash "$ROOT/bin/gates/checks/workflow-check.sh" --quiet
 gate units      "systemd reads every key in every unit template" bash "$ROOT/bin/gates/checks/unit-template-check.sh" --quiet
 gate ext-api    "extensions speak Pi's real tool API"          bash "$ROOT/bin/gates/checks/extension-api-check.sh" --quiet
 gate ext-smoke  "every Ymir tool ANSWERS when called like Pi calls it" \
                node --experimental-strip-types "$ROOT/tools/extension-smoke.mjs"
+codex_checks() {
+  local door
+  for door in bin/engine/ymir-install.sh bin/agents/groa-update.sh bin/bridge/ymir-plan.sh; do
+    bash -n "$ROOT/$door" || return 1
+  done
+  node --test "$ROOT/tests/test_codex_plugin.mjs" "$ROOT/tests/test_codex_install.mjs"
+}
+gate codex-plugin "the Codex tool catalog, shell syntax, install and refresh contract" codex_checks
 if [ "$FAST" = 1 ]; then
   printf '  "%s","SKIP","%s"\n' pr-pretest "skipped by --fast"
 else

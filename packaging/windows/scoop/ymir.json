@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.warebox.dev/scoop/app.schema.json",
+  "version": "0.1.53",
+  "description": "Ymir — the agent operating system: one home, one roster, one well, one forge.",
+  "homepage": "https://github.com/zerwiz/ymir",
+  "license": "Apache-2.0",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/zerwiz/ymir/releases/download/v0.1.53/Ymir-Setup-0.1.53.exe",
+      "hash": "REPLACE_WITH_SHA256_OF_THE_RELEASED_EXE",
+      "installer": {
+        "script": [
+          "# The Ymir installer raises Ubuntu on WSL2 and runs the Linux host inside it —",
+          "# Windows does not run Ymir natively (RULES/05, 2026-11-02).",
+          "Start-Process -FilePath \"$dir\\Ymir-Setup-0.1.53.exe\" -ArgumentList '/S' -Wait"
+        ]
+      }
+    }
+  },
+  "bin": "ymir.cmd",
+  "checkver": { "github": "https://github.com/zerwiz/ymir" },
+  "autoupdate": {
+    "architecture": {
+      "64bit": { "url": "https://github.com/zerwiz/ymir/releases/download/v$version/Ymir-Setup-$version.exe" }
+    }
+  }
+}

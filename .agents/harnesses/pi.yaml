@@ -1,0 +1,26 @@
+# Pi — the first harness, and the shape the others are measured against.
+name: pi
+binary: pi
+detect:
+  process: ["pi", "pi-signed"]
+  env: []
+launch: "pi"
+inject: "pi --print <prompt>"
+transcript:
+  shape: jsonl-tree          # id/parentId; a branch is a second child in the same file
+  root: ~/.pi/agent/sessions
+  path: "sessions/--<cwd-slug>--/<timestamp>_<id>.jsonl"
+extensions:
+  global_dir: ~/.pi/agent/extensions
+  project_dir: .pi/extensions
+  format: "ts|js file, or a directory with index.ts|index.js"
+  dedupe: "settings extensions[] is resolved by realpath — one path, no double registration"
+instructions:
+  global: ~/.pi/agent/AGENTS.md
+  project: AGENTS.md
+config: ~/.pi/agent/{settings,models,auth}.json
+capabilities:
+  streaming: full
+  hooks: full                # extensions subscribe to lifecycle events
+  resume: full
+  mcp: full

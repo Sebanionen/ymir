@@ -19,10 +19,12 @@ is the component whose shape moved, and a hand looking here must find it.
 could not receive a single message — and the desk rendered an empty queue, which is
 indistinguishable from "no mail today". `way-of.com` publishes Google Workspace MX and already
 receives; its aliases (`gimle@`, `snotra@`) do not exist yet: `sendAs` on the account lists only
-`josef@way-of.com`.
+`<the operator's address>`.
 
 ### The rule this leaves behind
 **A mailbox the desk can read is not a mailbox anyone can write to.** Two different questions,
 two different measurements, and the desk now carries both: an address is `deliverable` only
 after a real message from outside has landed with its `To:` intact, and `unproven` until then.
 `--check` exits nonzero rather than let an empty page read as a healthy one.
+
+**2026-11-03 (correction, appended):** the operator's name and address were redacted from this note. They are personal data: they belong in the home, and a public fix note may say *the operator* and nothing more (RULES/04, RULES/06 — the correction is recorded, not the leak).

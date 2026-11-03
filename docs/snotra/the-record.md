@@ -70,7 +70,7 @@ The validator (`.agents/skills/snotra-meeting-outcomes/scripts/meeting-outcomes.
 
 ```json
 {"at":"2026-10-23T16:41:00Z","id":"DEC-20261022-04","kind":"decision","from":"proposed",
- "to":"approved","by":"Lars-Josef Lindbom","why":"confirmed at the sync","record":"record.json"}
+ "to":"approved","by":"Lars-<the operator> <the operator>","why":"confirmed at the sync","record":"record.json"}
 ```
 
 **Append-only.** A second promotion of the same id is a *new* line (`from → to`), so the history of a decision
@@ -117,3 +117,5 @@ participants can correct it. The 22 Oct record carries both states: the room-mic
 - **not the board** — cards are a projection;
 - **not append-only** — it is machine state that a promotion moves; the *history* lives in
   `promotions.jsonl`, the Runes ledger and git.
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

@@ -854,7 +854,7 @@ hosts[6]{host,how_you_get_it,what_it_is}:
   "Omarchy","bin/engine/ymir-install.sh","the first-class layer: numbered desktops, launcher entries, the post-update hook"
   "other Linux (Ubuntu · Fedora · Debian · Arch)","bin/engine/ymir-install.sh","the portable core; the Omarchy layer skips cleanly, never faked"
   "Steam Deck (SteamOS)","bin/engine/ymir-install.sh --role dev","Arch-based and immutable — a full desk install on the gaming handheld (verified 2026-10-19); see the SteamOS section below"
-  "Windows","Ymir-Setup.exe — or bin/bootstrap-windows.ps1","Ubuntu on WSL2 is the host; Ymir installs inside it"
+  "Windows","Ymir-Setup.exe — or bin/host/bootstrap-windows.ps1","Ubuntu on WSL2 is the host; Ymir installs inside it"
   "macOS","Ymir Installer.command (or the .pkg) — or bin/host/bootstrap-macos.sh","Ubuntu in a Lima VM is the host; Ymir installs inside it"
   "Android (Termux)","curl … | bash — the command detects Termux","the phone, role `hand`: pi + its extensions, the hoard, and the heart's doors — no record, no rail, no bun"
 ```

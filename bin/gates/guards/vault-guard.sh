@@ -39,6 +39,9 @@ esac
 # The vault (Rule 07: env → hoard-lib → the one documented default).
 _home=""
 [ -r "$ROOT/bin/vault/hoard-lib.sh" ] && . "$ROOT/bin/vault/hoard-lib.sh"
+# The platform shim: `sha256sum` is GNU-only, `shasum -a 256` is BSD (RULES/05, 2026-11-02).
+[ -r "$ROOT/bin/fleet/ymir-platform.sh" ] || { printf 'vault-guard: the platform shim is missing — %s\n' "$ROOT/bin/fleet/ymir-platform.sh" >&2; exit 2; }
+. "$ROOT/bin/fleet/ymir-platform.sh"
 command -v ymir_home_root >/dev/null 2>&1 && ymir_home_root _home
 [ -n "$_home" ] || _home="${YMIR_HOME:-}"
 VAULT_MNT="${YMIR_VAULT_MNT:-$HOME/Vault}"
@@ -61,7 +64,9 @@ fi
 
 tmp="$(mktemp)"; trap 'rm -f "${tmp:-}"' EXIT
 # Hashes of every vault file (paths are never recorded — only what was hashed).
-find "$SRC" -type f -exec sha256sum {} + 2>/dev/null | awk '{print $1}' | sort -u > "$tmp"
+find "$SRC" -type f -print0 2>/dev/null | while IFS= read -r -d '' f; do
+  ymir_sha256 "$f"
+done | sort -u > "$tmp"
 vault_count="$(wc -l < "$tmp" | tr -d ' ')"
 [ "$vault_count" -gt 0 ] || { printf '  "none","","the vault holds no files yet"\n'; exit 0; }
 
@@ -79,7 +84,7 @@ while IFS= read -r f; do
   [ -n "$f" ] || continue
   [ -f "$f" ] || continue
   case "$f" in */Vault/*|*/vault/*.img) continue ;; esac
-  h="$(sha256sum "$f" 2>/dev/null | awk '{print $1}')"
+  h="$(ymir_sha256 "$f" 2>/dev/null)"
   [ -n "$h" ] || continue
   if grep -q "^$h\$" "$tmp"; then
     printf '  "a file copies the vault verbatim","%s","its content is byte-identical to a file inside the vault — Rule 15 forbids it leaving"\n' "$f"

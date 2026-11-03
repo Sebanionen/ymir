@@ -27,7 +27,7 @@ model_fallback: llama-swap/qwen3.6-35b-a3b@q4_k_xl-mtp
 
 # Peers that are NEVER blocked — by name, never by a LAN address (the network law).
 peers:
-  - "*.tailefab81.ts.net"      # the tailnet
+  - "*.<host>.tailnet.ts.net"      # the tailnet
   - "cloudflare.com"
   - "api.anthropic.com"        # a named model host, if hosted models are used
   - "registry.npmjs.org"

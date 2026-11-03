@@ -65,3 +65,83 @@ does not. A rule that contradicts this rule must change the rule first
 
 **Related:** `RULES/04-hoard.md` (what is private), `AGENTS.md` (the contract),
 `.agents/skills/galdr-ymirsystem/assets/installation.md` (the install procedure).
+
+## 2026-11-02 — appended: measured against the tree, not against intent
+
+The law above is unchanged. What follows is the measurement of how far the tree actually obeys it, so the next
+change has a true starting point instead of a hopeful one.
+
+**How to run on a given host, as it stands today:**
+
+```
+hosts[5]{host,how,what_actually_runs}
+  "Omarchy / Arch","bin/engine/ymir-install.sh","first-class; verified"
+  "other Linux (Ubuntu · Fedora · Debian)","bin/engine/ymir-install.sh","the core; the Omarchy layer skips cleanly — believed, not recently verified in CI"
+  "SteamOS","bin/engine/ymir-install.sh --role dev","verified 2026-10-19"
+  "Android (Termux)","the curl bootstrap","partial by design: a `hand` — pi, the hoard, the heart's doors; no record, no rail, no bun"
+  "macOS","bin/host/bootstrap-macos.sh","a **Linux VM** (Lima) is the host; Ymir runs inside it, not on the Mac"
+  "Windows","bin/host/bootstrap-windows.ps1","a **Linux VM** (WSL2 + Ubuntu) is the host; Ymir runs inside it, not on Windows"
+```
+
+**So: Ymir runs on Linux, and on macOS and Windows by hosting Linux.** That is a legitimate answer — it is the
+one the README already gives — but it is not the same claim as "runs on any operating system", and the rule
+must not pretend the two are equal.
+
+**The portability debt, counted:**
+
+```
+debt[8]{idiom,files,note}
+  "stat -c","43","BSD/macOS stat takes -f; the shim has no ymir_stat yet"
+  "sha256sum","43","macOS ships shasum -a 256 instead"
+  "systemctl","27","26 systemd units are shipped and no launchd unit at all; the service surface is Linux-shaped"
+  "path /proc/","17","absent on macOS and Windows"
+  "readlink -f","10","BSD readlink has no -f"
+  "flock","10","absent on macOS; mkdir-lock is the portable fallback"
+  "mapfile","7","bash 4+ only; macOS ships bash 3.2"
+  "setsid, nproc, loginctl, sed -i (4), md5sum (3), date -d (1)","5–6 each","same class: GNU-only, no shim"
+```
+
+**Only 24 of 667 shell scripts source `bin/fleet/ymir-platform.sh`.** The shim is the right idea and is not the
+road actually taken.
+
+**The installer and updater layer:** `packaging/` builds an NSIS `.exe` and a macOS `.pkg`
+(`packaging/build.sh`), with `packaging/macos/Ymir Installer.command` and `packaging/windows/ymir-setup.nsi`;
+`.github/workflows/ymir-installers.yml` builds both in CI. There is **no** `.deb`, `.rpm`, `.pkg.tar.zst`,
+Homebrew formula, winget/scoop manifest or Termux package, and the installer workflow has not run since
+2026-09-16. Gróa (the updater) is a bash+git door whose schedule is a **systemd timer** — so the updater has no
+launchd or Task Scheduler equivalent.
+
+**What the rule therefore demands of the next change:** a platform claim is made only for a layer that has been
+*run* in the last thirty days, and every new core script that touches a host facility goes through
+`bin/fleet/ymir-platform.sh` — not through a GNU tool name.
+
+## 2026-11-02 (appended, later) — what shipped, and the words "Windows" and "portable" still do not mean what they sound like
+
+**Merged and live:** the pinned runtime (`~/ymir-runtime`, ten units, `bin/engine/runtime-deploy.sh`,
+`runtime-pinned-guard`), the harness-contract installer, the recovered OpenCode plugin, and the first gate routed
+through the platform shim (`vault-guard` → `ymir_sha256`).
+
+**In review, not merged:** the shim's six verbs, the portability ratchet, and the Windows package manifests
+(`winget`, `scoop`) beside the NSIS installer.
+
+**The honest state, in one paragraph, for whoever reads this rule next.** Windows works by hosting Linux: the NSIS
+installer raises Ubuntu on WSL2 and runs the Linux install inside it — packaged, and *not proved*, because no clean
+Windows machine has run it and the installer workflow last executed on 2026-09-16. Portability is 1 of 82: the verbs
+exist and the ratchet holds the line, but 33 tracked files still call `stat -c`, 33 `sha256sum`, 7 `mapfile`,
+5 `flock`, 3 `sed -i`, 1 `nproc`, and the service surface is still 26 systemd units with no launchd or Windows
+rendering. A rule that says "runs on Linux, macOS and Windows" while all of that is true is a rule that needs this
+paragraph attached to it — which is what this is.
+
+## 2026-11-03 (appended) — the Windows layer was run, and the thirty-day claim now has an answer
+
+The 2026-11-02 append demanded that a platform claim be made only for a layer **run** in the last
+thirty days. That demand has one answer now, and it is on record in
+`docs/fixes/platforms/2026-11-03-the-windows-door-was-run.md`: a Windows 11 host with WSL2
+(Ubuntu 26.04.1, systemd) took a 0.1.52 seat to the merged head through the documented path —
+pinned runtime at `~/ymir-runtime`, `bin/engine/ymir-install.sh --role dev --yes`, the units
+re-pointed, and `bin/engine/ymir-validate.sh` green on everything but the session-gated cron row.
+
+What that proves, and what it does not, in one breath: **the bootstrapper-and-clone door works on
+Windows**; the **packaged** door does not exist yet — no tagged `.exe`, no signed artefact, and the
+winget/scoop manifests still carry placeholder hashes. The installer workflow has still never run
+in CI, so the honest table above gains a row that is true as of today and expires in thirty days.

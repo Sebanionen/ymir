@@ -20,7 +20,7 @@ mails we are using. Otherwise it's pretty weird."*
 |---|---|
 | `zerwiz.org` can receive | **NO.** The DNS answer carries no MX record at all — every `@zerwiz.org` address is undeliverable, and the relay on `zerwizserver` sends only |
 | `way-of.com` can receive | **YES.** Google Workspace MX (`aspmx.l.google.com`) is published, and the read-only grant we already hold reads the mailbox it delivers into |
-| the Workspace aliases exist | **NO.** `GET /users/me/settings/sendAs` lists exactly one address, `josef@way-of.com` — so `gimle@way-of.com` and `snotra@way-of.com` are `alias-missing`, one console step each |
+| the Workspace aliases exist | **NO.** `GET /users/me/settings/sendAs` lists exactly one address, `<the operator's address>` — so `<the operator's address>` and `<the operator's address>` are `alias-missing`, one console step each |
 | the desk could tell you that | it could not. It showed an empty queue, which reads exactly like "no mail today" |
 
 ### What now stands
@@ -62,3 +62,5 @@ the Workspace aliases for `way-of.com` (§16 — recommended, since that domain 
 Until one lands, `--check` fails by design. The next hand should re-run
 `bin/mail/inbound-test.sh`; when it exits 0 the register has its own proof and `deliverable`
 stops being a promise.
+
+**2026-11-03 (correction, appended):** the operator's name and address were redacted from this note. They are personal data: they belong in the home, and a public fix note may say *the operator* and nothing more (RULES/04, RULES/06 — the correction is recorded, not the leak).

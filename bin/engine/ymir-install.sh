@@ -206,9 +206,12 @@ step_prereqs() {
     [ "$need_bun" = 1 ] && "$SCRIPT_DIR/prereq-ensure.sh" bun >/dev/null 2>&1 || true
     "$SCRIPT_DIR/prereq-ensure.sh" uv  >/dev/null 2>&1 || true
     "$SCRIPT_DIR/prereq-ensure.sh" mcp >/dev/null 2>&1 || true
-    # bun installs to ~/.bun/bin; adopt it for the rest of this run.
+    # bun installs to ~/.bun/bin. Adopt it for THIS run, then write it where the NEXT shell
+    # reads it — a validator or a unit that cannot see bun reports it missing on a host that
+    # has it (measured on a clean Windows/WSL2 seat, 2026-11-03; RULES/25 PROBE, NEVER ASSUME).
     [ -x "$HOME/.bun/bin/bun" ] && export PATH="$HOME/.bun/bin:$PATH"
     [ -x "$HOME/.local/bin/uv" ] && export PATH="$HOME/.local/bin:$PATH"
+    "$SCRIPT_DIR/prereq-ensure.sh" --persist-path >/dev/null 2>&1 || true
   fi
   local miss="" engine="" ready="git python3"
   for c in git python3; do have "$c" || miss="$miss $c"; done
@@ -276,27 +279,15 @@ step_tree() {
     ( umask 077; : >"$HOARD/secrets/platform.env" )
     created=$((created+1))
   fi
-  if [ ! -f "$HOARD/identity/workspaces.yaml" ]; then
-    cat >"$HOARD/identity/workspaces.yaml" <<'YAML'
-# Workspace registry — single tenant. One operator, many workspaces.
-# kind: work | personal.  company: only for work.  domains: knowledge areas.
-# Add a work workspace of your own, e.g.:
-#   - id: work
-#     name: Work
-#     kind: work
-#     company: your-company
-#     domains: [company, development]
-workspaces:
-  - id: personal
-    name: Personal
-    kind: personal
-    domains: [me, life, development]
-YAML
-    created=$((created+1))
-  fi
-  if [ ! -f "$HOARD/identity/projects.yaml" ]; then
-    cp "$ROOT/registry/projects.yaml.example" "$HOARD/identity/projects.yaml"
-    created=$((created+1))
+  # The files a home must HOLD arrive through their own doors, never from a heredoc here
+  # (RULES/42): the identity registers belong to bin/identity/registers-seed.sh, and every
+  # other shape to bin/engine/home-seed.sh, which walks .agents/home-contract.yaml. Two
+  # writers of one file is how a template and an install drift apart — measured 2026-11-02:
+  # this step wrote `workspaces.yaml` inline, in a shape its own shipped template did not teach.
+  if seeded=$(bash "$SCRIPT_DIR/home-seed.sh" 2>&1); then
+    created=$((created + $(printf '%s' "$seeded" | grep -c '^home-seed: seeded ' || true)))
+  else
+    add tree WARN "the home contract could not be seeded — $(printf '%s' "$seeded" | tail -1)"
   fi
   add tree OK "workspace/{personal} · companies · registries · hoard (outside the repo) (created $created)"
 }
@@ -369,6 +360,11 @@ step_home() {
     return
   fi
   if [ "$ASSUME_YES" = 1 ] || [ ! -t 0 ]; then
+    # Lay the home out before anything else reads it: a fresh operator who was told "everything private lives in
+    # your home" should not then be handed an empty directory to design (his word, 2026-11-02).
+    if [ "$CHECK" = 0 ] && [ -x "$ROOT/bin/engine/home-seed.sh" ]; then
+      YMIR_HOME="$YMIR_HOME" bash "$ROOT/bin/engine/home-seed.sh" --yes ${ASSUME_YES:+} >/dev/null 2>&1 || true
+    fi
     if ymir_home_record_set "$YMIR_HOME" 2>/dev/null; then
       add home OK "home: $YMIR_HOME (default recorded — change it any time with YMIR_HOME=<path> bin/engine/ymir-install.sh)"
     else
@@ -384,6 +380,10 @@ step_home() {
   [ -n "$chosen" ] && YMIR_HOME="${chosen/#\~/$HOME}"
   if [ -e "$YMIR_HOME" ]; then
     printf 'using %s — what is already there is kept; nothing is deleted.\n' "$YMIR_HOME"
+  fi
+  # Lay the home out now that it has a name, rather than leaving an empty directory to be designed.
+  if [ "$CHECK" = 0 ] && [ -x "$ROOT/bin/engine/home-seed.sh" ]; then
+    YMIR_HOME="$YMIR_HOME" bash "$ROOT/bin/engine/home-seed.sh" ${ASSUME_YES:+} || true
   fi
   # Re-resolve the roots the choice moved: the hoard within the home, and the
   # workspace tree beneath it. A second run finds the record and never asks again.
@@ -1154,8 +1154,20 @@ step_spa() {
     if ! have npm; then
       add hlidskjalf WARN "no npm — cannot install the SPA"; return 0
     fi
-    if [ ! -d "$app/node_modules" ] && ! (cd "$app" && npm install --no-audit --no-fund >/dev/null 2>&1); then
-      add hlidskjalf WARN "npm install failed — (cd $app && npm install --no-audit --no-fund)"; return 0
+    local install_cmd
+    if [ ! -d "$app/node_modules" ]; then
+      # `npm ci` when a lockfile is present: it installs EXACTLY what is recorded and never
+      # rewrites package-lock.json. `npm install` on a checkout edits a tracked file, so the
+      # tree is left dirty and the next `git pull --ff-only` refuses — measured on a Windows
+      # seat 2026-11-03, where the documented bootstrapper pulls after every install.
+      if [ -f "$app/package-lock.json" ]; then
+        install_cmd="npm ci --no-audit --no-fund"
+      else
+        install_cmd="npm install --no-audit --no-fund"
+      fi
+      if ! (cd "$app" && $install_cmd >/dev/null 2>&1); then
+        add hlidskjalf WARN "$install_cmd failed — (cd $app && $install_cmd)"; return 0
+      fi
     fi
     if [ ! -d "$app/dist" ] && ! (cd "$app" && npm run build >/dev/null 2>&1); then
       add hlidskjalf WARN "installed, build failed — (cd $app && npm run build)"; return 0
@@ -1237,6 +1249,63 @@ step_loaders() {
         || add loaders WARN "post-merge hook not seated"
     fi
   else add loaders SKIP "no valknut-load.sh"; fi
+}
+
+# ── opencode V2 plugin: Ymir tools as first-class OpenCode tools & commands (Plan 109)
+step_opencode_v2_plugin() {
+  # Tier 0, not a dev privilege: the harness integration is what makes Ymir exist for an OpenCode user
+  # (RULES/25, 2026-11-02 — the tiers). Gate on the harness being installed, never on a fleet role.
+  have opencode || { add opencode-v2-plugin SKIP "no opencode on this host — nothing to integrate with"; return 0; }
+  local plugin_dir="$ROOT/.opencode/plugins"
+  local target_dir="${HOME}/.config/opencode/plugins"
+  local tool_file="ymir-tools.ts"
+  local pkg_file="package.json"
+  
+  if [ ! -f "$plugin_dir/$tool_file" ] || [ ! -f "$plugin_dir/$pkg_file" ]; then
+    add opencode-v2-plugin SKIP "source plugin not found in $plugin_dir"
+    return
+  fi
+  
+  if [ "$CHECK" = 1 ]; then
+    if [ -f "$target_dir/$tool_file" ] && [ -f "$target_dir/$pkg_file" ]; then
+      # Verify they're identical
+      if diff -q "$plugin_dir/$tool_file" "$target_dir/$tool_file" >/dev/null 2>&1 && \
+         diff -q "$plugin_dir/$pkg_file" "$target_dir/$pkg_file" >/dev/null 2>&1; then
+        add opencode-v2-plugin OK "V2 plugin deployed and current"
+      else
+        add opencode-v2-plugin WARN "V2 plugin deployed but stale (run without --check to update)"
+      fi
+    else
+      add opencode-v2-plugin WARN "V2 plugin not deployed (run without --check to deploy)"
+    fi
+    return
+  fi
+  
+  # Deploy to global plugin directory
+  mkdir -p "$target_dir"
+  cp "$plugin_dir/$tool_file" "$target_dir/"
+  cp "$plugin_dir/$pkg_file" "$target_dir/"
+  
+  # Verify deployment
+  if [ -f "$target_dir/$tool_file" ] && [ -f "$target_dir/$pkg_file" ]; then
+    add opencode-v2-plugin OK "V2 plugin deployed to ~/.config/opencode/plugins/"
+  else
+    add opencode-v2-plugin FAIL "could not deploy V2 plugin"
+  fi
+}
+
+# ── Codex plugin: the same Ymir doors, served through stdio MCP ──────────────
+step_codex_plugin() {
+  have codex || { add codex-plugin SKIP "no codex on this host — nothing to integrate with"; return 0; }
+  have node || { add codex-plugin FAIL "node is required for the Codex plugin"; return 0; }
+  local door="$SCRIPT_DIR/../seat/codex-plugin-install.mjs" output
+  [ -f "$door" ] || { add codex-plugin FAIL "the Codex plugin installer is missing from this package"; return 0; }
+  local args=(); [ "$CHECK" = 1 ] && args+=(--check)
+  if output="$(node "$door" "${args[@]}" 2>&1)"; then
+    add codex-plugin OK "$output"
+  else
+    add codex-plugin FAIL "$output"
+  fi
 }
 
 # ── 6b. delivery gates (git hooks) ───────────────────────────────────────────
@@ -1348,8 +1417,17 @@ step_marks() {
   if [ -x "$SCRIPT_DIR/../desktop/desktop-place.sh" ]; then
     "$SCRIPT_DIR/../desktop/desktop-place.sh" entries >/dev/null 2>&1 || true
   fi
-  "$SCRIPT_DIR/../desktop/design-icon.sh" mint --all >/dev/null 2>&1 || true
+  # The icon SOURCES are tracked files. Minting rewrites them, which leaves the checkout dirty
+  # and makes the next `git pull --ff-only` refuse (measured 2026-11-03 on Windows/WSL2). So a
+  # fresh clone mints what is missing, and a tree that already carries its runes is left alone.
+  if [ -x "$SCRIPT_DIR/../desktop/design-icon.sh" ]; then
+    local need_mint=0
+    for v in hlidskjalf odrerir sessrumnir smidja-factory; do
+      [ -f "$ROOT/apps/$v/public/icon.svg" ] || need_mint=1
+    done
+    [ "$need_mint" = 1 ] && "$SCRIPT_DIR/../desktop/design-icon.sh" mint --all >/dev/null 2>&1 || true
     "$SCRIPT_DIR/../desktop/design-icon.sh" install >/dev/null 2>&1 || true
+  fi
     [ -r "$HOME/.pi/agent/AGENTS.md" ] || [ -d "$HOME/.pi/agent" ] && {
       ln -sfn "$ROOT/AGENTS.md" "$HOME/.pi/agent/AGENTS.md" 2>/dev/null || true
     }
@@ -1657,7 +1735,9 @@ run_step step_smidja "the smithy"
 run_step step_spa "the spa"
 run_step step_omarchy "omarchy layer"
 run_step step_loaders "loaders"
-run_step step_council "the council of models"
+  run_step step_opencode_v2_plugin "opencode V2 plugin"
+run_step step_codex_plugin "Codex plugin"
+  run_step step_council "the council of models"
 run_step step_vault "the vault"
 run_step step_garmr "the hound"
 run_step step_gates "gates"

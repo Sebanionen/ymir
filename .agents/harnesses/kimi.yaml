@@ -1,0 +1,23 @@
+name: kimi
+binary: kimi
+detect:
+  process: ["kimi"]
+  env: []
+launch: "kimi"
+inject: ""
+transcript:
+  shape: unknown
+  root: ""
+  path: "not yet measured"
+extensions:
+  global_dir: ~/.kimi
+  project_dir: .kimi
+  format: unknown
+instructions:
+  global: ~/.kimi/AGENTS.md
+  project: AGENTS.md
+config: ~/.kimi/*
+capabilities:
+  streaming: partial
+  hooks: unknown
+  resume: unknown

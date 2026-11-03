@@ -133,6 +133,15 @@ printf 'reread-Brokk: %s\n' "$reread"
 # Galdr owns the assets; when the instruction surface moved she must be reflected
 # in the same pass (the code/plan/asset agreement law).
 printf 'galdr-reread: %s\n' "$reread"
+# A check must not redeploy harnesses, migrate the home or restart services.
+# The Codex checker proves the source, enabled registration and installed cache.
+if [ "$CHECK" = 1 ]; then
+  if command -v codex >/dev/null 2>&1; then
+    command -v node >/dev/null 2>&1 || { printf 'FAIL — node is required to check the Codex plugin.\n' >&2; exit 1; }
+    node "$ROOT/bin/seat/codex-plugin-install.mjs" --check || exit 1
+  fi
+  exit 0
+fi
 # The seat's name is part of the update surface: scan the collision registry and
 # report a drifted seat instead of silently keeping the old identity.
 if [ -x "$SCRIPT_DIR/../agents/name-registry.sh" ]; then
@@ -150,11 +159,19 @@ if [ -n "${NUDGE_IDS# }" ]; then printf 'nudge-eindri-homes: %s\n' "${NUDGE_IDS#
 # Heal this home forward (structure migrations) after every update.
 [ -x "$SCRIPT_DIR/../engine/ymir-migrate.sh" ] && "$SCRIPT_DIR/../engine/ymir-migrate.sh" apply >/dev/null 2>&1 || true
 # the hound's units are rendered from the repo, so an update re-seats them
-[ -x "$SCRIPT_DIR/../ward/garmr.sh" ] && "$SCRIPT_DIR/../ward/garmr.sh" refresh >/dev/null 2>&1 || true
+# A refresh that waits on a console, a polkit prompt or a missing unit must not
+# stall the whole update: bound it, detach it, and never let it hold our fds.
+if [ -x "$SCRIPT_DIR/../ward/garmr.sh" ]; then
+  setsid timeout -k 2 "${YMIR_GROA_GARMR_TIMEOUT:-15}" \
+    "$SCRIPT_DIR/../ward/garmr.sh" refresh </dev/null >/dev/null 2>&1 || true
+fi
 
 # Gróa's own body is rendered from the repo too: an update re-seats her, so the
 # features of the new tree are the features she runs. Never fatal.
-[ -x "$SCRIPT_DIR/groa-agent/seat.sh" ] && "$SCRIPT_DIR/groa-agent/seat.sh" --quiet >/dev/null 2>&1 || true
+if [ -x "$SCRIPT_DIR/groa-agent/seat.sh" ]; then
+  setsid timeout -k 2 "${YMIR_GROA_SEAT_TIMEOUT:-20}" \
+    "$SCRIPT_DIR/groa-agent/seat.sh" --quiet </dev/null >/dev/null 2>&1 || true
+fi
 
 # Eir checks after every update, so a desktop that cannot open is REPORTED and
 # never silently dead (P8, 2026-09-24). The update is never blocked on a
@@ -166,6 +183,17 @@ if [ -x "$SCRIPT_DIR/eir-doctor.sh" ]; then
   else
     eir_broken="$(printf '%s' "$eir_out" | sed -n '2s/.*,\([0-9][0-9]*\)$/\1/p')"
     printf 'eir: %s surface(s) need mending — bin/agents/eir-doctor.sh (the row above names them)\n' "${eir_broken:-?}"
+  fi
+fi
+
+# Codex uses the SAME deployment door as first setup. A failed refresh fails the
+# update; a source file existing in the repo is not proof that Codex loads it.
+if command -v codex >/dev/null 2>&1; then
+  if command -v node >/dev/null 2>&1 && node "$ROOT/bin/seat/codex-plugin-install.mjs"; then
+    printf 'codex plugin: refreshed and verified\n'
+  else
+    printf 'FAIL — the Codex plugin could not be refreshed; this update is NOT complete.\n' >&2
+    seat_failed=1
   fi
 fi
 
@@ -189,7 +217,56 @@ if [ -x "$SCRIPT_DIR/../seat/valknut-load.sh" ]; then
     fi
   fi
 
-  if "$SCRIPT_DIR/../seat/valknut-load.sh" --all --global >/dev/null 2>&1; then
+  # THE HOME: an update cannot assume the home exists. Measured 2026-11-02 — a fresh operator was told
+  # "everything private lives in your home" and then met an empty directory. An update that finds it missing
+  # says so in plain words and lays it out; it never guesses and never overwrites.
+  if [ -x "$SCRIPT_DIR/../engine/home-seed.sh" ]; then
+    if [ "${CHECK:-0}" = "1" ]; then
+      if bash "$SCRIPT_DIR/../engine/home-seed.sh" --check >/dev/null 2>&1; then
+        printf 'home: shelves complete\n'
+      else
+        printf 'home: shelves incomplete — an update would lay them out (bin/engine/home-seed.sh)\n'
+      fi
+    else
+      bash "$SCRIPT_DIR/../engine/home-seed.sh" --yes >/dev/null 2>&1 \
+        && printf 'home: shelves laid out and readme written\n' \
+        || printf 'home: home-seed could not lay the shelves out — run bin/engine/home-seed.sh and read its rows\n'
+    fi
+  fi
+  # THE HARNESSES: an update that leaves a user's agent reading last month's law, or running without the
+  # house's extensions, is not an update (RULES/13, 2026-11-02; his word: "all extentons and packets to all
+  # harnesses must come on uptaaes"). One verb does all of it, per harness the descriptors know about —
+  # contracts, plugins, hooks, rules — and it NAMES what it will not merge blindly (a user's own JSON).
+  if [ -x "$SCRIPT_DIR/../seat/harness-extensions-install.sh" ]; then
+    if [ "${CHECK:-0}" = "1" ]; then
+      # --check changes NOTHING: report, never write (an updater that writes during a dry run is not a dry run)
+      if bash "$SCRIPT_DIR/../seat/harness-extensions-install.sh" --check >/dev/null 2>&1; then
+        printf 'harnesses: extensions and contracts current\n'
+      else
+        printf 'harnesses: extensions or contracts are stale — an update would refresh them\n'
+      fi
+    elif ! bash "$SCRIPT_DIR/../seat/harness-extensions-install.sh" --check >/dev/null 2>&1; then
+      if bash "$SCRIPT_DIR/../seat/harness-extensions-install.sh" >/dev/null 2>&1; then
+        printf 'harnesses: extensions and contracts refreshed on every harness present\n'
+      else
+        printf 'FAIL — the harness extensions could not be refreshed.\n' >&2
+        printf '      run bin/seat/harness-extensions-install.sh and read its rows\n' >&2
+        seat_failed=1
+      fi
+    else
+      printf 'harnesses: extensions and contracts current\n'
+    fi
+  fi
+  if [ -x "$SCRIPT_DIR/../seat/harness-contract-install.sh" ]; then
+    if ! bash "$SCRIPT_DIR/../seat/harness-contract-install.sh" --check >/dev/null 2>&1; then
+      bash "$SCRIPT_DIR/../seat/harness-contract-install.sh" >/dev/null 2>&1 \
+        && printf 'harness contracts: relinked to the seat contract\n' \
+        || { printf 'FAIL — a harness contract is stale and could not be relinked.\n' >&2; seat_failed=1; }
+    fi
+  fi
+  if [ "${CHECK:-0}" = "1" ]; then
+    printf 'rebound: skipped (check mode writes nothing)\n'
+  elif "$SCRIPT_DIR/../seat/valknut-load.sh" --all --global >/dev/null 2>&1; then
     printf 'rebound (agents · skills · pi extensions)\n'
   else
     # A seat that could NOT be seated is not updated. This used to WARN and carry

@@ -4,8 +4,10 @@
 #   registers-seed.sh            # seed every absent register under hodd/identity/
 #   registers-seed.sh --check    # say what a real run would seed; write nothing
 #
-# The registers are the houses the operator IS (`companies.yaml`) and the companies a house
-# SERVES (`clients.yaml`) — two facts, two files, and each arrives from `registry/<name>.yaml.example`
+# The registers are the houses the operator IS (`companies.yaml`), the companies a house SERVES
+# (`clients.yaml`), the projects that belong to a house (`projects.yaml`) and the realms those
+# projects may name (`workspaces.yaml`) — four facts, four files, and each arrives from
+# `registry/<name>.yaml.example`
 # in the code tree (plan 128). This is the ONE place that copies them: the installer calls it,
 # and no script writes YAML inline any more — two sources of one truth drift by construction.
 #
@@ -43,7 +45,7 @@ esac
 
 [ -n "${YMIR_HOME:-}" ] || die "the home is unresolved — set YMIR_HOME or record the choice at installation"
 ID="$YMIR_HOME/hodd/identity"
-REGISTERS="companies clients"
+REGISTERS="companies clients projects workspaces"
 made=0 kept=0 missing=""
 
 [ "$CHECK" = 0 ] && mkdir -p "$ID"

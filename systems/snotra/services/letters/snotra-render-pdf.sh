@@ -67,7 +67,7 @@ footer {{ margin-top:8mm; border-top:1px solid #d8dee6; padding-top:2mm; color:#
 {md('questions.md')}
 {md('signoff.md')}
 {briefs}
-<footer>Prepared with Snotra, Ymir's meeting assistant. Reviewed by Lars-Josef Lindbom.</footer>
+<footer>Prepared with Snotra, Ymir's meeting assistant. Reviewed by Lars-<the operator> <the operator>.</footer>
 </body></html>"""
 open(out,'w',encoding='utf-8').write(doc)
 PY
@@ -75,3 +75,5 @@ chromium --headless=new --no-sandbox --disable-gpu --user-data-dir="$TMP/chrome"
   --no-pdf-header-footer --print-to-pdf="$OUT" "file://$TMP/record.html" >/dev/null 2>&1 \
   || chromium --headless --no-sandbox --disable-gpu --user-data-dir="$TMP/chrome" --print-to-pdf="$OUT" "file://$TMP/record.html" >/dev/null 2>&1
 [ -s "$OUT" ] && printf 'pdf\t%s\t%s\n' "$OUT" "$(du -h "$OUT" | cut -f1)" || { echo "error: pdf not written" >&2; exit 1; }
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

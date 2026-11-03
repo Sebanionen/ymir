@@ -1,0 +1,25 @@
+name: codex
+binary: codex
+detect:
+  process: ["*codex*"]
+  env: []
+launch: "codex"
+inject: "codex exec <prompt>"
+transcript:
+  shape: jsonl-flat
+  root: $CODEX_HOME           # default ~/.codex
+  path: "sessions/YYYY/MM/DD/rollout-<ts>-<id>.jsonl; archived_sessions/ flat"
+extensions:
+  global_dir: ~/.codex
+  project_dir: .codex
+  format: "hooks.json (JavaScript hooks with a trust flow); skills in directories"
+  dedupe: "hooks.json is one file per scope"
+instructions:
+  global: ~/.codex/AGENTS.md
+  project: AGENTS.md
+config: ~/.codex/config.toml
+capabilities:
+  streaming: full
+  hooks: partial             # JS hooks behind a trust prompt
+  resume: full
+  telemetry: log             # RUST_LOG + <log_dir>/codex-tui.log

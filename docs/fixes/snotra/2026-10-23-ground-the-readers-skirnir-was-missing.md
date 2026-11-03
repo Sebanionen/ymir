@@ -9,7 +9,7 @@ A partner was greeted with the owner's name, "what can you do" was refused, a Sw
 
 ### What it answers
 ```bash
-python3 bin/assistant/ground.py who "@JupiterRoyal"     # → Reygan Assareh · @JupiterRoyal · reygan@inmostinvest.com
+python3 bin/assistant/ground.py who "@JupiterRoyal"     # → Reygan Assareh · @JupiterRoyal · <a personal address>
 python3 bin/assistant/ground.py person "Reygan Assareh"  # per meeting: letter draft/sent, filed, replies, read date
 python3 bin/assistant/ground.py decisions "agenda"       # the record items matching the words, with ids + status
 python3 bin/assistant/ground.py calendar [1d|ISO..ISO]   # free|busy|unknown + the probe's freshness
@@ -26,7 +26,7 @@ the surface can cite it (Rule 37).
 
 ### Measured tonight
 ```
-who "@JupiterRoyal"     → Reygan Assareh (found: true, telegram JupiterRoyal, email reygan@inmostinvest.com)
+who "@JupiterRoyal"     → Reygan Assareh (found: true, telegram JupiterRoyal, email <a personal address>)
 person "Reygan Assareh" → M-20261022-sync-reygan-craig: letter draft · filed 3 · replies 0 · read 2026-10-23
 calendar 1d             → verdict busy, source cache, as_of 2026-10-23T19:10Z
 ```

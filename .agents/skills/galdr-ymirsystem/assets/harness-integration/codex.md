@@ -1,6 +1,6 @@
 # Codex Harness Adapter
 
-> **Purpose:** Rebuild, verify, or extend the Codex adapter — the `.codex/hooks.json` `SessionStart`, `PreToolUse`, and `Stop` hooks that run the Sága digest, enforce the seatbelts, and guard the turn end, gated by `[features].hooks = true`.
+> **Purpose:** Rebuild, verify, or extend the Codex adapter: the Ymir tools plugin under `.agents/harness/codex/`, its shared install/update door, and the existing project hooks below.
 
 Codex is a **run-tier session-open** harness when the hooks feature is enabled. Each hook is a defensive `bash -lc` one-liner that self-locates with `pwd -P`, self-verifies that it is really registered in the project's `.codex/hooks.json`, and only then calls the runtime.
 
@@ -20,7 +20,7 @@ Codex will not run project hooks unless the feature flag is on. The observed glo
   hooks = true
 ```
 
-There is no plugin runtime and no per-harness script directory; the adapter is the hook JSON plus the feature flag.
+The hook JSON is the existing lifecycle adapter. The Codex tools plugin described below is a separate surface; the earlier claim that Codex had no plugin runtime is retired.
 
 ---
 
@@ -189,3 +189,53 @@ bin/gates/checks/syn-cd-pretool-check.sh  --command 'cd ../..';             echo
 - **Do not simplify the preamble.** Each guard (`AGENTS.md`, `.codex/hooks.json`, executable bit, registration self-check) exists to keep the adapter from running in a foreign or partially installed home.
 
 **Skills.** This harness reads project skills from `.codex/skills/`; `bin/seat/valknut-load.sh` binds it to the one tree (`.codex/skills -> ../.agents/skills`). Never copy a `SKILL.md` in — a copy is drift, and a nested `SKILL.md` with frontmatter is loaded as a phantom skill.
+
+
+## Codex tools plugin — installation and update
+
+The canonical plugin lives beside the OpenCode adapter at `.agents/harness/codex/`.
+It exposes the OpenCode model tool set through a Node stdio MCP server, calling
+Ymir's existing owner scripts. Pi UI callbacks and terminal keybindings are not
+loaded into Codex. The existing `.codex/hooks.json` remains the project lifecycle
+adapter; the plugin does not register duplicate hooks.
+
+`node bin/seat/codex-plugin-install.mjs` is Valknut's single Codex deployment door.
+First setup (`step_codex_plugin`) and Gróa (`bin/agents/groa-update.sh`) call this
+same helper. The computed installation plan names the Codex change before consent.
+A host without Codex skips this harness integration; installed Codex with missing
+Node, unsupported plugin CLI, stale files or a failed refresh is a failure.
+
+The helper stages the public plugin under `$CODEX_HOME/ymir-marketplace/` (default
+`~/.codex/ymir-marketplace/`), renders `mcp.json` with the actual Node executable,
+canonical Ymir server path and `YMIR_ROOT`, and writes a runtime root record there.
+These machine-specific paths are generated user state, never tracked content.
+The dedicated local marketplace is registered using `codex plugin marketplace add`;
+`codex plugin add ymir@ymir --json` installs or refreshes the cached plugin. Codex
+itself owns config mutations; the installer preserves unrelated user settings and
+refuses to silently re-enable an explicitly disabled Ymir plugin.
+
+`node bin/seat/codex-plugin-install.mjs --check` checks staged files, marketplace
+source, enabled installation, version and cached bytes. It never redeploys or
+repairs stale content. Gróa's `--check` returns before migrations, service restarts
+and harness rebinding. A normal update fails if Codex refresh fails. Restart Codex
+after a refresh to load changed tools and skills into a new session.
+
+Canonical skills and agent profiles still bind through Valknut's existing paths;
+they are not copied into a second authoritative skill tree. The plugin includes
+its own entry skill to route into those existing Ymir capabilities. Shell-backed
+tools require working Bash and the underlying Ymir runtime dependencies. Installing
+the plugin is not proof that a fleet service or a Google grant is available.
+
+Verification: `node --test tests/test_codex_install.mjs tests/test_codex_plugin.mjs`.
+The installer suite uses the real Codex CLI in a temporary `CODEX_HOME` to prove
+installation, same-version refresh, idempotence and preservation of unrelated
+settings. That case reports an explicit skip when Codex is absent. The MCP tests
+exercise the actual stdio server; neither suite needs production credentials.
+Run `bash -n` on touched shell doors and the canonical compliance/CI gates too.
+
+Format references: [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins)
+and the installed `codex plugin add --help` / `codex plugin marketplace add --help`.
+
+## 2026-11-02 — bounded Gná arm
+
+gna_watch_arm now uses bounded canonical start/status commands with an actual Codex thread ID. Windows routes through WSL Linux Python, never native process liveness. Native Codex thread heartbeat owns automatic wake delivery; status alone does not prove it. Poll leaves events pending until the processing turn acknowledges handled work. See docs/features/gna-in-codex.md and tests/test_gna_codex.mjs.

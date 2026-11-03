@@ -24,5 +24,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+      # Rule 11 is judged against the range a PR adds. actions/checkout fetches the merge
+      # commit only, so the base branch is fetched here — without it the no-delete gate could
+      # only skip, and RULES/11 names CI as one of the three places it runs.
+      - name: The base, for the Rule 11 range
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=1 origin "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
       - name: The gates
         run: bash bin/gates/ci-verify.sh

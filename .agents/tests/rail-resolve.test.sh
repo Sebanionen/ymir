@@ -39,7 +39,7 @@ out="$(bash "$RR" --version)"
 
 # a mocked registry where THIS box is the rail: the stub serves
 cat >"$TMP/up.json" <<EOF
-{"heart":"selfbox","rails":["selfbox"],"hosts":{"selfbox":{"roles":["dev"],"tailnet":"selfbox.tail.ts.net"}}}
+{"heart":"selfbox","rails":["selfbox"],"hosts":{"selfbox":{"roles":["dev"],"tailnet":"selfbox.<host>.tailnet.ts.net"}}}
 EOF
 out="$(YMIR_HOST=selfbox YMIR_FLEET_REGISTRY="$TMP/up.json" YMIR_RAIL_PORT="$PORT" \
   LLAMA_SWAP_API_KEY=SUPERSECRET bash "$RR" resolve 2>/dev/null)"
@@ -68,7 +68,7 @@ PY
 
 # status reports the ranked set — the live box AND the dropped one
 cat >"$TMP/mixed.json" <<EOF
-{"heart":"selfbox","rails":["selfbox","faraway"],"hosts":{"selfbox":{"roles":["dev"],"tailnet":"selfbox.tail.ts.net"},"faraway":{"roles":["dev"],"lan":"192.0.2.1"}}}
+{"heart":"selfbox","rails":["selfbox","faraway"],"hosts":{"selfbox":{"roles":["dev"],"tailnet":"selfbox.<host>.tailnet.ts.net"},"faraway":{"roles":["dev"],"lan":"192.0.2.1"}}}
 EOF
 out="$(YMIR_HOST=selfbox YMIR_FLEET_REGISTRY="$TMP/mixed.json" YMIR_RAIL_PORT="$PORT" YMIR_RAIL_TIMEOUT=1 bash "$RR" status 2>/dev/null)"
 printf '%s' "$out" | grep -q '"selfbox","127.0.0.1","http://127.0.0.1:' && ok "status lists the live box" || bad "status live: $out"

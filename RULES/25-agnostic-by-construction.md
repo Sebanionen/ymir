@@ -93,3 +93,83 @@ and the clean-skip convention, which stays law for a layer that genuinely does n
 never allowed to stand in for a capability the fleet still needs.
 
 **The sentence to carry forward:** *a skip is honest; a skip where the capability was needed is not done.*
+
+## 2026-11-02 (appended) — not every device runs every capability, and the core is what everyone runs
+
+His word this day, while the platform claim was being audited:
+
+> *"all users might not run all features that gimle can do. like if they have a fleet or not. if they have a
+> server or not. ymir home and basis ymir runtimes and templetes, extentions to pi, packets to opencode and other
+> agent harnesses and logic are the improtant."*
+
+That is a second axis, and this rule did not have it. The first axis asks *"does it work on this device?"*; this
+one asks *"should this device have it at all?"* — and the answer is a **tier**, declared, not guessed.
+
+```
+tiers[4]{tier,what_it_is,what_it_needs of the host}
+  "0 · core","the home (hodd: identity, memory, plans, secrets, daily), the baseline runtime (the portable shell + python3 + git core), the templates and principles (the agent contracts), the skills, and the harness integrations — Pi extensions, the OpenCode package, and the shims for Claude Code / Codex / Cursor","a POSIX shell, python3 and git — nothing else. No fleet, no server, no GPU, no desktop"
+  "1 · desk","the local desktop layer: launchers, themes, voice, window rules, placement, crash sense","a desktop session and the layer's own packaging"
+  "2 · suite","Gimlé: the gate, Plane, AFFiNE, the whiteboard, Book, the desk, the mirror","a server, containers, and a hostname — one machine that stays up"
+  "3 · fleet","roles (heart · forge · dev · hand), the heart's doors, A2A grants, dispatch","two or more machines that can reach each other"
+```
+
+**The law that follows, and it bites where the installer already drifted:**
+
+- **Tier 0 installs and passes its gates on a machine with nothing else on it.** If the core needs a role, a
+  server, a fleet or a GPU to be *declared* before it will install, the tiering is wrong. Today
+  `bin/engine/ymir-install.sh` requires `--role heart|forge|dev|hand`, which is a tier-3 word doing tier-0 work.
+- **A higher tier is a named, gated addition.** It detects its own preconditions and reports SKIP with the reason
+  when they are absent (a clean skip is a pass), never a silent half-install and never a FAIL for a capability
+  the user never asked for.
+- **The installer and the updater are profile-aware.** One verb, one flag: `--profile core|desk|suite|fleet`,
+  defaulting to `core`; `--role` becomes what it always was — a fleet-tier detail.
+- **A feature names its tier where it is documented**, so a reader knows before installing whether they are being
+  asked for a laptop, a server or a fleet.
+
+**Why this is the important half of the rule.** The house has spent months making capabilities work on every
+*device* while assuming every user wants every *capability*. A person who wants an agent with a home, memory and
+a set of principles should not have to answer a question about the heart's role to get one.
+
+## 2026-11-02 (appended, second) — what belongs in a container, and what must never be
+
+Asked the same day: *"what things should be runed in containers? aduit this."* The audit is
+`hodd/docs/audits/2026-11-02-what-belongs-in-a-container.md` in the home; this is the law it produced.
+
+```
+container_law[5]{test,consequence}
+  "untrusted input over a network","container — a stranger's message, a peer's payload, a meeting's audio and a user's scene are all attack surface (Vexa, the ear, the whiteboard bridge, the MCP face, the mail desk)"
+  "third-party code with its own dependency closure","container — a runtime, a database, a Node/PHP/Ruby app; the version conflict is the house's problem, not the host's (Plane, AFFiNE, Cal.com, Forgejo, Authelia, Caddy, ntfy)"
+  "a capability the host should not grant casually","container — a browser, a GPU, raw sockets: grant it to the namespace, not to the operator"
+  "ephemeral, or must not see the home","container — this is Utgard's whole purpose"
+  "must read the operator's OWN truth to be honest","never — nornir, housewatch, the gates, groa-update, mimir and bifrost exist to read git, systemd, the home and the ledger; containerised they are blind, and a container over a mounted working tree inherits the drift it was meant to prevent (RULES/02 §7)"
+```
+
+**And the thing a container never buys:** version discipline for the runtime. That is a pinned checkout, not a
+namespace. Isolation is not a substitute for a deploy door.
+
+## 2026-11-02 (appended, third) — a capability is not installed until it works from any directory
+
+His word: *"ymir should not just work form booting agents with in ymirs repo/folder. ymir should work globally over the
+users computers."*
+
+Measured the same day (`hodd/docs/audits/2026-11-02-globally-not-just-in-the-repo.md`):
+
+- the **command** is global (`~/.npm-global/bin/ymir`), the **contract** is global for OpenCode, Claude and Codex
+  (`~/.config/opencode/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`) — and **absent for Pi**:
+  `~/.pi/agent/extensions/` holds `.ymir-root` and `.ymir-seat` and no extension, and there is no `~/.pi/AGENTS.md`;
+- the **capabilities** are global for no harness: the twelve Pi extensions and the OpenCode guards load only from
+  `.pi/extensions/` and `.opencode/plugins/` **inside the checkout**;
+- the published package carries **five** of those twelve extensions, so an installer that trusted the package would
+  hand the user less than half of what the house runs;
+- **486 scripts** resolve the root through `BASH_SOURCE`, which is correct inside a checkout and wrong behind any
+  symlink — a global `~/.local/bin` install would break them the way a moved shelf broke twenty-four Skírnir roots.
+
+```
+global_law[4]{rule,evidence}
+  "A CAPABILITY IS INSTALLED ONLY WHEN IT ANSWERS FROM A NEUTRAL DIRECTORY","the acceptance is `$HOME` and `/tmp`, never the checkout"
+  "THE ROOT RESOLVES THROUGH REALPATH, ONCE","one function in bin/fleet/ymir-platform.sh; a symlinked door must find the tree"
+  "EVERY HARNESS GETS THE CONTRACT AND THE CAPABILITIES IN ITS OWN GLOBAL DIR","present in three of four today; Pi is the gap, and the package's subset is the second gap"
+  "THE UPDATER RE-VERIFIES THE GLOBAL SET, NOT JUST THE CHECKOUT","otherwise a user's agent drifts from the house the moment they pull"
+```
+
+A house that only works where its own repository happens to be checked out is a house for its author.

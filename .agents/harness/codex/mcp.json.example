@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "ymir": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["<absolute installed plugin path>/server.mjs"],
+      "env": {"YMIR_ROOT": "<absolute Ymir code root>"}
+    }
+  }
+}

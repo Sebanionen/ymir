@@ -28,7 +28,7 @@ decision{DEC-…-01, grade:A, answer:confirm, person:Reygan Assareh, line:'DEC-�
 decision{DEC-…-02, grade:B, answer:none}
 reply{kind:confirm, names_no_id:true, line:'Confirmed overall, thanks.'}     ← NOT counted per decision
 --apply → refused without --by: "a machine may propose, only a person promotes"
---apply --by "Lars-Josef Lindbom" →
+--apply --by "Lars-<the operator> <the operator>" →
   promoted{DEC-…-01, from:proposed, to:approved, by:…}   promotions.jsonl: why = "reply … from Reygan: …"
 ```
 
@@ -44,3 +44,5 @@ attended: the letter's state (`sent at …` vs `draft … · not sent`), what wa
 the date the state file was last written, the letter's opening line, and the last reply with its kind — read-only, from
 the vault, never the mailbox. A send is a send only when `letters.json` carries `sent.at`; an absent file is
 **not recorded**, never *not sent* (Rule 37).
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

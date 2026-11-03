@@ -1,0 +1,38 @@
+# Zed — an editor whose agent reads AGENTS.md natively, and calls MCP servers "context servers".
+#
+# Measured against zed.dev's own docs (2026-11-02):
+#   * instructions: `AGENTS.md` is the PRIMARY instruction file, for personal and project guidance;
+#     the precedence list is first-match-wins and starts `.rules`, `.cursorrules`, `.windsurfrules`,
+#     `.clinerules`, `.github/copilot-instructions.md`, `AGENT.md`, `AGENTS.md`, `CLAUDE.md`.
+#   * skills: Zed reads `.agents/skills/` — the house's own shelf, natively.
+#   * MCP: configured as `context_servers` INSIDE `settings.json`; there is no separate MCP file, and a
+#     block copied from Cursor/Claude/VS Code (`mcpServers`) does not work.
+name: zed
+binary: zed
+detect:
+  process: ["zed", "zed-editor"]
+  env: []
+launch: "zed"
+inject: ""                    # the Agent Panel is interactive; external agents arrive over ACP
+transcript:
+  shape: unknown              # threads live in Zed's own store; not yet measured
+  root: ~/.local/share/zed
+  path: "not yet measured — the descriptor says so rather than guessing"
+extensions:
+  global_dir: ~/.config/zed
+  project_dir: .zed
+  format: "extensions (WASM) and skills; rules are plain files in the project"
+  dedupe: "one settings.json; the rules list is first-match-wins, so a stray .rules outranks AGENTS.md"
+instructions:
+  global: "personal instructions file (AGENTS.md is primary; the personal path is Zed's own)"
+  project: "AGENTS.md (primary), .rules outranks it if present"
+skills: .agents/skills         # native discovery — the house shelf already fits
+config: ~/.config/zed/settings.json
+mcp:
+  key: context_servers         # NOT mcpServers
+  where: "inside settings.json"
+capabilities:
+  streaming: full
+  hooks: absent               # no lifecycle hooks; tool permissions instead
+  resume: full                # threads persist
+  mcp: full                   # via context_servers

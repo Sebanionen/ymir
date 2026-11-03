@@ -10,6 +10,15 @@ on:
   workflow_dispatch:
   push:
     tags: ["v*"]
+  # A PACKAGING CHANGE MUST BUILD. Until 2026-11-03 this workflow ran only on `workflow_dispatch`
+  # and on a `v*` tag, and no tag had been cut since Rule 22 moved bin/bootstrap-windows.ps1 to
+  # bin/host/ — so the NSIS installer named a file that no longer existed, could not compile, and
+  # every gate in the house stayed green because none of them built anything.
+  pull_request:
+    paths:
+      - "packaging/**"
+      - "bin/host/**"
+      - ".github/workflows/ymir-installers.yml"
 
 permissions:
   contents: read

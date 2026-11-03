@@ -1,0 +1,27 @@
+# seats.yaml — this home's roster: which figure stands on which machine.
+#
+# This file is a STUB, copied to `hodd/identity/seats.yaml` once, on the first
+# install, and never overwritten. An empty roster is honest: a seat's name is the
+# operator's act, never a script's invention (RULES/02 §4 — no mock agents).
+#
+# Name this seat (the machine you are sitting at):
+#
+#     bin/agents/seat-identity.sh set <this-host> brokk
+#
+# and any other machine of yours the same way:
+#
+#     bin/agents/seat-identity.sh set <other-host> sindri
+#
+# Then seal the names in words beside this file — `hodd/identity/seats.md` — because
+# a name is proposed until a person seals it.
+#
+# Shape (one entry per host, the host key is what `hostname -s` prints):
+#
+#   seats:
+#     <host>:
+#       primary: brokk          # a figure that has a role file in .agents/agents/
+#       role:    counsellor     # what that figure does on this machine
+#       status:  proposed       # proposed | sealed
+#       why:     "the seat the operator works at"
+version: 1
+seats: {}
