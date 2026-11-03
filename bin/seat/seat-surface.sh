@@ -72,6 +72,9 @@ render_hermes_soul() {
   [ -r "$tpl" ] || { printf 'seat-surface: no SOUL template at %s\n' "$tpl" >&2; return 1; }
   name="$(bash "$SID" "$HOST" 2>/dev/null || true)"
   [ -n "$name" ] || return 0
+  case "$(printf '%s' "$name" | tr '[:upper:]' '[:lower:]')" in
+    brokk) printf 'seat-surface: the roster names this seat primary "brokk" — Brokk is the counsellor ROLE, never an agent name; name this machine its own (RULES/25, the Allfather 2026-11-03)\n' >&2; return 1 ;;
+  esac
   role="$(sed -n 's/^role=//p' "$HOME/.pi/agent/extensions/.ymir-seat" 2>/dev/null)"
   block="$(python3 - "$tpl" "$YMIR_HOME" "$HOST" "$name" "$role" "$ROOT" "${OPERATOR:-}" <<'PY2'
 import os, sys
@@ -91,6 +94,8 @@ for k, v in {
     '__HOST__': host, '__MACHINE_AGENT__': machine, '__MACHINE_ROLE__': mrole,
     '__SEAT_NAME__': seat, '__OPERATOR__': operator or '<the operator, unnamed in the config>',
     '__ROOT__': root, '__YMIR_HOME__': home,
+    '__FLEET__': ((cfg.get('fleet') or {}).get('name') or 'the Ymir fleet'),
+    '__HOUSE__': ((cfg.get('fleet') or {}).get('house') or 'the operator''s house'),
 }.items():
     text = text.replace(k, v)
 print(text, end='')

@@ -37,7 +37,7 @@ but **nothing called it**; `AGENTS.seat.md` did not exist.
   federation — never a personal name (Rule 04).
 
 ### Proven
-- `seat-surface.sh --check` → *seat file names sindri ✓ · names the operator (Allfather
-  <name>) ✓ · every harness reads sindri on nidavellir*.
+- `seat-surface.sh --check` → *seat file names the seat primary ✓ · names the operator (Allfather
+  <name>) ✓ · every harness reads the seat primary on this host*.
 - The rendered file's head names the seat and the operator; the shared contract follows
   beneath it.
