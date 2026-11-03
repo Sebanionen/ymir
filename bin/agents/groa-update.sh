@@ -283,6 +283,19 @@ if [ -x "$SCRIPT_DIR/../seat/valknut-load.sh" ]; then
     printf '      run bin/seat/valknut-load.sh --status, then bin/seat/verify-seat.sh\n' >&2
     seat_failed=1
   fi
+  # The Gná arm's session side (plan 177 H4): re-seated on every update, so a harness that HAS a
+  # hook surface is never left unarmed by an update that moved the code under its feet. This block is
+  # in the APPLY path only (a dry run writes nothing, and this door exits before it in --check). A
+  # host without Hermes is a named skip, never a silent pass (RULES/25).
+  if [ -x "$SCRIPT_DIR/../pi/arm.sh" ]; then
+    if ! command -v hermes >/dev/null 2>&1; then
+      printf 'arm: no Hermes on this host — no session hook to seat\n'
+    elif bash "$SCRIPT_DIR/../pi/arm.sh" hook hermes --install >/dev/null 2>&1; then
+      printf 'arm: hermes session hook re-seated (the session-start digest has a door)\n'
+    else
+      printf 'arm: hermes session hook could not be seated — run bin/pi/arm.sh hook hermes --install\n'
+    fi
+  fi
 fi
 
 # The seating verdict is the update's verdict: a seat that could not be seated is

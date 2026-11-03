@@ -1230,6 +1230,19 @@ step_loaders() {
         add loaders FAIL "the seat could not be seated — run bin/seat/valknut-load.sh --status"
       fi
 
+      # The Gná arm's SESSION SIDE, per harness (plan 177 H4). A harness with a hook surface is
+      # armed here, not left to the operator's memory; a harness without one is named as incapable
+      # by the door itself. No Hermes on this host is a clean skip (RULES/25).
+      if [ -x "$SCRIPT_DIR/../pi/arm.sh" ]; then
+        if ! command -v hermes >/dev/null 2>&1; then
+          add arm SKIP "no Hermes on this host — no session hook to seat"
+        elif "$SCRIPT_DIR/../pi/arm.sh" hook hermes --install >/dev/null 2>&1; then
+          add arm OK "Hermes session hook seated (digest at session start, delivered on the first turn)"
+        else
+          add arm WARN "Hermes session hook not seated — run bin/pi/arm.sh hook hermes --install"
+        fi
+      fi
+
       # The phone gateway (plan 68 P1). Installed and UPDATED, not just written: a capability
       # that is committed and never seated is the exact failure this file already fails on
       # (see the Rule comment above), so the gateway gets the same treatment as the extensions —
