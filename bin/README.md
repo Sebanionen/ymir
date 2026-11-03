@@ -11,7 +11,7 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 `disposition` says what happens to it: `keep`, `migrate → src/…` where the
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
-bin[717]{file,does,kind,verdict,disposition,callers,lines}:
+bin[718]{file,does,kind,verdict,disposition,callers,lines}:
   "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
   "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
   "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
@@ -67,7 +67,7 @@ bin[717]{file,does,kind,verdict,disposition,callers,lines}:
   "calendar-auth.sh","bin/time/snotra/calendar-auth.sh -> systems/snotra/services/calendar/calendar-auth.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new…","tool","wired","keep",0,16
   "calendar-invite.sh","bin/time/snotra/calendar-invite.sh -> systems/snotra/services/calendar/calendar-invite.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the…","tool","wired","keep",2,16
   "calendar-watch.sh","calendar-watch.sh — do not walk into a meeting by accident.","tool","wired","keep",0,81
-  "capabilities.md","What Ymir can do — the capability register","data","wired","keep",5,28
+  "capabilities.md","What Ymir can do — the capability register","data","wired","keep",6,28
   "capabilities.sh","A GENERATED FILE MUST BE A FUNCTION OF CONTENT ALONE (0.1.94/0.1.95/0.1.97 — three","tool","wired","keep",8,246
   "catalog.sh","catalog.sh — THE door to what this machine can serve.","tool","wired","keep",2,77
   "channel_calendar.py","bin/time/snotra/channel_calendar.py -> systems/snotra/services/cron/channel_calendar.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
@@ -654,6 +654,7 @@ bin[717]{file,does,kind,verdict,disposition,callers,lines}:
   "telegram-bot.sh","telegram-bot.sh — the horn answers (W0036).","tool","wired","keep",0,84
   "telegram-buttons.mjs","// telegram-buttons.mjs — the one place that knows Telegram's button grammar.","tool","wired","keep",1,368
   "telegram-buttons.sh","telegram-buttons.sh — make a Telegram button that actually renders.","tool","wired","keep",2,46
+  "telegram-members.sh","telegram-members.sh — who is actually in a Telegram chat, as far as the Bot API will say.","tool","wired","keep",0,151
   "telegram.sh","bin/assistant/telegram.sh -> systems/skirnir/services/telegram.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "test_collab.sh","test_collab.sh — the proofs for bin/collab (Vingólf).","data","wired","keep",0,93
   "test_constellation.sh","test_constellation.sh — the road's proof: a card, a grant, a token, and the refusals.","tool","wired","keep",0,102
@@ -730,6 +731,6 @@ bin[717]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=472, tested=245
+**Tally.** verdict: wired=473, tested=245
 
-**Tally.** disposition: keep=702, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=703, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
