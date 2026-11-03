@@ -50,6 +50,26 @@ gate() {  # <name> <description> <command...>
 }
 
 gate ward        "the tree wards (runtime, defaults)"   bash "$ROOT/bin/gates/guards.sh"
+
+# Rule 11 — a tracked file is MOVED, never deleted. RULES/11 says the ward runs here; until
+# 2026-11-03 nothing in this file called it, so a deletion passed CI unseen. The range is the
+# PR's base when there is one, and an honest SKIP (not a green) when this checkout has no base.
+nodelete_base() {
+  local b=""
+  if [ -n "${GITHUB_BASE_REF:-}" ] && git rev-parse -q --verify "origin/${GITHUB_BASE_REF}" >/dev/null 2>&1; then
+    b="origin/${GITHUB_BASE_REF}"
+  elif git rev-parse -q --verify origin/main >/dev/null 2>&1; then
+    b="origin/main"
+  fi
+  [ -n "$b" ] || return 1
+  printf '%s' "$b"
+}
+if nd_base="$(nodelete_base)"; then
+  gate no-delete "Rule 11 — a tracked file is moved, never deleted (against $nd_base)" \
+       bash "$ROOT/bin/no-delete-guard.sh" --base "$nd_base"
+else
+  printf '  "%s","SKIP","%s"\n' "no-delete" "no base ref in this checkout — judged by the pre-push hook and on a PR"
+fi
 gate compliance  "the 15 governance gates"              bash "$ROOT/.agents/skills/galdr-ymirsystem/scripts/compliance-check.sh"
 gate contracts   "the typed surfaces (one contract, two consumers)" bash "$ROOT/bin/gates/checks/contracts-check.sh"
 gate queue       "the derived work queue is current"              bash "$ROOT/bin/gates/queue.sh" --check

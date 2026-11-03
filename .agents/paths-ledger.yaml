@@ -40,6 +40,23 @@ moves:
     why: "the bin/ reorganisation (Rule 23)"
     migration: "0009-flat-bin-paths"
     superseded: true
+  # 2026-11-03 — the same bin/ reorganisation (Rule 22) moved the two host bootstrappers under
+  # bin/host/, and NO entry was written: path-ledger-guard therefore had nothing to refuse, and a
+  # month later three pointers still named the old spelling — the README's Windows row, the
+  # bootstrapper's own usage header, and packaging/windows/ymir-setup.nsi (which is the packaged
+  # Windows door, and could not compile). Recorded here so the ward sees it from now on.
+  - old: "bin/bootstrap-windows.ps1"
+    new: "bin/host/bootstrap-windows.ps1"
+    date: "2026-11-03"
+    why: "Rule 22 moved the host layers under bin/host/; recorded late, after three stale pointers were found"
+    migration: "0017-the-seat-follows-the-pull"
+    superseded: true
+  - old: "bin/bootstrap-macos.sh"
+    new: "bin/host/bootstrap-macos.sh"
+    date: "2026-11-03"
+    why: "the same move; the macOS .command and packaging/build.sh were already updated, the ledger was not"
+    migration: "0017-the-seat-follows-the-pull"
+    superseded: true
   - old: "bin/ymir-install.sh"
     new: "bin/engine/ymir-install.sh"
     date: "2026-10-18"

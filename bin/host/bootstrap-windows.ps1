@@ -16,7 +16,11 @@
 param(
   [switch]$Check,
   [string]$Repo = "",
-  [string]$Distro = "Ubuntu"
+  [string]$Distro = "Ubuntu",
+  # The ROLE this Linux seat plays (heart | forge | dev | hand). It is PASSED THROUGH rather
+  # than left to the installer's default: a role-gated step that skips reports SKIP and the
+  # install still ends "OK", which is a half-install wearing a green row (RULES/25).
+  [string]$Role = "dev"
 )
 
 $ErrorActionPreference = "Stop"
@@ -52,6 +56,7 @@ if ($Check) {
   Row "admin"     $(if ($admin) { "OK" } else { "MISSING" })  "WSL setup needs an elevated shell"
   Row "wsl"       $(if ($hasWsl) { "OK" } else { "MISSING" }) "the Windows Subsystem for Linux"
   Row "distro"    $(if ($hasDistro) { "OK" } else { "MISSING" }) "$Distro - the Linux host Ymir installs into"
+  Row "role"      "OK"    "$Role - what this Linux seat will be"
   exit 0
 }
 
@@ -89,11 +94,21 @@ set -e
 command -v git >/dev/null 2>&1 || { sudo apt-get update -qq && sudo apt-get install -y -qq git; }
 if [ -n "%REPO%" ]; then
   [ -d "$HOME/Ymir/.git" ] || git clone "%REPO%" "$HOME/Ymir"
-  cd "$HOME/Ymir" && { git pull --ff-only || true; }
+  cd "$HOME/Ymir"
+  # A fast-forward that cannot happen is TOLD, never swallowed: an install leaves its own
+  # marks in the tree, and `|| true` here meant a seat stayed a version behind while the
+  # bootstrapper printed success (measured 2026-11-03 on Windows/WSL2).
+  if ! git pull --ff-only; then
+    echo "the checkout could not fast-forward to the latest Ymir."
+    echo "local changes in the way:"
+    git status --short | head -20
+    echo "help: keep them (git stash), or discard them (git reset --hard origin/main), then run this again."
+    exit 1
+  fi
 fi
-cd "$HOME/Ymir" && bin/engine/ymir-install.sh --yes
+cd "$HOME/Ymir" && bin/engine/ymir-install.sh --role "%ROLE%" --yes
 '@
-$inner = $inner.Replace("%REPO%", $Repo)
+$inner = $inner.Replace("%REPO%", $Repo).Replace("%ROLE%", $Role)
 
 & wsl.exe -d $Distro -- bash -lc $inner
 if ($LASTEXITCODE -ne 0) {

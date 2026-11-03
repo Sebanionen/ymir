@@ -59,6 +59,13 @@ cat >"\$refs"
 "\$ROOT/bin/gates/guards.sh" || exit 1
 "\$ROOT/bin/gates/guards/branch-guard.sh" <"\$refs" || exit 1
 "\$ROOT/bin/gates/guards/fixes-guard.sh" <"\$refs" || exit 1
+# Rule 11 — a tracked file is MOVED, never deleted. RULES/11 said this ran "in the pre-commit
+# and pre-push chains and in CI"; on 2026-11-03 it ran in none of them, and a collaborator's
+# deletion walked through a green tree. Judged against the merged base; a repo with no
+# origin/main skips cleanly rather than failing every push.
+if git rev-parse -q --verify origin/main >/dev/null 2>&1; then
+  "\$ROOT/bin/no-delete-guard.sh" --base origin/main || exit 1
+fi
 "\$ROOT/bin/gates/branch-current.sh" check || exit 1
 EOF
     chmod +x "$H"

@@ -206,9 +206,12 @@ step_prereqs() {
     [ "$need_bun" = 1 ] && "$SCRIPT_DIR/prereq-ensure.sh" bun >/dev/null 2>&1 || true
     "$SCRIPT_DIR/prereq-ensure.sh" uv  >/dev/null 2>&1 || true
     "$SCRIPT_DIR/prereq-ensure.sh" mcp >/dev/null 2>&1 || true
-    # bun installs to ~/.bun/bin; adopt it for the rest of this run.
+    # bun installs to ~/.bun/bin. Adopt it for THIS run, then write it where the NEXT shell
+    # reads it — a validator or a unit that cannot see bun reports it missing on a host that
+    # has it (measured on a clean Windows/WSL2 seat, 2026-11-03; RULES/25 PROBE, NEVER ASSUME).
     [ -x "$HOME/.bun/bin/bun" ] && export PATH="$HOME/.bun/bin:$PATH"
     [ -x "$HOME/.local/bin/uv" ] && export PATH="$HOME/.local/bin:$PATH"
+    "$SCRIPT_DIR/prereq-ensure.sh" --persist-path >/dev/null 2>&1 || true
   fi
   local miss="" engine="" ready="git python3"
   for c in git python3; do have "$c" || miss="$miss $c"; done
@@ -1151,8 +1154,20 @@ step_spa() {
     if ! have npm; then
       add hlidskjalf WARN "no npm — cannot install the SPA"; return 0
     fi
-    if [ ! -d "$app/node_modules" ] && ! (cd "$app" && npm install --no-audit --no-fund >/dev/null 2>&1); then
-      add hlidskjalf WARN "npm install failed — (cd $app && npm install --no-audit --no-fund)"; return 0
+    local install_cmd
+    if [ ! -d "$app/node_modules" ]; then
+      # `npm ci` when a lockfile is present: it installs EXACTLY what is recorded and never
+      # rewrites package-lock.json. `npm install` on a checkout edits a tracked file, so the
+      # tree is left dirty and the next `git pull --ff-only` refuses — measured on a Windows
+      # seat 2026-11-03, where the documented bootstrapper pulls after every install.
+      if [ -f "$app/package-lock.json" ]; then
+        install_cmd="npm ci --no-audit --no-fund"
+      else
+        install_cmd="npm install --no-audit --no-fund"
+      fi
+      if ! (cd "$app" && $install_cmd >/dev/null 2>&1); then
+        add hlidskjalf WARN "$install_cmd failed — (cd $app && $install_cmd)"; return 0
+      fi
     fi
     if [ ! -d "$app/dist" ] && ! (cd "$app" && npm run build >/dev/null 2>&1); then
       add hlidskjalf WARN "installed, build failed — (cd $app && npm run build)"; return 0
@@ -1402,8 +1417,17 @@ step_marks() {
   if [ -x "$SCRIPT_DIR/../desktop/desktop-place.sh" ]; then
     "$SCRIPT_DIR/../desktop/desktop-place.sh" entries >/dev/null 2>&1 || true
   fi
-  "$SCRIPT_DIR/../desktop/design-icon.sh" mint --all >/dev/null 2>&1 || true
+  # The icon SOURCES are tracked files. Minting rewrites them, which leaves the checkout dirty
+  # and makes the next `git pull --ff-only` refuse (measured 2026-11-03 on Windows/WSL2). So a
+  # fresh clone mints what is missing, and a tree that already carries its runes is left alone.
+  if [ -x "$SCRIPT_DIR/../desktop/design-icon.sh" ]; then
+    local need_mint=0
+    for v in hlidskjalf odrerir sessrumnir smidja-factory; do
+      [ -f "$ROOT/apps/$v/public/icon.svg" ] || need_mint=1
+    done
+    [ "$need_mint" = 1 ] && "$SCRIPT_DIR/../desktop/design-icon.sh" mint --all >/dev/null 2>&1 || true
     "$SCRIPT_DIR/../desktop/design-icon.sh" install >/dev/null 2>&1 || true
+  fi
     [ -r "$HOME/.pi/agent/AGENTS.md" ] || [ -d "$HOME/.pi/agent" ] && {
       ln -sfn "$ROOT/AGENTS.md" "$HOME/.pi/agent/AGENTS.md" 2>/dev/null || true
     }

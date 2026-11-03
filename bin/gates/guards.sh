@@ -23,7 +23,13 @@ _root() {
 ROOT="$(_root)"
 
 # ONE list. A new tree ward appears here or it does not run anywhere.
-WARDS=(runtime-guard runtime-pinned-guard defaults-guard app-folder-guard app-functional-guard rules-number-guard inventory-guard fleet-version-guard subsystem-docs-guard path-ledger-guard cron-guard features-guard vault-guard confidential-guard dead-code-guard docs-claims-guard home-contract-guard pkill-guard)
+WARDS=(runtime-guard.sh runtime-pinned-guard.sh defaults-guard.sh app-folder-guard.sh app-functional-guard.sh rules-number-guard.sh inventory-guard.sh fleet-version-guard.sh subsystem-docs-guard.sh path-ledger-guard.sh path-legality-guard.sh packaging-guard.sh cron-guard.sh features-guard.sh vault-guard.sh confidential-guard.sh dead-code-guard.sh docs-claims-guard.sh home-contract-guard.sh pkill-guard.sh)
+#
+# path-legality-guard (2026-11-03): a tracked NAME must be legal on every host RULES/05 claims —
+# a `:` NTFS cannot hold made a Windows clone write no tree at all, for a month, unseen.
+# packaging-guard (2026-11-03): every path a shipped installer names must exist — the Windows
+# .nsi still named the OLD bootstrapper path after Rule 22 moved the host layers, and the build
+# that would have said so (ymir-installers.yml) runs only on a tag nobody had cut.
 
 case "${1-}" in
   -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
@@ -35,9 +41,9 @@ esac
 fail=0
 printf 'guards[%s]{ward,status,finding}:\n' "${#WARDS[@]}"
 for w in "${WARDS[@]}"; do
-  s="$ROOT/bin/gates/guards/$w.sh"
+  s="$ROOT/bin/gates/guards/$w"
   if [ ! -r "$s" ]; then
-    printf '  "%s","MISSING","bin/gates/guards/%s.sh — a ward named in the list does not exist"\n' "$w" "$w"
+    printf '  "%s","MISSING","bin/gates/guards/%s — a ward named in the list does not exist"\n' "$w" "$w"
     fail=1
     continue
   fi

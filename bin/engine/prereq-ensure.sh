@@ -14,6 +14,7 @@
 #
 # Usage:
 #   bin/engine/prereq-ensure.sh bun | uv | mcp | python <X.Y> | all
+#   bin/engine/prereq-ensure.sh --persist-path   # make ~/.bun/bin reached by a NON-INTERACTIVE shell
 #   bin/engine/prereq-ensure.sh status
 #   bin/engine/prereq-ensure.sh --version
 #
@@ -31,6 +32,97 @@ BUN_HOME="${BUN_INSTALL:-$HOME/.bun}"
 add_path() { case ":$PATH:" in *":$1:"*) ;; *) PATH="$1:$PATH" ;; esac; }
 have() { command -v "$1" >/dev/null 2>&1; }
 say()  { printf 'prereq[1]{name,state,detail}:\n  "%s","%s","%s"\n' "$1" "$2" "$3"; }
+
+# ── the PATH a LATER shell sees ──────────────────────────────────────────────
+#
+# WHY (2026-11-03, found on a clean Windows/WSL2 seat this house claims to support):
+# `ensure_bun` installs to `~/.bun/bin`, and the installer then exports it into ITS OWN
+# PATH and into nobody else's. A non-interactive shell — a validator, a systemd unit, the
+# next `bin/engine/ymir-validate.sh` — therefore reports `missing: bun` on a host that has
+# bun, and the operator is told to fix a thing that is not broken. That is the failure
+# RULES/25 names: PROBE, NEVER ASSUME, and never let a claim about a machine depend on
+# which shell happened to run it.
+#
+# So the directories this engine installs into are written down ONCE, in the profile the
+# operator's shell actually reads: `~/.profile` for sh/bash (every Linux, and WSL2) and
+# `~/.zprofile` for zsh (the macOS default). Both are probed, never assumed. A systemd unit
+# does NOT read a profile, so every unit carries its own `Environment=` and
+# `prereq-ensure.sh resolve <tool>` answers a caller by absolute path.
+PATH_MARK="# >>> ymir prerequisites >>>"
+PATH_MARK_END="# <<< ymir prerequisites <<<"
+
+# Write (or replace in place) the marked block in one file. Never duplicates a block, and
+# never rewrites a line the operator wrote.
+write_block() {  # <file> <dirs, newline-separated>
+  local file="$1" dirs="$2" block
+  block="$PATH_MARK
+$(printf '%s' "$dirs" | sed 's|^\(.*\)$|case ":$PATH:" in *":\1:"*) ;; *) export PATH="\1:$PATH" ;; esac|')
+$PATH_MARK_END"
+  if [ -f "$file" ] && grep -qF "$PATH_MARK" "$file" 2>/dev/null; then
+    python3 - "$file" "$PATH_MARK" "$PATH_MARK_END" "$block" <<'PY' 2>/dev/null || return 1
+import sys
+path, start, end, block = sys.argv[1:5]
+text = open(path, encoding='utf-8', errors='surrogateescape').read()
+i, j = text.find(start), text.find(end)
+if i == -1 or j == -1 or j < i:
+    sys.exit(1)
+open(path, 'w', encoding='utf-8', errors='surrogateescape').write(text[:i] + block + text[j + len(end):])
+PY
+    return 0
+  fi
+  [ -w "$(dirname "$file")" ] || return 1
+  { [ -s "$file" ] && printf '\n'; printf '%s\n' "$block"; } >>"$file" 2>/dev/null
+}
+
+persist_path() {
+  local dirs="" d list=""
+  for d in "$BUN_HOME/bin" "$HOME/.local/bin"; do
+    [ -d "$d" ] || continue
+    add_path "$d"                     # this run
+    case "$dirs" in *"$d"$'\n'*) : ;; *) dirs="$dirs$d"$'\n' ; list="$list $d" ;; esac
+  done
+  [ -n "$dirs" ] || { say path present "every prerequisite directory is already on PATH"; return 0; }
+
+  # WHICH PROFILE — the operator's own shell, probed. A machine that never runs zsh is never
+  # given a .zprofile, and a home that already keeps one is honoured even if $SHELL says bash.
+  local sh="${SHELL##*/}" candidates=""
+  case "$sh" in
+    zsh) candidates="$HOME/.zprofile" ;;
+    *)   candidates="$HOME/.profile" ;;
+  esac
+  [ -f "$HOME/.zprofile" ] && case "$candidates" in *".zprofile"*) : ;; *) candidates="$candidates $HOME/.zprofile" ;; esac
+
+  # ALREADY WRITTEN? A second run of the same update must change nothing and say so. The
+  # PRIMARY profile is the one this operator's shell reads: the block must be there, with
+  # every directory — a block in some other shell's file is not a pass.
+  local f primary have_all=1
+  primary="${candidates%% *}"
+  if [ -f "$primary" ] && grep -qF "$PATH_MARK" "$primary" 2>/dev/null; then
+    while IFS= read -r d; do
+      [ -n "$d" ] || continue
+      grep -qF "$d" "$primary" 2>/dev/null || have_all=0
+    done <<EOF2
+$dirs
+EOF2
+  else
+    have_all=0
+  fi
+  if [ "$have_all" = 1 ]; then
+    say path present "${list# } already written for a login shell"
+    return 0
+  fi
+
+  local shells=""
+  for f in $candidates; do
+    write_block "$f" "$dirs" && shells="$shells $(basename "$f")"
+  done
+  if [ -n "$shells" ]; then
+    say path persisted "${list# } written for a login shell:$shells"
+  else
+    say path skipped "the directories belong on PATH, but no shell profile here is writable"
+  fi
+  return 0
+}
 
 # Android/Termux: the well engine's sqlite-vec dependency publishes wheels for
 # linux/macos/windows but NONE for aarch64-android, and there is no sdist. A phone
@@ -208,12 +300,24 @@ case "${1-}" in
 esac
 
 case "$1" in
+  --persist-path) persist_path ;;
   bun)    ensure_bun ;;
   uv)     ensure_uv ;;
   mcp)    ensure_mcp ;;
   engram) ensure_engram ;;
   pyyaml) ensure_pyyaml ;;
   python) ensure_python "${2:?usage: prereq-ensure.sh python <X.Y>}" ;;
+  resolve)
+    # Ask the MACHINE where a tool is, before any caller decides it is missing
+    # (RULES/25 PROBE, NEVER ASSUME). Printed as a path; exit 1 when absent.
+    case "${2-}" in
+      bun) have bun && { command -v bun; exit 0; }
+           for _c in "$BUN_HOME/bin/bun" "$HOME/.local/bin/bun" /opt/homebrew/bin/bun /usr/local/bin/bun; do
+             [ -x "$_c" ] && { printf '%s\n' "$_c"; exit 0; }
+           done
+           exit 1 ;;
+      *) printf 'error: unknown tool %s\nhelp: prereq-ensure.sh resolve bun\n' "${2-}" >&2; exit 2 ;;
+    esac ;;
   status)
     engine="$(ymir_container_engine_name 2>/dev/null || true)"
     printf 'prereq[6]{name,state,detail}:\n'
