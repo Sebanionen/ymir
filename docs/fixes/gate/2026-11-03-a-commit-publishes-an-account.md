@@ -33,7 +33,7 @@ writes, in every repository, at every commit.
   ward.
 - **`bin/records/developers.sh` reads the ACCOUNT.** `whoami` prints the login, the name, the address commits *should*
   carry, what this checkout is set to, and a verdict (`agrees` / `DIFFERS`). The authors row now prints **logins**,
-  masks a personal address (`j***@gmail.com`) and shows it only with `--emails`. The register identifies people; it does
+  masks a personal address (a masked address) and shows it only with `--emails`. The register identifies people; it does
   not republish their mailboxes.
 
 ## What this does not fix, and must not pretend to

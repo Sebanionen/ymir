@@ -29,10 +29,10 @@ SYNTHETIC = {
     "heart": "heartbox",
     "rails": ["railbox", "backupbox", "deadbox"],
     "hosts": {
-        "railbox": {"roles": ["dev"], "tailnet": "railbox.tail.ts.net"},
-        "backupbox": {"roles": ["forge"], "lan": "10.0.0.2"},
-        "deadbox": {"roles": ["dev"], "tailnet": "deadbox.tail.ts.net"},
-        "heartbox": {"roles": ["heart"], "tailnet": "heartbox.tail.ts.net"},
+        "railbox": {"roles": ["dev"], "tailnet": "railbox.<host>.tailnet.ts.net"},
+        "backupbox": {"roles": ["forge"], "lan": "192.0.2.0.2"},
+        "deadbox": {"roles": ["dev"], "tailnet": "deadbox.<host>.tailnet.ts.net"},
+        "heartbox": {"roles": ["heart"], "tailnet": "heartbox.<host>.tailnet.ts.net"},
     },
 }
 
@@ -79,8 +79,8 @@ class CandidateTest(unittest.TestCase):
 
     def test_a_remote_box_prefers_tailnet_then_lan(self) -> None:
         targets = candidates(SYNTHETIC, "heartbox")
-        self.assertEqual(targets[0].address, "railbox.tail.ts.net")
-        self.assertEqual(targets[1].address, "10.0.0.2")
+        self.assertEqual(targets[0].address, "railbox.<host>.tailnet.ts.net")
+        self.assertEqual(targets[1].address, "192.0.2.0.2")
 
     def test_the_registry_order_is_kept(self) -> None:
         self.assertEqual([t.host for t in candidates(SYNTHETIC, "heartbox")],
@@ -99,7 +99,7 @@ class ResolutionTest(unittest.TestCase):
         result = status(doc=SYNTHETIC, self_host="heartbox", probe=probe)
         self.assertFalse(result.declined)
         self.assertEqual(result.serving.host, "backupbox")
-        self.assertEqual(result.serving.url, "http://10.0.0.2:8080/v1")
+        self.assertEqual(result.serving.url, "http://192.0.2.0.2:8080/v1")
         self.assertEqual(result.serving.key_ref, KEY_REF)
         self.assertEqual([r.host for r in result.live], ["backupbox"])
 

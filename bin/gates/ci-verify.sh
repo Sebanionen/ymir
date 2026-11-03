@@ -50,6 +50,10 @@ gate() {  # <name> <description> <command...>
 }
 
 gate ward        "the tree wards (runtime, defaults)"   bash "$ROOT/bin/gates/guards.sh"
+# RULES/04 — the public tree carries TEMPLATES and LOGIC. The ward is in the list above; this is
+# the proof that it BITES (a ward never seen to refuse is decoration, and this one wore that coat).
+gate public-data "RULES/04 — a secret, a name, a topology or a mailbox is refused, and the ward is proved to refuse" \
+     bash "$ROOT/bin/gates/checks/public-data-ward.test.sh"
 
 # Rule 11 — a tracked file is MOVED, never deleted. RULES/11 says the ward runs here; until
 # 2026-11-03 nothing in this file called it, so a deletion passed CI unseen. The range is the

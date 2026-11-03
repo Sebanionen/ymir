@@ -2,7 +2,7 @@
 
 ### Why
 - **Problem:** `~/.pi/agent/mcp.json` hardcoded **literal LAN IPs**
-  (`bolthorn`/`skuld` at `192.168.68.111`), hand-edited per machine. A synced
+  (`bolthorn`/`skuld` at `192.0.2.111`), hand-edited per machine. A synced
   config naming one machine's LAN address is the same trap family as the lock
   pointer; and if the heart moved, every body broke.
 - **Fix:** `bin/bridge/mcp-config.sh` **generates** the harness MCP config from the
