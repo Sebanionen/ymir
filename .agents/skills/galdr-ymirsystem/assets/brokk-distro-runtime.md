@@ -809,3 +809,29 @@ answers an errand whose body has already ended. `bin/agents/eindri-send.sh`'s pa
 prompt may fail on an ended pane; the durable inbox is the always-true lane.
 
 galdr-reread: the naming map's Sýn + the harness-integration arm section.
+
+## 2026-11-04 — a worker loads ONE extension tree, named explicitly
+
+Measured the hard way: four Eindri were written into Yggdrasil worktrees on herdr and every pane answered
+with 43 load errors — `Tool "constellation_list" conflicts with …/.yggdrasil/<id>/.pi/extensions/…` — while
+the dispatcher printed `spawned`. The seat's `~/.pi/agent/settings.json` names the **primary** checkout's
+extensions tree absolutely; Pi also discovers the project tree under the working directory. Run from
+`~/ymir` those are one canonical path and Pi dedupes; run from a worktree they are two, so every extension
+registered twice and Pi refused all of them. RULES/13's law — one home per extension, two load paths seats
+nobody — broken by the launch road itself, not by a stray file.
+
+The mend lives in `bin/agents/einherjar-spawn.sh`:
+
+```
+pi_ext_args <cwd>     # every extension under <cwd>/.pi/extensions, one -e each (dirs by index.ts)
+pi|pi-signed launch   # pi --model … -ne$(pi_ext_args "$LAUNCH_CWD") "…brief…"
+```
+
+- **Discovery is OFF** (`-ne`) and each extension is named once, from the **worker's own worktree** — so a
+  worker can never run the primary checkout's tool code.
+- **The npm packages are re-stated** (`-e npm:<pkg>` from the seat settings' `packages[]`), because
+  `--no-extensions` also disables package discovery; a silent loss of `pi-mcp-adapter` would be a second
+  false green.
+- **A `spawned` line is not a running agent.** The same rule as the 2026-10-24 opencode seats: a dispatcher
+  proves a pane exists; only a status line proves an Eindri is working. The launch of a Pi worker therefore
+  must be read back from `state/<id>.status`, never trusted from the success line alone.

@@ -58,4 +58,7 @@ t "hermes-telegram: a foreign machine is refused" bash -c 'bash '"$ROOT"'/bin/se
 t "hermes-telegram: no token writes nothing"      bash -c 'mkdir -p '"$TMPD"'/hh; HERMES_HOME='"$TMPD"'/hh TELEGRAM_MACHINES_REG='"$TMPD"'/machines.yaml bash '"$ROOT"'/bin/seat/hermes-telegram.sh seat "$(sed -n s/^host=//p "$HOME/.pi/agent/extensions/.ymir-seat")" 2>&1 | grep -q "no token"; [ ! -s '"$TMPD"'/hh/.env ]'
 t "ymir-mcp: selftest"                          bash -c 'python3 '"$ROOT"'/bin/mcp/ymir-mcp.py --selftest | grep -q doors'
 t "seat-surface: check passes"                  bash -c 'bash '"$ROOT"'/bin/seat/seat-surface.sh --check >/dev/null'
+# 2026-11-04: four Pi workers were born dead because the seat settings and project discovery loaded two
+# extension trees in a worktree. The launch must name ONE tree (defined AND used) — the invariant, not a wish.
+t "spawn: a worker's pi loads one extension tree" bash -c '[ "$(grep -c pi_ext_args '"$ROOT"'/bin/agents/einherjar-spawn.sh)" -ge 2 ]'
 printf 'new doors: %s failure(s)\n' "$fail"; exit "$([ "$fail" -eq 0 ] && echo 0 || echo 1)"
