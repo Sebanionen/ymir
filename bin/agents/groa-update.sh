@@ -159,11 +159,19 @@ if [ -n "${NUDGE_IDS# }" ]; then printf 'nudge-eindri-homes: %s\n' "${NUDGE_IDS#
 # Heal this home forward (structure migrations) after every update.
 [ -x "$SCRIPT_DIR/../engine/ymir-migrate.sh" ] && "$SCRIPT_DIR/../engine/ymir-migrate.sh" apply >/dev/null 2>&1 || true
 # the hound's units are rendered from the repo, so an update re-seats them
-[ -x "$SCRIPT_DIR/../ward/garmr.sh" ] && "$SCRIPT_DIR/../ward/garmr.sh" refresh >/dev/null 2>&1 || true
+# A refresh that waits on a console, a polkit prompt or a missing unit must not
+# stall the whole update: bound it, detach it, and never let it hold our fds.
+if [ -x "$SCRIPT_DIR/../ward/garmr.sh" ]; then
+  setsid timeout -k 2 "${YMIR_GROA_GARMR_TIMEOUT:-15}" \
+    "$SCRIPT_DIR/../ward/garmr.sh" refresh </dev/null >/dev/null 2>&1 || true
+fi
 
 # Gróa's own body is rendered from the repo too: an update re-seats her, so the
 # features of the new tree are the features she runs. Never fatal.
-[ -x "$SCRIPT_DIR/groa-agent/seat.sh" ] && "$SCRIPT_DIR/groa-agent/seat.sh" --quiet >/dev/null 2>&1 || true
+if [ -x "$SCRIPT_DIR/groa-agent/seat.sh" ]; then
+  setsid timeout -k 2 "${YMIR_GROA_SEAT_TIMEOUT:-20}" \
+    "$SCRIPT_DIR/groa-agent/seat.sh" --quiet </dev/null >/dev/null 2>&1 || true
+fi
 
 # Eir checks after every update, so a desktop that cannot open is REPORTED and
 # never silently dead (P8, 2026-09-24). The update is never blocked on a
