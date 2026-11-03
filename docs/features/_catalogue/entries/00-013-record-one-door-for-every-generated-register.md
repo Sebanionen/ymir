@@ -1,0 +1,4 @@
+---
+section: core-install-run-operate
+---
+| Record | **One door for every generated register** (`bin/gates/registers.sh` · `bin/gates/guards/registers-guard.sh`) | Two registers describe the tree — the `bin/` inventory and the capability register — written by two generators and checked by two gates, so a change that adds a door half-regenerated the tree and went red only in CI, where the pusher cannot see it (that is how four collaborators' PRs showed a failure that was ours). One door owns the list: `list` · `generate` · `check`; a seated ward calls it, so a push and CI judge the same set; a generator that fails is named, never skipped. Records the order that works — write, stage, generate, commit, push — because the inventory enumerates tracked files | [One door for the registers](docs/features/one-door-for-the-registers.md) |
