@@ -14,6 +14,11 @@ The law this module enforces (a semantic check JSON Schema cannot state):
   1. **Signed per Heimdall.** A grant that crosses operators must carry a
      signature from EACH party's Heimdall. A cross-operator grant with a missing
      signature is REFUSED, naming the Heimdall that did not sign.
+     **Unless it is `pending`** — added 2026-11-03 with plan 172: two independent
+     houses sign at different moments, so a grant signed by one party and awaiting
+     the other's countersignature is `pending` and **may not be used**; `pending`
+     is exempt from the missing-signature refusal and from nothing else (a foreign
+     or duplicate signer is still refused). Only `activate` makes it `active`.
   2. **A card that says it is signed must be signed.** A party whose
      `card.signed` is true must have a signature from its own Heimdall — the
      card's claim and the registry's signatures can never disagree.
@@ -141,9 +146,12 @@ def check_grant(grant: Mapping[str, Any], *, source: str, key: str) -> None:
         )
 
     cross = is_cross_operator(grant)
+    pending = str(grant.get("state", "")) == "pending"
     for party in (grantor, grantee):
         heimdall = str(party.get("heimdall", ""))
         signed = bool((party.get("card") or {}).get("signed"))
+        if pending:
+            continue
         if (cross or signed) and heimdall and heimdall not in signers:
             why = _CROSS if cross else "its card declares it signed"
             _refuse(

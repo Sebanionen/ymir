@@ -80,10 +80,14 @@ class State:
             return {"meetings": []}
 
     def tokens_map(self) -> dict:
-        """`<token> <subject> [places]` — places are comma-separated; `*` means every place.
+        """`<token> <subject> [places] [fleet]` — places are comma-separated; `*` means every place.
 
         A token that names no place may touch **nothing**: the default is deny, because a token
         with no scope is how "one token = the whole record" happened (plan 105, H4).
+
+        The optional fourth field is the FLEET the subject belongs to (plan 172): a collaborator
+        of another Ymir is a guest, not a housemate, and a ledger that cannot say which house a
+        read came from cannot answer the one question an incident asks.
         """
         out = {}
         try:
@@ -92,16 +96,22 @@ class State:
                     parts = line.split()
                     if len(parts) >= 2:
                         places = parts[2].split(",") if len(parts) > 2 else []
-                        out[parts[1]] = (parts[0], [p for p in places if p])
+                        fleet = parts[3] if len(parts) > 3 else ""
+                        out[parts[1]] = (parts[0], [p for p in places if p]) + ((fleet,) if fleet else ())
         except Exception:
             pass
         return out
 
     def subject_for(self, presented: str) -> tuple[str, list[str]] | None:
-        for subject, (token, places) in self.tokens_map().items():
+        for subject, entry in self.tokens_map().items():
+            token, places = entry[0], entry[1]
             if hmac.compare_digest(token, presented):
                 return subject, places
         return None
+
+    def fleet_of(self, subject: str) -> str:
+        entry = self.tokens_map().get(subject) or ()
+        return str(entry[2]) if len(entry) > 2 else ""
 
     @staticmethod
     def may(subject_places: list[str], place: str) -> bool:
@@ -111,7 +121,8 @@ class State:
 
     def record(self, subject: str, tool: str, verdict: str, why: str = ""):
         row = {"at": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
-               "subject": subject, "tool": tool, "verdict": verdict, "why": why}
+               "subject": subject, "fleet": self.fleet_of(subject), "tool": tool,
+               "verdict": verdict, "why": why}
         with self.lock:
             try:
                 with open(self.audit, "a", encoding="utf-8") as fh:
