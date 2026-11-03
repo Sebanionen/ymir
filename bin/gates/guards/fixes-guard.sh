@@ -107,8 +107,11 @@ range="${base}..${head_sha}"
 # it. Accepting only a digit-first version made the gate blind to those notes and
 # refused every push that carried one (2026-09-25) — the guard demanded a format its
 # own writer does not require. A note the gate cannot SEE is a note it cannot judge.
-notes="$(git diff --name-only --diff-filter=A "$range" 2>/dev/null | grep -E '^docs/fixes/[a-z]+/([0-9]|unversioned-)[^/]*\.md$' || true)"
-touched="$(git diff --name-only "$range" 2>/dev/null | grep -v '^docs/fixes/' | grep -v '^CHANGELOG' || true)"
+# A MERGE IS NOT A CHANGE: `git diff remote..HEAD` on a branch that merged main drags
+# every path main brought into the range, so a correct note could never cover the push
+# (measured 2026-11-03 on PR #493). Judge OUR OWN non-merge commits instead.
+notes="$(git log --no-merges --diff-filter=A --name-only --format= "$range" 2>/dev/null | grep -E '^docs/fixes/[a-z]+/([0-9]|unversioned-)[^/]*\.md$' || true)"
+touched="$(git log --no-merges --name-only --format= "$range" 2>/dev/null | sed '/^$/d' | sort -u | grep -v '^docs/fixes/' | grep -v '^CHANGELOG' || true)"
 
 if [ -z "$notes" ]; then
   printf 'fixes-guard[1]{gate,result}:\n  "push","refused — no fix note in this range"\n' >&2
@@ -135,7 +138,12 @@ path_component() {  # <path> -> the component it belongs to, or empty
     bin/bridge/a2a-mcp.sh|bin/bridge/ratatoskr.sh) echo runtime ;;
     bin/engine/ymir-install.sh|bin/agents/groa-update.sh|bin/seat/valknut-load.sh|bin/engine/ymir-migrate.sh) echo install ;;
     .pi/*|.agents/skills/*|bin/agents/skill-find.sh|bin/gates/fixes.sh|bin/gates/guards/fixes-guard.sh) echo agents ;;
-    bin/gates/capabilities.sh|bin/gates/inventory.sh|bin/gates/queue.sh|bin/gates/ci-verify.sh|bin/gates/checks/*|bin/no-delete-guard.sh) echo gate ;;
+    bin/gates/capabilities.sh|bin/gates/inventory.sh|bin/gates/registers.sh|bin/gates/registers-*|bin/gates/queue.sh|bin/gates/ci-verify.sh|bin/gates/checks/*|bin/gates/guards.sh|bin/gates/guards/*|bin/gates/tests/*|bin/no-delete-guard.sh) echo gate ;;
+    # The woven catalogue (Þættir) and the derived registers belong to the gate suite:
+    # a fix to them is a gate fix (2026-11-03 — they mapped to nothing and a correct
+    # note could not cover the push; the same class the 2026-10-12 StartLimit mend found).
+    FEATURES.md|docs/features/*) echo gate ;;
+    bin/README.md|.agents/backend/README.md|.agents/assets/agents/capabilities.md) echo gate ;;
     # The unit templates and the renderer that seats them: the seat's services, so a fix
     # here is a runtime fix. Before this row tools/{mill,web}/systemd/* mapped to NO
     # component — a correct runtime note covered nothing and the gate passed on a
