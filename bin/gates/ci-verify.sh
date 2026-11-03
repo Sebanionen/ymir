@@ -67,6 +67,8 @@ nodelete_base() {
 if nd_base="$(nodelete_base)"; then
   gate no-delete "Rule 11 — a tracked file is moved, never deleted (against $nd_base)" \
        bash "$ROOT/bin/no-delete-guard.sh" --base "$nd_base"
+  gate identity  "Rule 04/39 — a commit publishes an account, never a private mailbox" \
+       bash "$ROOT/bin/gates/guards/identity-guard.sh" --base "$nd_base"
 else
   printf '  "%s","SKIP","%s"\n' "no-delete" "no base ref in this checkout — judged by the pre-push hook and on a PR"
 fi
