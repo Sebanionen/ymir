@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",664
+  "shell doors (bin/*.sh)",676
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -264,6 +264,7 @@ capabilities[5]{surface,count}:
 | init.sh | init.sh — put the collaboration shelf into a repository, or check the  | tested | keep (a human or a cron row must run it) |
 | letter.sh | letter.sh — the collaboration letter, rendered from a template and lef | tested+named | keep (a human or a cron row must run it) |
 | ship.sh | ship.sh — the house's git discipline as one door: branch, commit named | tested | keep (a human or a cron row must run it) |
+| standardise.sh | standardise.sh — put the collaboration kit into a repository, or say w | tested | keep (a human or a cron row must run it) |
 | handoff-check-wrapper.sh | handoff/check.sh — the stable door for the baton, in any project. | tested | keep (a human or a cron row must run it) |
 | test_collab.sh | test_collab.sh — the proofs for bin/collab (Vingólf). No network, no  | tested | keep (a human or a cron row must run it) |
 | app-build.sh | app-build — build the in-tree apps (plan 35). | tested+named | keep (a human or a cron row must run it) |
@@ -459,6 +460,7 @@ capabilities[5]{surface,count}:
 | tui-frame-check.sh | tui-frame-check.sh — prove that what the TUI writes to the terminal fi | tested | keep (a human or a cron row must run it) |
 | place.sh | place.sh — team PLACES: a wall, not a permission (Rule 18; plan 77 Par | tested+named | keep (a human or a cron row must run it) |
 | daily-log.sh | daily-log.sh — the day's work, recorded where the contract says it liv | tested+named | keep (a human or a cron row must run it) |
+| developers.sh | developers.sh — who can write to a repository, and who actually has. | tested | keep (a human or a cron row must run it) |
 | journal-append.sh | journal-append.sh — write one idempotent entry to THIS machine's outbo | tested+named | keep (a human or a cron row must run it) |
 | journal-receive.sh | journal-receive.sh — the HEART folds the bodies' journals into one rec | tested+named | keep (a human or a cron row must run it) |
 | journal-reconcile.sh | journal-reconcile.sh — push this machine's outbox to the heart, when i | tested | keep (a human or a cron row must run it) |
