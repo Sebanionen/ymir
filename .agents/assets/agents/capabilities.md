@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",695
+  "shell doors (bin/*.sh)",698
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -449,7 +449,9 @@ capabilities[5]{surface,count}:
 | send.sh | send.sh — THE HOTLINE: one door a system calls when it has something t | tested+named | keep (a human or a cron row must run it) |
 | telegram-buttons.sh | telegram-buttons.sh — make a Telegram button that actually renders. | tested | keep (a human or a cron row must run it) |
 | telegram-members.sh | telegram-members.sh — who is actually in a Telegram chat, as far as th | tested | keep (a human or a cron row must run it) |
+| telegram-roster.sh | telegram-roster.sh — who speaks in a chat, remembered (thin door over  | tested | keep (a human or a cron row must run it) |
 | test_telegram_buttons.sh | test_telegram_buttons.sh — the button grammar, proved both ways. | tested | keep (a human or a cron row must run it) |
+| test_telegram_roster.sh | test_telegram_roster.sh — the roster records who speaks, once, per cha | tested | keep (a human or a cron row must run it) |
 | collaborators.sh | collaborators.sh — the people we work with: clients, collaborators, ad | tested | keep (a human or a cron row must run it) |
 | inbox-watch.sh | inbox-watch.sh — notice when someone answers, without a human opening  | tested | keep (a human or a cron row must run it) |
 | inbox.sh | inbox.sh — read the mail that matters to a collaborator, and prove you | tested | keep (a human or a cron row must run it) |
