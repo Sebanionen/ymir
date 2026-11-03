@@ -59,6 +59,18 @@ The law is restated in four authoritative places; keep them consistent:
 | Meeting ear (capture · transcribe · minutes) | **Snotra** | The wise one, mistress of counsel — the minutes-maker; hears the meeting, keeps the record | `systems/snotra/services/ear/snotra-capture.sh`, `systems/snotra/services/ear/snotra-transcribe.sh`, `systems/snotra/services/ear/snotra-ensure.sh`, `tools/snotra/`, `tools/mill/systemd/snotra.service` |
 | Meeting room (our own hall) | **Þing** | The assembly, the law-meeting — a hall of our own (MiroTalk P2P fork on whynot) where the ear knows the room, the participants, and the moment it began | `zerwiz/mirotalk` (fork), deployed `~/thing/mirotalk` on whynot (unit `thing.service`) |
 
+### 3.1b Machine agents — one per host, named by the law
+
+| Figure | Role | Where it lives |
+|---|---|---|
+| **Íðunn** (nidavellir) | Keeper of the apples that keep the gods young — the operator's agent that keeps THIS COMPUTER alive and working; distinct from the seat primary, who works INSIDE Ymir | rendered into `~/.hermes/SOUL.md` by `bin/seat/seat-surface.sh`; named in `hodd/identity/seats.yaml` → `seats.<host>.machine_agent` |
+| **Fulla** (heimdall) | Keeper of Frigg's casket — the operator's agent that keeps the counsellor's machine alive and whole; **never Brokk**, who is Ymir's counsellor (the seat primary) and may not be doubled | same files |
+
+**Rule:** every host names its own machine agent (never one shared name — a fleet of identical
+names collides, 2026-11-03). The name is chosen by the law's role sentence — *the agent that keeps
+this computer* — and sealed by the Allfather; an unsealed host's block says **unnamed**, never an
+invented name.
+
 ### 3.2 Brokk distro runtime components (`docs/plans/29-brokk-distro-runtime.md:270-297`)
 
 These are the figures the port actually wired into `bin/` and the harness adapters. This table is the authoritative runtime map; `brokk-distro-runtime.md` describes their behavior.
