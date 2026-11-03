@@ -19,8 +19,8 @@ skip(){ row "$1" skip "$2"; }
 
 YMIR_HOME="${YMIR_HOME:-$HOME/Documents/ymirhome}"
 PING_PUBLIC_URL="${PING_PUBLIC_URL:-https://ping.zerwiz.org}"
-PING_TAILNET_URL="${PING_TAILNET_URL:-https://whynot.tailefab81.ts.net:3000}"
-SNOTRA_MCP_URL="${SNOTRA_MCP_URL:-http://zerwizserver.tailefab81.ts.net:8321/mcp}"
+PING_TAILNET_URL="${PING_TAILNET_URL:-https://<host>.<host>.tailnet.ts.net:3000}"
+SNOTRA_MCP_URL="${SNOTRA_MCP_URL:-http://<host>.<host>.tailnet.ts.net:8321/mcp}"
 MANAGANDR_CACHE="${MANAGANDR_CACHE:-$YMIR_HOME/hodd/state/calendar/cache.json}"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 

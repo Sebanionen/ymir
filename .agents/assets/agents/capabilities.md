@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",676
+  "shell doors (bin/*.sh)",680
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -343,6 +343,7 @@ capabilities[5]{surface,count}:
 | home-index-check.sh | home-index-check.sh — every shelf in the home has an index, and the in | tested | keep (a human or a cron row must run it) |
 | model-alias-check.sh | model-alias-check.sh — does every alias a body names resolve in the fl | tested+named | keep (a human or a cron row must run it) |
 | portability-ratchet.sh | portability-ratchet.sh — the GNU-only callers may go DOWN, never up. | tested | keep (a human or a cron row must run it) |
+| public-data-ward.test.sh | public-data-ward.test.sh — prove the RULES/04 ward BITES. | tested | keep (a human or a cron row must run it) |
 | readme-claims.sh | readme-claims.sh — the user-facing documents must not claim what the t | tested | keep (a human or a cron row must run it) |
 | syn-arm-pretool-check.sh | syn-arm-pretool-check.sh - PreToolUse seatbelt for watcher-arm bash comm | tested+named | keep (a human or a cron row must run it) |
 | syn-asset-pretool-check.sh | syn-asset-pretool-check.sh — PreToolUse seatbelt for governed paths. | tested+named | keep (a human or a cron row must run it) |
@@ -376,6 +377,7 @@ capabilities[5]{surface,count}:
 | git-clobber-guard.sh | git-clobber-guard.sh — no command that throws away uncommitted work. | tested | keep (a human or a cron row must run it) |
 | hoard-guard.sh | hoard-guard.sh — the ward for the PRIVATE HOME repo ($YMIR_HOME). | tested+named | keep (a human or a cron row must run it) |
 | home-contract-guard.sh | home-contract-guard.sh — the contract that raises a user's home is che | tested | keep (a human or a cron row must run it) |
+| identity-guard.sh | identity-guard.sh — a commit that leaves by push must not publish a pr | tested | keep (a human or a cron row must run it) |
 | inventory-guard.sh | inventory-guard.sh — a register that runs in no gate is a capability t | tested | keep (a human or a cron row must run it) |
 | packaging-guard.sh | packaging-guard.sh — every path a shipped installer names must exist i | tested | keep (a human or a cron row must run it) |
 | path-ledger-guard.sh | path-ledger-guard.sh — Rule 25: a path that MOVED may not be reference | tested | keep (a human or a cron row must run it) |
@@ -384,6 +386,7 @@ capabilities[5]{surface,count}:
 | perm-guard.sh | perm-guard.sh — flag agent profiles whose permissions are self-defeati | tested | keep (a human or a cron row must run it) |
 | pkill-guard.sh | pkill-guard.sh — no blanket kill in the tree, and the audit that finds | tested | keep (a human or a cron row must run it) |
 | private-guard.sh | private-guard.sh — private structure and NDA material never cross a su | tested | keep (a human or a cron row must run it) |
+| public-data-guard.sh | public-data-guard.sh — the TREE scan for RULES/04: templates and logic | tested | keep (a human or a cron row must run it) |
 | public-guard.sh | public-guard.sh — every PUBLIC, user-facing file must be free of opera | tested+named | keep (a human or a cron row must run it) |
 | rules-number-guard.sh | rules-number-guard.sh — the house law is NUMBERED, so no two rules may | tested | keep (a human or a cron row must run it) |
 | runtime-guard.sh | runtime-guard.sh — THE TREE IS NOT A RUNTIME. | tested | keep (a human or a cron row must run it) |
