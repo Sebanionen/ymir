@@ -144,7 +144,7 @@ bin[707]{file,does,kind,verdict,disposition,callers,lines}:
   "features-guard.sh","features-guard.sh — every feature page is catalogued (Rule 14).","tool","wired","keep",1,58
   "fixes-components.sh","The components of this product — one directory of notes each, and no invented names.","tool","wired","keep",1,4
   "fixes-guard.sh","fixes-guard — a behaviour change leaves a note, or says why it did not need one.","tool","tested","keep",6,26
-  "fixes-guard.sh","fixes-guard.sh — the delivery gate reads, and it checks the RECORD.","tool","tested","keep",6,207
+  "fixes-guard.sh","fixes-guard.sh — the delivery gate reads, and it checks the RECORD.","tool","tested","keep",6,210
   "fixes.sh","fixes.sh — the fix notes.","tool","wired","keep",3,81
   "fixes.sh","fixes.sh — the fix notes.","tool","wired","keep",3,162
   "fleet-apply.sh","fleet-apply.sh — apply fleet-wide preferences to every registered Eindri-home.","tool","wired","keep",1,83
@@ -376,7 +376,7 @@ bin[707]{file,does,kind,verdict,disposition,callers,lines}:
   "init.sh","init.sh — put the collaboration shelf into a repository, or check the one it has.","tool","wired","keep",5,124
   "install.sh","install.sh — seat Gná's desk on THIS machine.","data","tested","keep",38,82
   "inventory-guard.sh","inventory-guard.sh — a register that runs in no gate is a capability that is silently absent.","tool","wired","keep",2,54
-  "inventory.sh","inventory.sh — the honest index of the two shelves nobody can read.","tool","wired","keep",7,273
+  "inventory.sh","inventory.sh — the honest index of the two shelves nobody can read.","tool","wired","keep",7,285
   "jira_adapter.py","bin/time/snotra/jira_adapter.py -> systems/snotra/services/cron/jira_adapter.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "journal-append.sh","journal-append.sh — write one idempotent entry to THIS machine's outbox.","tool","tested","keep",0,115
   "journal-receive.sh","journal-receive.sh — the HEART folds the bodies' journals into one record.","tool","tested","keep",1,137

@@ -85,7 +85,7 @@ SELF="${BASH_SOURCE[0]}"
 
 while IFS=$'\t' read -r old new still; do
   [ -n "$old" ] || continue
-  grep -rns "${EXCLUDES[@]}" -e "$old" "${SEARCH_DIRS[@]/#/$ROOT/}" 2>/dev/null \
+  LC_ALL=C grep -rns "${EXCLUDES[@]}" -e "$old" "${SEARCH_DIRS[@]/#/$ROOT/}" 2>/dev/null \
   | while IFS= read -r hit; do
       file="${hit%%:*}"; rest="${hit#*:}"; line="${rest%%:*}"
       case "$file" in

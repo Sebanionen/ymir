@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { Agent } from 'node:http';
 
 // Ports are environment-driven so a deployment can avoid collisions with other
 // services on a shared host; the historic defaults are unchanged. The gate API
@@ -11,6 +12,9 @@ const API_PORT = Number(process.env.HLIDSKJALF_API_PORT ?? 3889);
 // (and pins the host-side publish to loopback where the surface must stay private).
 const SPA_HOST = process.env.HLIDSKJALF_HOST ?? '127.0.0.1';
 const API_ORIGIN = `http://127.0.0.1:${API_PORT}`;
+// http-proxy otherwise forces Connection: close. On native Windows this reset
+// real audio uploads; retain the origin connection rather than retrying audio.
+const API_PROXY = { target: API_ORIGIN, agent: new Agent({ keepAlive: true }) };
 
 export default defineConfig({
   plugins: [react()],
@@ -28,7 +32,7 @@ export default defineConfig({
     })(),
     proxy: {
       // The local gate API (apps/hlidskjalf/server) reading the Brokk runtime.
-      '/api': API_ORIGIN,
+      '/api': API_PROXY,
     },
     fs: {
       // Allow importing the canonical design tokens from midgard/.
@@ -39,7 +43,7 @@ export default defineConfig({
     host: SPA_HOST,
     port: SPA_PORT,
     proxy: {
-      '/api': API_ORIGIN,
+      '/api': API_PROXY,
     },
   },
   build: {

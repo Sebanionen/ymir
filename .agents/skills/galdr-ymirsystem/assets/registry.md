@@ -144,3 +144,18 @@ Smíðja: how a run is launched, what a roster is (`roster.yaml`, teams in `stac
 written, how a chain is composed, and what an install needs. They sit **inside an app**, so no inventory
 of `bin/` will ever surface them — read them before touching the smithy.
 Law: `RULES/36-the-run-is-visible.md` · detail: `assets/smidja.md`.
+## Inventory executable classification (2026-11-03)
+
+`bin/gates/inventory.sh` derives executable status from Git index mode `100755`, not host `os.access(X_OK)`. It reads `git ls-files --stage -z` so whitespace in tracked paths is preserved. Directory walks use an explicit relative POSIX path sort key, avoiding Windows case-folded Path ordering. Filesystem permission changes must not alter the generated public register when the index is unchanged.
+
+`tests/test_inventory_git_mode.py` runs the actual generator in a small Git repository, inverts working-tree executable bits without changing index modes, and checks complete output stability, data/tool classification, whitespace paths and case-sensitive row ordering. Run it on Windows and Linux when changing inventory classification. Regenerate the full registers only after all intended source changes are staged.
+
+The generator writes explicit UTF-8 with LF newlines on every host. The real-generator regression asserts LF output on Windows and Linux. Previously generated register data was retained exactly, with Git text normalization changing CRLF to LF only.
+
+## Path-ledger byte matching (2026-11-03)
+
+bin/gates/guards/path-ledger-guard.sh performs its initial recursive grep in LC_ALL=C so invalid UTF-8 in legacy generated catalogs cannot replace a matching line with a binary-file summary. Paired old/new migration records retain their line context; old-only references still fail. tests/test_path_ledger_bytes.py exercises the actual guard against invalid and valid UTF-8 fixtures on Git Bash and Linux without waivers or binary-file exclusions.
+
+## Fix-note coverage for outgoing refs (2026-11-03)
+
+bin/gates/guards/fixes-guard.sh judges every outgoing branch independently. A recorded sibling cannot hide an unrecorded branch, regardless of push order. Tag and deletion pointers remain content-free. A branch tip with no commits absent from already-fetched origin refs is an already-public pointer; every other outgoing branch must add a fix note in its own comparison range. A new unrelated history compares against the empty tree. Manual --check keeps its existing branch/base judgment. tests/test_fixes_guard_refs.py exercises actual Git commit graphs and mixed ref batches without override flags.

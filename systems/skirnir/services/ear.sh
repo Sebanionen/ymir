@@ -19,6 +19,11 @@ while [ $# -gt 0 ]; do
 done
 [ -n "$FILE" ] && [ -r "$FILE" ] || { printf 'ear: no audio file\n' >&2; exit 2; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$SCRIPT_DIR/native-voice.sh"
+if native_voice_available; then
+  native_voice_file transcribe "$FILE" "" "$LANG_CODE"
+  exit $?
+fi
 URL="${WHISPER_URL:-http://127.0.0.1:10300/inference}"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 # whisper wants 16 kHz mono PCM — and TELEGRAM'S NOTES ARE QUIET. Measured 2026-10-22: the same note
@@ -35,7 +40,7 @@ ffmpeg -hide_banner -loglevel error -y -i "$FILE" \
 # live, so the mouth is raised here — in the background, overlapping the transcription and the head's
 # thinking — never on the critical path. Output goes nowhere: this file's stdout IS the transcript.
 raise_mouth() {
-  local lease="${SCRIPT_DIR}/../../systems/snotra/services/tts-lease/tts-lease.sh" url="${KOKORO_URL:-http://127.0.0.1:8765/v1/audio/speech}"
+  local lease="${SCRIPT_DIR}/../../snotra/services/tts-lease/tts-lease.sh" url="${KOKORO_URL:-http://127.0.0.1:8765/v1/audio/speech}"
   local host="${url#*://}"; host="${host%%/*}"; local port="${host##*:}"; host="${host%%:*}"
   port="${port:-80}"
   bash "$lease" touch >/dev/null 2>&1 || true
@@ -53,7 +58,7 @@ raise_mouth >/dev/null 2>&1 &
 # never a private fact: it biases the decoder toward the words the house actually says.
 VOCAB="${WHISPER_VOCAB:-OptiCat, OVK, Skírnir, Snotra, Boverket, WayOf, Whynot Productions, Synteon, ventilation inspection, Isabella, Craig, Brokk, Ymir}"
 OUT="$(curl -s -m 120 "$URL" -F "file=@$TMP/16k.wav" -F response_format=json -F temperature=0 \
-  -F "prompt=$VOCAB" 2>/dev/null)"
+  -F "language=$LANG_CODE" -F "prompt=$VOCAB" 2>/dev/null)"
 TEXT="$(printf '%s' "$OUT" | python3 -c 'import json,sys
 try: print(json.load(sys.stdin).get("text","").strip())
 except Exception: print("")' 2>/dev/null)"

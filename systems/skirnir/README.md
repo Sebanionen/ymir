@@ -21,3 +21,5 @@ references the vault.
 
 `bin/assistant/` holds **retired shims** that exec these doors, so a caller nobody has repointed yet
 still works. They retire by a dated note, never silently.
+
+Windows and WSL file voice and engine control: [operator guide](../../docs/features/voice-files-on-windows.md). The Kokoro adapter supports English. The [Hlidskjalf speech entry](../../docs/features/talk-to-skirnir.md) adds app-scoped F8/Escape and separate genuine Swedish Bengt speech.

@@ -109,6 +109,7 @@ export interface GateDef {
 }
 
 export const GATES: GateDef[] = [
+  { id: 'skirnir', label: 'Skírnir – Tala', glyph: 'ᚨ', hint: 'Assistent · mikrofon med samtycke · lokalt svar' },
   { id: 'fleet', label: 'Fleet', glyph: 'ᚠ', hint: 'Agent Cards · status · A2A graph' },
   { id: 'tasks', label: 'Tasks', glyph: 'ᛏ', hint: 'A2A lifecycle board' },
   { id: 'well', label: 'Well', glyph: 'ᛜ', hint: 'Mimirsbrunn recall · timeline' },

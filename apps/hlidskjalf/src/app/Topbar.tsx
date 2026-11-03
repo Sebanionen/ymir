@@ -103,6 +103,8 @@ export function Topbar() {
           the words as they are spoken. A front for snotra-live.sh, never a
           second pipeline. */}
       <Ward />
+      <button type="button" className="btn btn-sm" style={{ whiteSpace: 'nowrap', flexShrink: 0 }} onClick={() => useYmir.getState().setGate('skirnir')}
+        title="Tala med assistenten – separat från Snotras mötesinspelning">Skírnir – Tala</button>
       <SnotraLive />
 
       {/* The Óðrerir Live Hall — the landing's live board, not one of the three

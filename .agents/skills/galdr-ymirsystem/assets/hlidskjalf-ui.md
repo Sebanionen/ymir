@@ -832,3 +832,115 @@ browser with no pty is a log viewer wearing a shell's clothes.
 
 Rule: a Hlidskjalf code change updates this asset in the same pass — and a component's imports
 are part of that change, not an afterthought of the install.
+
+### Skírnir speech entry — local assistant, separate from Snotra (2026-11-02)
+
+The skirnir gate (Skírnir – Tala) is first in GATES and has its own metadata and
+Topbar entry. The existing SnotraLive Start listening control retains meeting/
+room recording semantics. The new page uses explicit consent plus getUserMedia
+only on a user click, then MediaRecorder for one question (30-second capture
+cap). Finish stops every track before upload; Stop and unmount close tracks,
+abort browser requests/playback and DELETE the owned pending turn.
+
+server/voice.ts implements /api/skirnir/voice/status and GET/POST/DELETE
+/api/skirnir/voice/turns/:id. Real peer loopback, local host, same Origin,
+no forwarded requests and local-operator eligibility are required. An unrelated
+signed-in account cannot become owner through this route. No browser API key or
+engine URL is needed. The existing trusted local browser gets its operator
+session label; remote authentication is not relaxed.
+
+The native file adapter, installed Whisper/Kokoro and existing skirnir.py own
+transcription, approved knowledge, refusals and speech. SKIRNIR_HOME selects the
+private profile; SKIRNIR_VOICE_TMP selects temporary audio; SKIRNIR_PYTHON selects
+the interpreter. Engine URLs must be loopback. English has Kokoro speech;
+Swedish is input transcription plus text-only output, never English phonetics
+labelled Swedish. Escalation is suppressed for this local voice channel, so it
+opens no external messaging road. Backend turn state is memory-only; temporary
+audio is separate from the Snotra record shelf and is removed after processing.
+
+The Vite API proxy uses a keep-alive HTTP agent: its default forced Connection:
+close reset native Windows audio uploads. It never retries failed audio as if
+it succeeded. voice-preview.ps1 starts only isolated loopback API/UI processes,
+with separate gate state, no production key read and no main deployment.
+
+Tests: server/voice.test.ts (peer/origin/owner boundaries, invalid uploads and
+stop-before-upload tombstone) and tests/voice.e2e.mjs (real prerecorded input,
+real existing answer/Kokoro, synthetic browser capture, track release, pending
+turn cancellation and Swedish text-only mode). Browser tests require fake-device
+and prerecorded-input flags and must never capture a physical microphone.
+Operator guide: docs/features/talk-to-skirnir.md.
+### Update — app-scoped F8/Escape and genuine Swedish speech
+
+This supersedes the temporary Swedish text-only mode in the preceding section.
+The focused Skirnir page owns F8 (start through visible consent; next F8 finishes
+and submits) and Escape (cancel capture, pending turn or playback). Repeats,
+modified combinations, editable typing, hidden pages and unfocused apps are
+ignored. No system-global shortcut exists. Labels explain the scope beside
+the controls; F8 never bypasses checkbox or browser microphone permission.
+
+English speech is pinned to American female Kokoro af_nicole and its returned
+adapter metadata is checked. Swedish uses Microsoft Bengt sv-SE through the
+private file contract, not Kokoro: SKIRNIR_SWEDISH_DIR defaults to the home's
+hodd/state/runtime/skirnir-swedish; installation.json.executable records the
+verified default PowerShell 7.6.5 path. SKIRNIR_SWEDISH_PWSH and
+SKIRNIR_SWEDISH_SCRIPT are documented overrides. Version 5.1 is never a fallback.
+The gate writes UTF-8 answer text into its private turn directory, invokes the
+contract with -TextPath/-OutputPath, verifies Bengt/culture/24kHz/mono/PCM16
+metadata, and returns the genuine WAV. Cancellation and cleanup own the turn,
+not the shared engines. Public source carries no account/package-specific path.
+
+skirnir.py --language sv localizes greeting, permitted-fact inventory and honest
+refusal before its existing gate/audit. It does not invent translations of
+approved facts: missing verified Swedish wording produces a spoken limitation.
+The voice-local channel refuses delivery/learning/research action branches, so
+no external action is hidden behind an assistant answer.
+
+Final proof: 11 passing synthetic browser checks with zero uncaught browser
+errors: consent/no capture on load, F8 consent, typing exclusion, actual file
+chain, Nicole identity, F8 capture/repeat/finish, Escape track release, Escape
+pending cancellation, genuine Swedish ASR -> permitted Swedish answer -> Bengt
+WAV, Escape Swedish playback, and browser errors. Additional key policy tests
+cover modifiers, hidden/unfocused pages and every pending state. Root independently
+confirmed the consent gate with getUserMedia forbidden and zero physical capture
+attempts, then opened the ordinary local browser for the operator. Earlier
+Swedish-disabled concern during status loading is superseded, not home drift.
+### Swedish installer contract update — integrity and independent recognition
+
+swedish-voice.ts now reads the private installation.json executable, arguments
+and script_sha256. It validates the file-only flag shape, substitutes only the
+UTF-8 input/WAV output placeholders and checks actual script bytes against the
+recorded SHA-256 immediately before invocation. Env overrides do not bypass
+that integrity check. No account/package path is hardcoded into public source.
+Three focused contract tests cover exact manifest invocation, tampered/missing
+hash and unexpected flags; a real synthetic Swedish file round trip on an
+isolated ephemeral port passed. The 11 passing F8/bilingual browser results were
+preserved rather than rerun. The owned preview API was reloaded only at active=0;
+its UI, browser and shared engines remained running.
+
+Independent Swedish Whisper recognition succeeds semantically but has observed
+word-form and proper-name errors (svenskt -> svensk, Skirnir -> skinir). Neither
+these tests nor the operator guide promise perfect ASR. The existing local
+F8/Escape scope, Nicole/Bengt routes and no-microphone automation boundary hold.
+### Rendered availability refresh — pending is not unavailable
+
+The Skirnir client now distinguishes unconfirmed Swedish capability from an
+actual negative status response. Before completion it says kontrollerar röst,
+not röst ej tillgänglig. Status refreshes on focus/visibility; Kontrollera röster
+performs an explicit read. While Swedish availability remains unconfirmed, a
+visible idle page rechecks every five seconds, deduplicating reads and cleaning
+up timers/listeners on unmount. None of these paths requests microphone access.
+The existing SKIRNIR_HOME/preview-home routing was not changed: current server
+status already reported both voices available.
+
+The targeted tests/swedish-selection.e2e.mjs proof uses the actual running UI,
+no media permission and forbidden getUserMedia. It verifies the rendered enabled
+Svenska · Bengt selection, an actual prerecorded Swedish request, real permitted
+Swedish answer and browser-decoded Microsoft Bengt WAV, with zero physical
+capture attempts and zero uncaught errors. This is fresh rendered UI proof,
+not an inference from API speech=true, and does not rerun the broad voice suite.
+## Opt-in voice contract CLI (2026-11-03)
+
+The real Swedish contract proof lives under apps/hlidskjalf/scripts and is
+invoked by npm run test:voice:contract. It is an explicit file-only CLI, not
+an unused server module or an automatically run unit test. Its required
+private home/audio/report settings and synthetic-only boundary are unchanged.
