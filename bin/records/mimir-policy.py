@@ -1143,7 +1143,7 @@ def _self_test() -> int:
           str(d["tags"]))
     check("  ... scored by novelty and relevance", d["novelty"] > 0.5 and d["relevance"] > 0, str(d))
 
-    text, notes = canonicalize("Yesterday at 9:05 pm Deck said Oct 26, 2026 is the day.")
+    text, notes = canonicalize("Yesterday at 9:05 pm Deck said Oct 26, 2026 is the day.", now=now)
     check("dates canonicalized to ISO", "2026-10-25" in text and "2026-10-26" in text, text)
     check("clock canonicalized to 24h", "21:05" in text, text)
     check("  ... and the change is named", any("yesterday" in n for n in notes), str(notes))
@@ -1265,7 +1265,24 @@ def main(argv: list[str]) -> int:
 
     if verb == "memory":
         store = Path(opts["store"]).expanduser() if opts.get("store") else default_store()
-        row = memory_row(store)
+        if opts.get("bridge"):
+            # Ask the process that owns SQLite, including its WAL and platform.
+            # A client across SSH/WSL must not open a different local store.
+            from urllib.request import urlopen
+            try:
+                with urlopen(opts["bridge"].rstrip("/") + "/health", timeout=5) as response:
+                    row = json.load(response)
+                required = {"episodes", "voided", "stores", "healthy", "why",
+                            "last_observe", "last_recall", "last_daily", "last_prune"}
+                if not required.issubset(row) or type(row["healthy"]) is not bool:
+                    raise ValueError("bridge does not provide memory health")
+                row["measurement"] = "bridge"
+            except Exception as exc:
+                print(f"error: bridge memory health unavailable ({type(exc).__name__}: {exc})")
+                return 1
+        else:
+            row = memory_row(store)
+            row["measurement"] = "local-file"
         if "line" in flags:
             print(memory_line(row))
         elif "json" in flags:

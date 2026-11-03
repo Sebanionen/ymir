@@ -235,3 +235,7 @@ Run `bash -n` on touched shell doors and the canonical compliance/CI gates too.
 
 Format references: [OpenAI plugin packaging](https://developers.openai.com/plugins/build/plugins)
 and the installed `codex plugin add --help` / `codex plugin marketplace add --help`.
+
+## 2026-11-02 — bounded Gná arm
+
+gna_watch_arm now uses bounded canonical start/status commands with an actual Codex thread ID. Windows routes through WSL Linux Python, never native process liveness. Native Codex thread heartbeat owns automatic wake delivery; status alone does not prove it. Poll leaves events pending until the processing turn acknowledges handled work. See docs/features/gna-in-codex.md and tests/test_gna_codex.mjs.

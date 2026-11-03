@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { gnaArm } from "./gna-arm.mjs";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -689,8 +690,8 @@ export function createTools({ root, home, state, env = process.env }) {
       return rows.join("\n") || "no markdown documents";
     },
   );
-  add("gna_watch_arm", "Request the existing Gná watcher door.", {}, [], () =>
-    shell("bin/pi/syn-watch-arm.sh", ["--restart"]),
+  add("gna_watch_arm", "Arm or inspect the canonical watcher; Codex native heartbeat owns wake delivery.", { action: E("arm", "status", "poll"), threadId: S }, [], (a) =>
+    gnaArm({ root, home, state, env: vars }, a),
   );
   add(
     "subagents",

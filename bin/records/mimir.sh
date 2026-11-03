@@ -182,7 +182,18 @@ PYR
 case "$CMD" in
   health)
     if bridge_up; then
-      printf 'well[1]{state,entries,bridge}:\n  "WARM",%s,"online"\n' "$(well_count)"
+      "$PY" "$POLICY" memory --bridge "$BRIDGE" --json | "$PY" -c '
+import json, sys
+try:
+    row = json.load(sys.stdin)
+    print("well[1]{state,entries,bridge,healthy}:")
+    print("  \"WARM\",%s,\"online\",\"%s\"" %
+          (row["episodes"], str(row["healthy"]).lower()))
+    print("why: " + row["why"])
+except (ValueError, KeyError):
+    print("error: bridge memory health unavailable")
+    sys.exit(1)
+'
     else
       printf 'well[1]{state,entries,bridge}:\n  "COLD",%s,"offline"\n' "$(well_count)"
     fi
@@ -207,7 +218,11 @@ case "$CMD" in
         *) printf 'error: unknown flag %s\nhelp: mimir.sh memory [--line] [--json] [--check]\n' "$a" >&2; exit 2 ;;
       esac
     done
-    out="$(ENGRAM_DB="$STORE" "$PY" "$POLICY" memory "$@")"; rc=$?
+    if bridge_up; then
+      out="$("$PY" "$POLICY" memory --bridge "$BRIDGE" "$@")"; rc=$?
+    else
+      out="$(ENGRAM_DB="$STORE" "$PY" "$POLICY" memory "$@")"; rc=$?
+    fi
     printf '%s\n' "$out"
     exit "$rc"
     ;;

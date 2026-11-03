@@ -1,5 +1,25 @@
 # The well answers on every role — how to get memory on a phone as well as the servers
 
+## Checking the memory itself
+
+Run `bin/records/mimir.sh memory --json --check`. With a bridge online this reads
+the serving engine's health, including for a borrowed well or a Windows engine
+queried from another environment. JSON names the measurement `bridge`; offline
+file checks name it `local-file`. Exit 1 means unhealthy or unavailable health.
+An online transport with an empty database is still unhealthy. A failed bridge
+health response is not silently replaced by a different local database.
+`mimir.sh health` also reports the serving engine's episode count, its health
+boolean and the reason, instead of treating a local log count as remote memory.
+
+Windows and WSL loopback listeners can be different processes serving different
+homes. Check the `store` returned by `memory --json` before trusting a recall.
+Select the intended, already protected bridge with `MIMIRSBRUNN_URL`; a successful
+connection alone does not establish that it is the right well.
+
+Do not open a Windows-owned WAL database directly from WSL to diagnose the
+serving engine. Use its HTTP health/recall doors. Never replace a store because
+a client cannot read its file.
+
 The house keeps one memory, the well, and it lives on the heart. A laptop or a server with the engine
 installed serves that well itself. A phone cannot: the engine needs two native pieces with no build for
 Android, so on a phone — a `hand` in this house's language — the well is **borrowed** from the heart

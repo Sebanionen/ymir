@@ -441,3 +441,15 @@ heart; a hand holds no second well.
 
 **Proof:** `.agents/tests/well-door.test.sh` (6 assertions — borrowed door, owned process, silent port, and
 the named refusal). How-to for a person: `docs/features/the-well-on-every-role.md`.
+
+## Memory health across platform and borrowed boundaries (2026-11-02)
+
+`mimir.sh memory` queries the active bridge through the policy's `memory --bridge
+<url>` path. The serving process owns the SQLite file and WAL; a WSL or borrowed
+client must not substitute its own local file as evidence of the server's health.
+JSON identifies `measurement=bridge`, or `local-file` when offline. Bridge errors
+and incomplete policy records fail closed; the server's `healthy=false` remains
+an exit-1 check. This changes no memory content or storage format.
+
+Validation: `bin/records/test_mimir_bridge_health.py`, policy self-test, and shell
+syntax. Operator instructions: `docs/features/the-well-on-every-role.md`.
