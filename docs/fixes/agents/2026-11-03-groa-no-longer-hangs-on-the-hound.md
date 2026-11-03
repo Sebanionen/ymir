@@ -7,6 +7,11 @@ fast-forward — `bin/ward/garmr.sh refresh` and `groa-agent/seat.sh --quiet`. E
 `setsid timeout -k 2` with its own stdin and output closed, so a refresh that waits on a console,
 a polkit prompt or a missing unit can no longer stall the whole update.
 
+And the cause beneath it: `bin/ward/garmr.sh refresh` probes `sudo -n true` before it writes the
+hound's two system units. When sudo is not available without a password it leaves them alone with
+a named refusal and still seats the operator's own brain timer, instead of blocking on a prompt
+nobody will answer.
+
 ### Why
 
 Gróa was reported as hanging: three runs were killed by hand after five minutes, and a fourth
@@ -19,18 +24,27 @@ line:
 
 and nothing after it. The hound's refresh had no timeout, and it is not the update: the tree was
 already fast-forwarded, the migration applied and the seat identity checked before that line. A
-maintenance nicety was allowed to hold the whole door shut.
+maintenance nicety was allowed to hold the whole door shut. Under the bound, `seat_units` was then
+seen waiting on `sudo tee /etc/systemd/system/garmr-hound.service` — a password prompt on a
+terminal that does not exist.
 
 ### Files
 
 - `bin/agents/groa-update.sh`
+- `bin/ward/garmr.sh`
 
 ### Verified
 
 - traced run, before: last line `+ .../ward/garmr.sh refresh`, no exit, process killed by hand.
-- the same call alone: `timeout -k 3 12 bin/ward/garmr.sh refresh` also failed to return, so the
-  fault is in the refresh, not in Gróa's bookkeeping.
-- after the patch, a detached run completed with `exit=0` and printed every row:
+- the same call alone: `timeout -k 3 12 bin/ward/garmr.sh refresh` also failed to return.
+- after the hound's probe: `bin/ward/garmr.sh refresh` returns `rc=0` with
+
+```
+garmr: the hound needs root, and sudo is not available without a password here; its two system units were left alone
+garmr: units re-rendered and reloaded (rules untouched)
+```
+
+- after the Gróa bound, a detached run completed with `exit=0` and printed every row:
 
 ```
 groa[1]{state,root,remote,branch,mode}: "renew","/home/ymir/coding/ymir","origin","main","apply"
