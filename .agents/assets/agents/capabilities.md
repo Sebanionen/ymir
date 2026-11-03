@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",698
+  "shell doors (bin/*.sh)",712
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -49,6 +49,7 @@ capabilities[5]{surface,count}:
 | groa-agent.sh | groa-agent.sh — Gróa's body on a schedule: the updater, leashed, one  | tested | keep (a human or a cron row must run it) |
 | seat.sh | seat.sh — seat Gróa on THIS machine, once. Idempotent: one Gróa per  | tested+named | keep (a human or a cron row must run it) |
 | groa-update.sh | groa-update.sh — Gróa, the völva who renews. | tested+named | keep (a human or a cron row must run it) |
+| hall.sh | hall.sh — the whole house in ONE read: the seat, the doors, the queue, | tested | keep (a human or a cron row must run it) |
 | name-registry.sh | name-registry.sh — the collision system for Ymir's names. | tested | keep (a human or a cron row must run it) |
 | profile.sh | profile.sh — what THIS user's machine actually is, probed not assumed. | tested+named | keep (a human or a cron row must run it) |
 | project-git.sh | project-git.sh — resolve a project's GitHub block from the master regi | tested+named | keep (a human or a cron row must run it) |
@@ -405,6 +406,7 @@ capabilities[5]{surface,count}:
 | plan-audit.sh | plan-audit.sh — the plan CONTRACT, as a check over the ledger shelf. | tested | keep (a human or a cron row must run it) |
 | registers.sh | registers.sh — every generated register, through one door. | tested | keep (a human or a cron row must run it) |
 | repo-scrub.sh | repo-scrub.sh — purge private paths from ALL git history before going  | tested | keep (a human or a cron row must run it) |
+| test_new_doors.sh | test_new_doors.sh — the production tests for the doors built 2026-11-0 | tested | keep (a human or a cron row must run it) |
 | test_registers.sh | test_registers.sh — one door for every generated register. | tested | keep (a human or a cron row must run it) |
 | toolchain.sh | toolchain.sh — the provider wrappers (W0033). A typed front door to th | tested+named | keep (a human or a cron row must run it) |
 | wedge-notify.sh | wedge-notify.sh — the Ymir wedge-alarm notifier. | tested+named | keep (a human or a cron row must run it) |
@@ -448,6 +450,7 @@ capabilities[5]{surface,count}:
 | approve.sh | approve.sh — one gesture answers one question. | tested+named | keep (a human or a cron row must run it) |
 | send.sh | send.sh — THE HOTLINE: one door a system calls when it has something t | tested+named | keep (a human or a cron row must run it) |
 | telegram-buttons.sh | telegram-buttons.sh — make a Telegram button that actually renders. | tested | keep (a human or a cron row must run it) |
+| telegram-machines.sh | telegram-machines.sh — Telegram across the FLEET: each machine's own b | tested | keep (a human or a cron row must run it) |
 | telegram-members.sh | telegram-members.sh — who is actually in a Telegram chat, as far as th | tested | keep (a human or a cron row must run it) |
 | telegram-roster.sh | telegram-roster.sh — who speaks in a chat, remembered (thin door over  | tested | keep (a human or a cron row must run it) |
 | test_telegram_buttons.sh | test_telegram_buttons.sh — the button grammar, proved both ways. | tested | keep (a human or a cron row must run it) |
@@ -457,6 +460,7 @@ capabilities[5]{surface,count}:
 | inbox.sh | inbox.sh — read the mail that matters to a collaborator, and prove you | tested | keep (a human or a cron row must run it) |
 | meet.sh | meet.sh — one command: "put a meeting with <person> in the calendar, w | tested | keep (a human or a cron row must run it) |
 | who.sh | who.sh — the address book, and the one question that blocks everything | tested | keep (a human or a cron row must run it) |
+| arm.sh | arm.sh — the Gná arm, honestly: what the watch is, and whether THIS h | tested+named | keep (a human or a cron row must run it) |
 | logretta-council.sh | logretta-council.sh — the council's MODES: who divides the work, who i | tested | keep (a human or a cron row must run it) |
 | logretta-debate.sh | logretta-debate.sh — the council's second round: seats answering SEATS | tested | keep (a human or a cron row must run it) |
 | logretta-ensure.sh | logretta-ensure.sh — seat the council's roster on this machine. | tested | keep (a human or a cron row must run it) |
@@ -476,6 +480,8 @@ capabilities[5]{surface,count}:
 | place.sh | place.sh — team PLACES: a wall, not a permission (Rule 18; plan 77 Par | tested+named | keep (a human or a cron row must run it) |
 | daily-log.sh | daily-log.sh — the day's work, recorded where the contract says it liv | tested+named | keep (a human or a cron row must run it) |
 | developers.sh | developers.sh — who can write to a repository, and who actually has. | tested | keep (a human or a cron row must run it) |
+| grade.sh | grade.sh — Dellingr: how fresh is a document? A Norse grade from measu | tested | keep (a human or a cron row must run it) |
+| header.sh | header.sh — the declared-truth header of a home document: check, or ap | tested | keep (a human or a cron row must run it) |
 | journal-append.sh | journal-append.sh — write one idempotent entry to THIS machine's outbo | tested+named | keep (a human or a cron row must run it) |
 | journal-receive.sh | journal-receive.sh — the HEART folds the bodies' journals into one rec | tested+named | keep (a human or a cron row must run it) |
 | journal-reconcile.sh | journal-reconcile.sh — push this machine's outbox to the heart, when i | tested | keep (a human or a cron row must run it) |
@@ -485,11 +491,14 @@ capabilities[5]{surface,count}:
 | mimir-recall-today.sh | mimir-recall-today.sh — drink before you act: the session's opening re | tested+named | keep (a human or a cron row must run it) |
 | mimir-reflect.sh | mimir-reflect — smelt the well's episodes into facts, through the LLAM | tested | keep (a human or a cron row must run it) |
 | mimir.sh | mimir.sh — the well (Mimirsbrunn). Drink before you act, water it afte | tested+named | keep (a human or a cron row must run it) |
+| note.sh | note.sh — append a DATED section to an existing document in the home ( | tested | keep (a human or a cron row must run it) |
+| plan.sh | plan.sh — the plan ledger: create the NEXT numbered plan and its index | tested+named | keep (a human or a cron row must run it) |
 | regenerate-on-merge.sh | regenerate-on-merge.sh — the merge driver for WOVEN documents (Þætti | tested | keep (a human or a cron row must run it) |
 | runes-append.sh | runes-append.sh — the append-only Runes ledger, a THIN SHIM. | tested+named | keep (a human or a cron row must run it) |
 | runes-project.sh | runes-project.sh — the DAG projector, regenerates runes_audit.md from  | tested | keep (a human or a cron row must run it) |
 | vor-crew-state.sh | vor-crew-state.sh - deterministic read of an Eindri worker's CURRENT sta | tested+named | keep (a human or a cron row must run it) |
 | weave-features.sh | weave-features.sh — FEATURES.md is WOVEN from fragments, never hand-ed | tested+named | keep (a human or a cron row must run it) |
+| weave.sh | weave.sh — the dispatcher for every WOVEN document and every INDEX (Þ | tested | keep (a human or a cron row must run it) |
 | well-door.sh | well-door.sh — the hand's door to the heart's well, raised over SSH. | tested+named | keep (a human or a cron row must run it) |
 | well-guard.sh | well-guard.sh — the WARD behind RULES/20-the-well-appends.md. | tested+named | keep (a human or a cron row must run it) |
 | well-selftest.sh | well-selftest.sh — prove a keeper can find its own memory, and only it | tested | keep (a human or a cron row must run it) |
@@ -504,7 +513,9 @@ capabilities[5]{surface,count}:
 | herdr-ensure.sh | herdr-ensure.sh — Þjazi: guarantee the terminal backend Ymir needs. | tested+named | keep (a human or a cron row must run it) |
 | herdr-run.sh | herdr-run.sh — raise an Eindri in herdr, by the grain that fits the er | tested+named | keep (a human or a cron row must run it) |
 | hermes-seat.sh | hermes-seat.sh — seat Ymir's tools into Hermes, the same packets the o | tested+named | keep (a human or a cron row must run it) |
+| hermes-telegram.sh | hermes-telegram.sh — seat THIS machine's Telegram bot into the Hermes  | tested | keep (a human or a cron row must run it) |
 | seat-surface.sh | seat-surface.sh — render THIS seat's own name into the AGENTS.md every | tested+named | keep (a human or a cron row must run it) |
+| seats.sh | seats.sh — where the work actually is: panes in either backend, and th | tested | keep (a human or a cron row must run it) |
 | valknut-load.sh | valknut-load.sh — Valknut, the knot that binds the repo distro into ea | tested+named | keep (a human or a cron row must run it) |
 | realm-lib.sh | realm-lib.sh — resolve the ACTIVE realm (tenant) without assuming the  | tested+named | keep (a human or a cron row must run it) |
 | registry-lib.sh | registry-lib.sh — the ONE reader for the master project registry's row | tested+named | keep (a human or a cron row must run it) |
@@ -604,6 +615,7 @@ capabilities[5]{surface,count}:
 | hodd-set.sh | hodd-set.sh — set ONE key in an age-encrypted secret file, with guards | tested | keep (a human or a cron row must run it) |
 | hodd.sh | hodd.sh — the Allfather's private hoard: path, init, ls, load, tenant. | tested+named | keep (a human or a cron row must run it) |
 | phone-lib.sh | phone-lib.sh — reach the operator's phone storage for the vault's phon | tested | keep (a human or a cron row must run it) |
+| push.sh | push.sh — commit and push NAMED paths in the home (never `git add -A`) | tested+named | keep (a human or a cron row must run it) |
 | voice-ensure.sh | voice-ensure.sh — ensure the voice engines: whisper.cpp (speech → te | tested+named | keep (a human or a cron row must run it) |
 | garmr-bite-test.sh | garmr-bite-test.sh — the laws of the bite, proven offline (no real bit | tested | keep (a human or a cron row must run it) |
 | garmr-bite.sh | garmr-bite.sh — GARMR'S TEETH. The hound may contain, within a written | tested | keep (a human or a cron row must run it) |

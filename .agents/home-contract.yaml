@@ -108,6 +108,12 @@ contract:
     door: bin/engine/home-seed.sh
     required: true
     why: "the roster: which figure stands on which machine. Empty is honest; absent is a refusal"
+  - path: hodd/identity/machines.yaml
+    kind: stub
+    template: hodd/identity/machines.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "the fleet's Telegram registry: each machine's bot id, chat and vault path. Absent, the fleet door is loud and names this shape rather than listing nothing"
   - path: hodd/identity/grants.yaml
     kind: seeded
     template: .agents/config/grants.yaml.example
