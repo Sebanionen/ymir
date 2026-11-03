@@ -73,10 +73,19 @@ $(git config --get committer.email 2>/dev/null || true)"
     scope="the commits this push adds ($base..HEAD)"
     ;;
   *)
+    # ON A PULL REQUEST, CHECKOUT IS THE SYNTHETIC MERGE COMMIT, and GitHub authors it with the
+    # account that opened the PR — a mailbox that is not in the PR's own commits at all. Judging
+    # HEAD would fail every PR for a commit nobody wrote. So judge the PR's OWN side of the merge:
+    # `origin/main..HEAD^2` when HEAD is a merge whose first parent is the base.
     b="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main 2>/dev/null || true)"
+    tip="HEAD"
+    if [ "$(git rev-list --parents -n1 HEAD | awk '{print NF-1}')" -ge 2 ] \
+       && [ "$(git rev-parse HEAD^1 2>/dev/null)" = "$b" ]; then
+      tip="HEAD^2"
+    fi
     [ -n "$b" ] || { printf 'identity_guard[1]{state,reason}:\n  "SKIP","no merge base to judge"\n'; exit 0; }
-    addrs="$(git log --format='%ae%n%ce' "$b"..HEAD 2>/dev/null)"
-    scope="this branch's commits ($(printf '%s' "$b" | cut -c1-8)..HEAD)"
+    addrs="$(git log --format='%ae%n%ce' "$b".."$tip" 2>/dev/null)"
+    scope="this branch's commits ($(printf '%s' "$b" | cut -c1-8)..$tip)"
     ;;
 esac
 
