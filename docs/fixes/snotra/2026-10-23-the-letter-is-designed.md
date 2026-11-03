@@ -32,6 +32,8 @@ about the letter itself, not claims about the meeting.
 letters/reygan-assareh.html   21 066 bytes   (was 5 334)
 probes: 'Synteon Technologies' 2 · '#12263f' 10 · 'Grade A · Critical' 1 · '2026-10-24' 2 · 'DEC-20261022' 1
 sections: Who does what · What I need from you · How to answer · Next meeting   all present
-sent: the designed letter to josef@way-of.com only (approved cde98d0b…)
+sent: the designed letter to <the operator's address> only (approved cde98d0b…)
 ```
 The two partner drafts carry the same design and stay unsent until his word.
+
+**2026-11-03 (correction, appended):** the operator's name and address were redacted from this note. They are personal data: they belong in the home, and a public fix note may say *the operator* and nothing more (RULES/04, RULES/06 — the correction is recorded, not the leak).

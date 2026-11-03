@@ -84,4 +84,6 @@ independently.
 
 Looking forward to your thoughts.
 
-— Josef
+— <the operator>
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

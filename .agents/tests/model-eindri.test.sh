@@ -12,16 +12,16 @@ bad() { printf 'not ok - %s\n' "$1" >&2; fail=1; }
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 cat >"$TMP/f.json" <<'EOF'
 {"heart":"h1","hosts":{
-  "h1":{"roles":["heart"],"tailnet":"h1.tail.ts.net"},
-  "f1":{"roles":["forge"],"tailnet":"f1.tail.ts.net"},
-  "d1":{"roles":["dev"],"tailnet":"d1.tail.ts.net"}}}
+  "h1":{"roles":["heart"],"tailnet":"h1.<host>.tailnet.ts.net"},
+  "f1":{"roles":["forge"],"tailnet":"f1.<host>.tailnet.ts.net"},
+  "d1":{"roles":["dev"],"tailnet":"d1.<host>.tailnet.ts.net"}}}
 EOF
 export YMIR_FLEET_REGISTRY="$TMP/f.json"
 
 # placement: the forge rail is reported
 out="$(YMIR_HOST=d1 bash "$MP" 2>/dev/null)"
-printf '%s' "$out" | grep -q 'f1.tail.ts.net:8080' && ok "forge rail listed from the registry" || bad "placement: $out"
-printf '%s' "$out" | grep -q '"h1.tail.ts.net' && bad "a non-forge host appeared as a rail" || ok "only forge hosts are rails"
+printf '%s' "$out" | grep -q 'f1.<host>.tailnet.ts.net:8080' && ok "forge rail listed from the registry" || bad "placement: $out"
+printf '%s' "$out" | grep -q '"h1.<host>.tailnet.ts.net' && bad "a non-forge host appeared as a rail" || ok "only forge hosts are rails"
 
 # routing by kind
 out="$(YMIR_HOST=d1 bash "$ER" model 2>/dev/null)"

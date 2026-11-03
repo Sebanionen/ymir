@@ -23,7 +23,7 @@ State  Recv-Q Send-Q Local Address:Port  Peer Address:Port Process
 LISTEN 0      4096       127.0.0.1:4602       0.0.0.0:*     users:(("python3",pid=1,fd=6))
 EOF
 cat >"$CLEAN/ufw.out" <<'EOF'
--A ufw-user-input -p tcp --dport 22 -s 192.168.68.0/24 -j ACCEPT
+-A ufw-user-input -p tcp --dport 22 -s 192.0.2.0/24 -j ACCEPT
 -A ufw-user-input -i tailscale0 -p tcp --dport 22 -j ACCEPT
 EOF
 printf 'DEFAULT_INPUT_POLICY="DROP"\n' >"$CLEAN/ufw-default.out"

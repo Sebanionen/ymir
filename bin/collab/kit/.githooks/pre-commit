@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# The cheap checks, so a commit never carries a broken tree.
+set -u
+if ! command -v npm >/dev/null 2>&1; then exit 0; fi
+
+printf 'pre-commit: the doctor\n'
+npm run --silent check || {
+  printf '\npre-commit refused: a ward found a fault (see the FAIL row above)\nhelp: fix it, or commit with --no-verify and say why in the message\n' >&2
+  exit 1
+}
+
+printf 'pre-commit: typecheck\n'
+npm run --silent typecheck || {
+  printf '\npre-commit refused: a type error — the contract and a consumer disagree\n' >&2
+  exit 1
+}
+
+exit 0
