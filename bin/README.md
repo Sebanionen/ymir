@@ -11,10 +11,11 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 `disposition` says what happens to it: `keep`, `migrate → src/…` where the
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
-bin[709]{file,does,kind,verdict,disposition,callers,lines}:
-  "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","orphan","retire",0,35
-  "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","orphan","retire",0,32
-  "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","orphan","retire",0,36
+bin[710]{file,does,kind,verdict,disposition,callers,lines}:
+  "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
+  "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
+  "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
+  "README.md","`bin/` — every file, what it does, and whether it is alive","data","tested","keep",25,-
   "README.md","Gróa — the updater, one per install","data","tested","keep",25,-
   "README.md","collab — Vingólf, the assembly hall","data","tested","keep",25,-
   "README.md","The collaboration kit — the same discipline in every repository","data","tested","keep",25,-
@@ -722,6 +723,6 @@ bin[709]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=462, tested=244, orphan=3
+**Tally.** verdict: wired=465, tested=245
 
-**Tally.** disposition: keep=691, migrate → src/ymir_runtime/send.py=3, retire=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=695, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
