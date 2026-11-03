@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",684
+  "shell doors (bin/*.sh)",687
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -68,7 +68,7 @@ capabilities[5]{surface,count}:
 | ask.sh | bin/assistant/ask.sh -> systems/skirnir/services/ask.sh — RETIRED SHIM | tested+named | keep (a human or a cron row must run it) |
 | asks.sh | bin/assistant/asks.sh -> systems/skirnir/services/asks.sh — RETIRED SH | tested | keep (a human or a cron row must run it) |
 | ban.sh | bin/assistant/ban.sh -> systems/skirnir/services/ban.sh — RETIRED SHIM | tested | keep (a human or a cron row must run it) |
-| ear.sh | bin/assistant/ear.sh -> systems/skirnir/services/ear.sh — RETIRED SHIM | tested | keep (a human or a cron row must run it) |
+| ear.sh | bin/assistant/ear.sh -> systems/skirnir/services/ear.sh — RETIRED SHIM | tested+named | keep (a human or a cron row must run it) |
 | escalate.sh | bin/assistant/escalate.sh -> systems/skirnir/services/escalate.sh — RE | tested | keep (a human or a cron row must run it) |
 | escalation-timer.sh | bin/assistant/escalation-timer.sh -> systems/skirnir/services/escalation | tested | keep (a human or a cron row must run it) |
 | group-add.sh | bin/assistant/group-add.sh -> systems/skirnir/services/group-add.sh —  | tested | keep (a human or a cron row must run it) |
@@ -78,7 +78,7 @@ capabilities[5]{surface,count}:
 | learn-house.sh | bin/assistant/learn-house.sh -> systems/skirnir/services/learn-house.sh  | tested | keep (a human or a cron row must run it) |
 | learn-site.sh | bin/assistant/learn-site.sh -> systems/skirnir/services/learn-site.sh � | tested | keep (a human or a cron row must run it) |
 | learn.sh | bin/assistant/learn.sh -> systems/skirnir/services/learn.sh — RETIRED  | tested | keep (a human or a cron row must run it) |
-| mouth.sh | bin/assistant/mouth.sh -> systems/skirnir/services/mouth.sh — RETIRED  | tested | keep (a human or a cron row must run it) |
+| mouth.sh | bin/assistant/mouth.sh -> systems/skirnir/services/mouth.sh — RETIRED  | tested+named | keep (a human or a cron row must run it) |
 | prune.sh | bin/assistant/prune.sh -> systems/skirnir/services/prune.sh — RETIRED  | tested | keep (a human or a cron row must run it) |
 | query.sh | bin/assistant/query.sh -> systems/skirnir/services/query.sh — RETIRED  | tested | keep (a human or a cron row must run it) |
 | research-smoke.sh | bin/assistant/research-smoke.sh -> systems/skirnir/services/research-smo | tested | keep (a human or a cron row must run it) |
@@ -88,7 +88,7 @@ capabilities[5]{surface,count}:
 | smoke.sh | bin/assistant/smoke.sh -> systems/skirnir/services/smoke.sh — RETIRED  | tested+named | keep (a human or a cron row must run it) |
 | telegram.sh | bin/assistant/telegram.sh -> systems/skirnir/services/telegram.sh — RE | tested | keep (a human or a cron row must run it) |
 | voice-handler.sh | bin/assistant/voice-handler.sh -> systems/skirnir/services/voice-handler | tested | keep (a human or a cron row must run it) |
-| voice.sh | bin/assistant/voice.sh -> systems/skirnir/services/voice.sh — RETIRED  | tested | keep (a human or a cron row must run it) |
+| voice.sh | bin/assistant/voice.sh -> systems/skirnir/services/voice.sh — RETIRED  | tested+named | keep (a human or a cron row must run it) |
 | walls-test.sh | bin/assistant/walls-test.sh -> systems/skirnir/services/walls-test.sh � | tested | keep (a human or a cron row must run it) |
 | fm-afk-launch.sh | fm-afk-launch.sh - the single owner of the away-mode daemon TERMINAL lif | tested+named | keep (a human or a cron row must run it) |
 | fm-afk-return.sh | fm-afk-return.sh - deterministic away-mode return catch-up gate. | tested | keep (a human or a cron row must run it) |
@@ -382,8 +382,9 @@ capabilities[5]{surface,count}:
 | home-contract-guard.sh | home-contract-guard.sh — the contract that raises a user's home is che | tested | keep (a human or a cron row must run it) |
 | identity-guard.sh | identity-guard.sh — a commit that leaves by push must not publish a pr | tested | keep (a human or a cron row must run it) |
 | inventory-guard.sh | inventory-guard.sh — a register that runs in no gate is a capability t | tested | keep (a human or a cron row must run it) |
+| language-guard.sh | language-guard.sh — two tongues: English for the work, Old Norse for t | tested+named | keep (a human or a cron row must run it) |
 | packaging-guard.sh | packaging-guard.sh — every path a shipped installer names must exist i | tested | keep (a human or a cron row must run it) |
-| path-ledger-guard.sh | path-ledger-guard.sh — Rule 25: a path that MOVED may not be reference | tested | keep (a human or a cron row must run it) |
+| path-ledger-guard.sh | path-ledger-guard.sh — Rule 25: a path that MOVED may not be reference | tested+named | keep (a human or a cron row must run it) |
 | path-legality-guard.sh | path-legality-guard.sh — a tracked path must be a name EVERY host can  | tested | keep (a human or a cron row must run it) |
 | people-guard.sh | people-guard.sh — the public tree holds no people. | tested | keep (a human or a cron row must run it) |
 | perm-guard.sh | perm-guard.sh — flag agent profiles whose permissions are self-defeati | tested | keep (a human or a cron row must run it) |
@@ -443,6 +444,8 @@ capabilities[5]{surface,count}:
 | no-delete-guard.sh | no-delete-guard.sh — Rule 11, ENFORCED. A tracked file is never delete | tested | keep (a human or a cron row must run it) |
 | approve.sh | approve.sh — one gesture answers one question. | tested+named | keep (a human or a cron row must run it) |
 | send.sh | send.sh — THE HOTLINE: one door a system calls when it has something t | tested+named | keep (a human or a cron row must run it) |
+| telegram-buttons.sh | telegram-buttons.sh — make a Telegram button that actually renders. | tested | keep (a human or a cron row must run it) |
+| test_telegram_buttons.sh | test_telegram_buttons.sh — the button grammar, proved both ways. | tested | keep (a human or a cron row must run it) |
 | collaborators.sh | collaborators.sh — the people we work with: clients, collaborators, ad | tested | keep (a human or a cron row must run it) |
 | inbox-watch.sh | inbox-watch.sh — notice when someone answers, without a human opening  | tested | keep (a human or a cron row must run it) |
 | inbox.sh | inbox.sh — read the mail that matters to a collaborator, and prove you | tested | keep (a human or a cron row must run it) |
