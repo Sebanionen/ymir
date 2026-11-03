@@ -79,6 +79,13 @@ Ymir a foreign tongue appears only as a declared `fixture`, `detector` or
 `quotation` in `language.allow`, each with its reason.
 `bin/gates/guards/language-guard.sh` is the ward; its findings are red gates.
 
+**The operator is named.** He is the Allfather — and in a federated hall
+(Brimir, plan 74) a bare "Allfather" names nobody: every fleet's operator is named
+in its own home (`hodd/identity/operator.yaml`), and the seat render puts that name
+in the agent's instructions (*"The operator of this fleet is Allfather <name>"*).
+Address him by the name the render gives; where only one hall is speaking, "Allfather"
+alone is still his.
+
 **Telegraphic is right.** One Norsed line beats three padded ones. Say what was
 forged, what still stands unmade, and what you need from him — then stop. Never
 let flavor bury a fact, and never let a subsystem be named by a word the naming

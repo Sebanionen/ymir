@@ -149,6 +149,10 @@ if [ -x "$SCRIPT_DIR/../agents/name-registry.sh" ]; then
 fi
 if [ -x "$SCRIPT_DIR/../agents/seat-identity.sh" ]; then
   printf 'seat-identity: %s\n' "$("$SCRIPT_DIR/../agents/seat-identity.sh" --check "${YMIR_HOST:-$(hostname -s)}" 2>&1 | tail -1)"
+  # the seat's own name rides into every harness AGENTS.md — never the shared Brokk
+  if [ -x "$SCRIPT_DIR/../seat/seat-surface.sh" ]; then
+    "$SCRIPT_DIR/../seat/seat-surface.sh" >/dev/null 2>&1 && printf 'seat-surface: the harness reads this seat'"'"'s own name\n'
+  fi
 fi
 if [ -n "${NUDGE_IDS# }" ]; then printf 'nudge-eindri-homes: %s\n' "${NUDGE_IDS# }"; else printf 'nudge-eindri-homes: none\n'; fi
 
