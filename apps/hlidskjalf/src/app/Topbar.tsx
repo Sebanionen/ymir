@@ -104,7 +104,7 @@ export function Topbar() {
           second pipeline. */}
       <Ward />
       <button type="button" className="btn btn-sm" style={{ whiteSpace: 'nowrap', flexShrink: 0 }} onClick={() => useYmir.getState().setGate('skirnir')}
-        title="Tala med assistenten – separat från Snotras mötesinspelning">Skírnir – Tala</button>
+        title="Talk with the assistant – separate from Snotra's meeting recording">Skírnir – Tala</button>
       <SnotraLive />
 
       {/* The Óðrerir Live Hall — the landing's live board, not one of the three

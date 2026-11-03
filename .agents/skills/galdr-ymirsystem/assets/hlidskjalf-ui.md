@@ -924,8 +924,8 @@ F8/Escape scope, Nicole/Bengt routes and no-microphone automation boundary hold.
 ### Rendered availability refresh — pending is not unavailable
 
 The Skirnir client now distinguishes unconfirmed Swedish capability from an
-actual negative status response. Before completion it says kontrollerar röst,
-not röst ej tillgänglig. Status refreshes on focus/visibility; Kontrollera röster
+actual negative status response. Before completion it says checking voice,
+not voice unavailable. Status refreshes on focus/visibility; Check voices
 performs an explicit read. While Swedish availability remains unconfirmed, a
 visible idle page rechecks every five seconds, deduplicating reads and cleaning
 up timers/listeners on unmount. None of these paths requests microphone access.

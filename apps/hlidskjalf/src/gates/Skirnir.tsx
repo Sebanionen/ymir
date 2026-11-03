@@ -6,10 +6,10 @@ type Phase = 'idle' | 'permission' | 'listening' | 'transcribing' | 'answering' 
 type Turn = { phase: Phase; transcript?: string; answer?: string; refused?: boolean; audio?: string; voice?: string; error?: string };
 type VoiceStatus = { languages: { id: string; speech: boolean; voice: string }[] };
 const labels: Record<Phase, string> = {
-  idle: 'Mikrofonen är av', permission: 'Väntar på ditt mikrofontillstånd', listening: 'Lyssnar på din fråga',
-  transcribing: 'Mikrofonen är av · tolkar frågan', answering: 'Mikrofonen är av · Skírnir svarar',
-  synthesizing: 'Mikrofonen är av · skapar tal', ready: 'Svaret är klart · mikrofonen är av',
-  stopped: 'Stoppad · mikrofonen är av', error: 'Kunde inte slutföra · mikrofonen är av',
+  idle: 'The microphone is off', permission: 'Waiting for your microphone permission', listening: 'Listening to your question',
+  transcribing: 'The microphone is off · interpreting the question', answering: 'The microphone is off · Skírnir answers',
+  synthesizing: 'The microphone is off · creating speech', ready: 'The answer is ready · the microphone is off',
+  stopped: 'Stopped · the microphone is off', error: 'Could not complete · the microphone is off',
 };
 
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -77,7 +77,7 @@ export function Skirnir() {
     setAudio(''); setPhase('stopped'); setPlayHint('');
     if (id) {
       try { await api(`turns/${id}`, { method: 'DELETE' }); }
-      catch { setError('Mikrofonen är av. Backendstoppet kunde inte bekräftas; ladda inte upp en ny fråga ännu.'); }
+      catch { setError('The microphone is off. The backend stop could not be confirmed; do not upload a new question yet.'); }
     }
   }
 
@@ -124,7 +124,7 @@ export function Skirnir() {
 
   useEffect(() => {
     if (!audio || !player.current) return;
-    void player.current.play().catch(() => setPlayHint('Tryck på Spela upp svaret för att höra det.'));
+    void player.current.play().catch(() => setPlayHint('Press Play answer to hear it.'));
   }, [audio]);
 
   useEffect(() => {
@@ -141,7 +141,7 @@ export function Skirnir() {
       if (action === 'cancel') void stop();
       else if (action === 'finish') finishQuestion();
       else if (!consent) {
-        setError('Bekräfta mikrofonvalet först. F8 använder samma samtycke som Börja tala.');
+        setError('Confirm the microphone choice first. F8 uses the same consent as Begin speaking.');
         consentBox.current?.focus();
       } else void start();
     };
@@ -202,7 +202,7 @@ export function Skirnir() {
     const token = ++generation.current;
     setPhase('permission');
     try {
-      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) throw new Error('Den här webbläsaren saknar lokal ljudinspelning. Använd en aktuell webbläsare på den lokala adressen.');
+      if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) throw new Error('This browser lacks local audio recording. Use a current browser on the local address.');
       const input = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
       if (generation.current !== token) { input.getTracks().forEach((track) => track.stop()); return; }
       stream.current = input;
@@ -215,7 +215,7 @@ export function Skirnir() {
         closeTracks(); recorder.current = null;
         if (generation.current === token) void upload(new Blob(chunks, { type: recording.mimeType }), token);
       };
-      recording.onerror = () => { void stop(); setError('Ljudinspelningen avbröts av webbläsaren.'); };
+      recording.onerror = () => { void stop(); setError('The audio recording was interrupted by the browser.'); };
       recording.start();
       setPhase('listening');
       timer.current = setTimeout(finishQuestion, 30_000);
@@ -223,7 +223,7 @@ export function Skirnir() {
       closeTracks();
       if (generation.current === token) {
         setPhase('error');
-        setError((e as Error).name === 'NotAllowedError' ? 'Mikrofontillstånd saknas. Du väljer själv om du vill tillåta det i webbläsaren.' : (e as Error).message);
+        setError((e as Error).name === 'NotAllowedError' ? 'No microphone permission. You choose yourself whether to allow it in the browser.' : (e as Error).message);
       }
     }
   }
@@ -231,47 +231,47 @@ export function Skirnir() {
   return <>
     <div className="stage-head"><div>
       <h1 className="stage-title">Skírnir – Tala</h1>
-      <p className="stage-deck">En fråga i taget · godkänd kunskap · lokala röstmotorer</p>
+      <p className="stage-deck">One question at a time · approved knowledge · local voice engines</p>
     </div></div>
-    <section className="panel" aria-label="Tala med Skírnir" style={{ maxWidth: 840 }}>
+    <section className="panel" aria-label="Talk with Skírnir" style={{ maxWidth: 840 }}>
       <div className="panel-body" style={{ display: 'grid', gap: 20 }}>
-        <div><h2 style={{ marginTop: 0 }}>Tala med Skírnir</h2>
-          <p>Tryck på Börja tala, tillåt mikrofonen i webbläsaren och ställ din fråga. Tryck sedan på Avsluta frågan. Mikrofonen stängs innan svaret skapas.</p>
-          <p className="muted">Detta är assistenten. Snotras mötesinspelning är en separat funktion. Ljudet används för din fråga och tas bort efter bearbetning; texten följer Skírnirs befintliga privata samtalslogg.</p>
+        <div><h2 style={{ marginTop: 0 }}>Talk with Skírnir</h2>
+          <p>Press Begin speaking, allow the microphone in the browser and ask your question. Then press Finish question. The microphone closes before the answer is created.</p>
+          <p className="muted">This is the assistant. Snotra's meeting recording is a separate function. The audio is used for your question and removed after processing; the text follows Skírnir's existing private conversation log.</p>
         </div>
-        <label>Språk<br /><select aria-label="Språk för tal" value={language} disabled={busy} onChange={(event) => setLanguage(event.target.value)}
+        <label>Language<br /><select aria-label="Language for speech" value={language} disabled={busy} onChange={(event) => setLanguage(event.target.value)}
           style={{ background: 'var(--ymir-bg-2)', color: 'var(--ymir-text-0)', border: '1px solid var(--ymir-steel-2)', borderRadius: 'var(--ymir-radius)', padding: 8, minHeight: 44, font: 'inherit' }}>
-          <option value="en">English · Nicole (USA, kvinna)</option>
-          <option value="sv" disabled={swedishSpeech !== true}>{swedishSpeech === null ? 'Svenska · kontrollerar röst…' : swedishSpeech ? 'Svenska · Bengt (sv-SE)' : 'Svenska · röst ej tillgänglig ännu'}</option>
+          <option value="en">English · Nicole (USA, woman)</option>
+          <option value="sv" disabled={swedishSpeech !== true}>{swedishSpeech === null ? 'Swedish · checking voice…' : swedishSpeech ? 'Swedish · Bengt (sv-SE)' : 'Swedish · voice not available yet'}</option>
         </select></label>
-        <button className="btn btn-sm" style={{ justifySelf: 'start' }} disabled={busy} onClick={() => refreshVoices.current()}>Kontrollera röster</button>
-        <p className="muted" style={{ margin: 0 }}>Engelska använder Kokoro Nicole. Svenska använder den separata lokala Bengt-rösten; Kokoro används aldrig som svensk röst. Fakta utan verifierad svensk formulering ger ett ärligt begränsningssvar.</p>
+        <button className="btn btn-sm" style={{ justifySelf: 'start' }} disabled={busy} onClick={() => refreshVoices.current()}>Check voices</button>
+        <p className="muted" style={{ margin: 0 }}>English uses Kokoro Nicole. Swedish uses the separate local Bengt voice; Kokoro is never used as the Swedish voice. A fact without a verified Swedish phrasing gives an honest limitation answer.</p>
         <label style={{ display: 'flex', alignItems: 'start', gap: 10 }}>
           <input ref={consentBox} type="checkbox" style={{ accentColor: 'var(--ymir-cyan-1)' }} checked={consent} disabled={busy} onChange={(event) => setConsent(event.target.checked)} />
-          Jag vill använda mikrofonen för den här frågan. Webbläsaren ber om mitt tillstånd.
+          I want to use the microphone for this question. The browser asks for my permission.
         </label>
         <div role="status" aria-live="polite" className="mono" style={{ color: phase === 'listening' ? 'var(--ymir-warn)' : 'var(--ymir-text-1)' }}>
-          <span aria-hidden="true">ᛟ </span>{labels[phase]}{!connected ? (connectionFailed ? ' · lokal anslutning saknas' : ' · ansluter lokalt…') : ''}
+          <span aria-hidden="true">ᛟ </span>{labels[phase]}{!connected ? (connectionFailed ? ' · local connection missing' : ' · connecting locally…') : ''}
         </div>
-        <p className="muted" style={{ margin: 0 }}><kbd>F8</kbd> börjar tala, nästa <kbd>F8</kbd> avslutar frågan. <kbd>Escape</kbd> avbryter.
-          {' '}Gäller bara när den här Skírnir-sidan har fokus, inte när du skriver eller arbetar i en annan app. Samtycke krävs även med F8.</p>
+        <p className="muted" style={{ margin: 0 }}><kbd>F8</kbd> starts speaking, the next <kbd>F8</kbd> finishes the question. <kbd>Escape</kbd> cancels.
+          {' '}Applies only when this Skírnir page has focus, not when you are typing or working in another app. Consent is required even with F8.</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-          <button className="btn btn-primary" style={{ minHeight: 44 }} disabled={!consent || !connected || busy} onClick={() => void start()}>Börja tala</button>
-          <button className="btn" style={{ minHeight: 44 }} disabled={phase !== 'listening'} onClick={finishQuestion}>Avsluta frågan</button>
-          <button className="btn" style={{ minHeight: 44 }} disabled={phase === 'idle' || phase === 'stopped'} onClick={() => void stop()}>Stoppa</button>
-          {connectionFailed && <button className="btn" onClick={() => refreshVoices.current()}>Anslut igen</button>}
+          <button className="btn btn-primary" style={{ minHeight: 44 }} disabled={!consent || !connected || busy} onClick={() => void start()}>Begin speaking</button>
+          <button className="btn" style={{ minHeight: 44 }} disabled={phase !== 'listening'} onClick={finishQuestion}>Finish question</button>
+          <button className="btn" style={{ minHeight: 44 }} disabled={phase === 'idle' || phase === 'stopped'} onClick={() => void stop()}>Stop</button>
+          {connectionFailed && <button className="btn" onClick={() => refreshVoices.current()}>Reconnect</button>}
         </div>
         {error && <p role="alert" style={{ color: 'var(--ymir-danger)', overflowWrap: 'anywhere' }}>{error}</p>}
-        <div><h3>Din fråga</h3><p data-testid="voice-transcript">{transcript || 'Här visas transkriptionen när frågan har tolkats.'}</p></div>
-        <div><h3>Skírnirs svar</h3><p data-testid="voice-answer" style={{ whiteSpace: 'pre-wrap' }}>{answer || 'Här visas svaret från Skírnirs befintliga kunskap och svarsspärr.'}</p>
-          {answer && refused && <p className="muted">Skírnir markerade svaret som en begränsning eller saknad godkänd fakta.</p>}
+        <div><h3>Your question</h3><p data-testid="voice-transcript">{transcript || 'The transcription appears here once the question has been interpreted.'}</p></div>
+        <div><h3>Skírnir's answer</h3><p data-testid="voice-answer" style={{ whiteSpace: 'pre-wrap' }}>{answer || 'The answer appears here from Skírnir's existing knowledge and answer gate.'}</p>
+          {answer && refused && <p className="muted">Skírnir marked the answer as a limitation or missing approved fact.</p>}
         </div>
-        {audio && <div><audio ref={player} controls src={audio} aria-label="Skírnirs talade svar" />
-          <p className="muted">Röst: {voice === 'af_nicole' ? 'Nicole · amerikansk engelska · kvinna' : voice === 'Microsoft Bengt' ? 'Bengt · svenska (sv-SE)' : voice}</p>
-          <p>{playHint}</p><button className="btn" onClick={() => void player.current?.play().catch(() => setPlayHint('Webbläsaren kunde inte spela ljudet.'))}>Spela upp svaret</button></div>}
-        <details><summary>Prova med en ljudfil utan mikrofon</summary>
-          <p>Välj ett ljudprov på högst 8 MiB. Samma riktiga transkription och svar används.</p>
-          <input aria-label="Ljudfil till Skírnir" type="file" accept="audio/*" disabled={!connected || busy}
+        {audio && <div><audio ref={player} controls src={audio} aria-label="Skírnirs spoken answer" />
+          <p className="muted">Voice: {voice === 'af_nicole' ? 'Nicole · American English · woman' : voice === 'Microsoft Bengt' ? 'Bengt · Swedish (sv-SE)' : voice}</p>
+          <p>{playHint}</p><button className="btn" onClick={() => void player.current?.play().catch(() => setPlayHint('The browser could not play the audio.'))}>Play answer</button></div>}
+        <details><summary>Try an audio file without a microphone</summary>
+          <p>Choose an audio sample of at most 8 MiB. The same real transcription and answer are used.</p>
+          <input aria-label="Audio file for Skírnir" type="file" accept="audio/*" disabled={!connected || busy}
             onChange={(event) => { const file = event.target.files?.[0]; if (!file) return; reset(); void upload(file, ++generation.current); event.target.value = ''; }} />
         </details>
       </div>
