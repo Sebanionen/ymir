@@ -59,17 +59,22 @@ The law is restated in four authoritative places; keep them consistent:
 | Meeting ear (capture · transcribe · minutes) | **Snotra** | The wise one, mistress of counsel — the minutes-maker; hears the meeting, keeps the record | `systems/snotra/services/ear/snotra-capture.sh`, `systems/snotra/services/ear/snotra-transcribe.sh`, `systems/snotra/services/ear/snotra-ensure.sh`, `tools/snotra/`, `tools/mill/systemd/snotra.service` |
 | Meeting room (our own hall) | **Þing** | The assembly, the law-meeting — a hall of our own (MiroTalk P2P fork on whynot) where the ear knows the room, the participants, and the moment it began | `zerwiz/mirotalk` (fork), deployed `~/thing/mirotalk` on whynot (unit `thing.service`) |
 
-### 3.1b Machine agents — one per host, named by the law
+### 3.1b Machine agents — two agents per host, each named by the law
 
-| Figure | Role | Where it lives |
+**No agent is named Brokk (Rule 44).** Brokk is the counsellor's ROLE; every host names both of its
+agents, and every agent declares **house · fleet · machine · Allfather**.
+
+| Agent | What it is | Where its name lives |
 |---|---|---|
-| **Íðunn** (nidavellir) | Keeper of the apples that keep the gods young — the operator's agent that keeps THIS COMPUTER alive and working; distinct from the seat primary, who works INSIDE Ymir | rendered into `~/.hermes/SOUL.md` by `bin/seat/seat-surface.sh`; named in `hodd/identity/seats.yaml` → `seats.<host>.machine_agent` |
-| **Fulla** (heimdall) | Keeper of Frigg's casket — the operator's agent that keeps the counsellor's machine alive and whole; **never Brokk**, who is Ymir's counsellor (the seat primary) and may not be doubled | same files |
+| **seat primary** | works INSIDE Ymir on that host (the figure whose role matches the seat's work) | `hodd/identity/seats.yaml` → `seats.<host>.primary` |
+| **machine agent** | the operator's agent that keeps that COMPUTER alive and working | `hodd/identity/seats.yaml` → `seats.<host>.machine_agent` |
 
-**Rule:** every host names its own machine agent (never one shared name — a fleet of identical
-names collides, 2026-11-03). The name is chosen by the law's role sentence — *the agent that keeps
-this computer* — and sealed by the Allfather; an unsealed host's block says **unnamed**, never an
-invented name.
+**Rules for naming either one.** State the role in one sentence, choose the figure whose mythic role
+is that sentence; never reuse another host's name; never name an agent `brokk`; if the Allfather has
+not sealed one, the render says **unnamed** — never an invention. The renderer is
+`bin/seat/seat-surface.sh` (it refuses a roster that names an agent `brokk`), run by **install and
+every update**. **The roster itself is private** and lives in the operator's home, never in this
+repository (Rule 04).
 
 ### 3.2 Brokk distro runtime components (`docs/plans/29-brokk-distro-runtime.md:270-297`)
 
