@@ -60,7 +60,7 @@ fi
 if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
   driver="$(git -C "$ROOT" config --get merge.regenerate.driver 2>/dev/null || true)"
   [ -n "$driver" ] || {
-    printf '  "the merge driver is not seated","FEATURES.md","run bin/records/weave-features.sh --install (a woven document without its driver conflicts by hand)"\n'
+    printf '  "the merge driver is not seated","FEATURES.md · bin/README.md · capabilities.md","run bin/records/weave-features.sh --install (a woven document without its driver conflicts by hand, on every merge)"\n'
     stale=$((stale + 1))
   }
 fi

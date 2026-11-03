@@ -153,6 +153,10 @@ if [ -x "$SCRIPT_DIR/../agents/seat-identity.sh" ]; then
   if [ -x "$SCRIPT_DIR/../seat/seat-surface.sh" ]; then
     "$SCRIPT_DIR/../seat/seat-surface.sh" >/dev/null 2>&1 && printf 'seat-surface: the harness reads this seat'"'"'s own name\n'
   fi
+  # the woven documents are answered by a merge driver — an update seats it too
+  if [ -x "$SCRIPT_DIR/../records/weave-features.sh" ]; then
+    "$SCRIPT_DIR/../records/weave-features.sh" --install >/dev/null 2>&1 && printf 'weave-driver: the woven documents merge by re-weaving\n'
+  fi
 fi
 if [ -n "${NUDGE_IDS# }" ]; then printf 'nudge-eindri-homes: %s\n' "${NUDGE_IDS# }"; else printf 'nudge-eindri-homes: none\n'; fi
 
