@@ -47,6 +47,8 @@ only people who can book are the people who already have an account, which defea
 - **The Plane token is not missing, it is unhoarded.** It lives at
   `/home/zerwizserver/gimle/desk/etc/plane-token`. `ymir_secret_keys PLANE` reports nothing because the vault knows
   no such key; moving it into `hodd/secrets/platform.env` is a decision, not a cleanup.
-- Cal.com holds **one** user (username `josef`), 4 event types, 0 bookings, a Google calendar credential, a Google
+- Cal.com holds **one** user (username `<the operator>`), 4 event types, 0 bookings, a Google calendar credential, a Google
   video credential, and no teams. Per-member booking places are the Allfather's call: each person gets a Cal.com
   user (or a team with round-robin) before their link is real.
+
+**2026-11-03 (correction, appended):** the operator's name and address were redacted from this note. They are personal data: they belong in the home, and a public fix note may say *the operator* and nothing more (RULES/04, RULES/06 — the correction is recorded, not the leak).

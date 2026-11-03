@@ -60,7 +60,7 @@ are **localhost-only**, so a hand reaches them through an SSH tunnel, never a LA
 ```
 # ~/.ssh/config
 Host zerwizserver
-  HostName 192.168.68.103
+  HostName 192.0.2.103
   User zerwizserver
   LocalForward 8316 127.0.0.1:8316     # gateway: well · bolthorn · skuld
   LocalForward 4602 127.0.0.1:4602     # the well bridge (engram)

@@ -64,12 +64,12 @@ EOF
 plan_ufw() {
   cat <<EOF
 mend ufw[4]{rule,now,after}:
-  "ssh","--dport 22 -j ACCEPT (any source)","-s 192.168.68.0/24 + in on tailscale0"
+  "ssh","--dport 22 -j ACCEPT (any source)","-s 192.0.2.0/24 + in on tailscale0"
   "the gate","--dport 3889 -j ACCEPT (any source)","in on tailscale0 + the Cloudflare tunnel only"
-  "the rail","--dport 8080 -s 192.168.68.0/24 and in on tailscale0","unchanged — already narrow"
+  "the rail","--dport 8080 -s 192.0.2.0/24 and in on tailscale0","unchanged — already narrow"
   "LocalSend","--dport 53317 (any source)","unchanged — a deliberate transfer port; say so here"
 commands[4]{run,why}:
-  "sudo ufw allow from 192.168.68.0/24 to any port 22 proto tcp","the LAN road stays"
+  "sudo ufw allow from 192.0.2.0/24 to any port 22 proto tcp","the LAN road stays"
   "sudo ufw allow in on tailscale0 to any port 22 proto tcp","the tailnet road — the one that always works"
   "sudo ufw delete allow 22/tcp","remove the world's door (do this only after the two above answer)"
   "sudo ufw allow in on tailscale0 to any port 3889 proto tcp && sudo ufw delete allow 3889/tcp","the gate: tailnet + the tunnel, not the world"
@@ -138,7 +138,7 @@ if [ "$DO_UFW" = 1 ]; then
     exit 3
   fi
   [ "$(id -u)" = 0 ] || { printf 'error: ufw needs root\nhelp: sudo bin/ward/harden.sh apply --ufw --i-will-not-travel-blind\n' >&2; exit 1; }
-  ufw allow from 192.168.68.0/24 to any port 22 proto tcp
+  ufw allow from 192.0.2.0/24 to any port 22 proto tcp
   ufw allow in on tailscale0 to any port 22 proto tcp
   ufw deny 22/tcp
   ufw allow in on tailscale0 to any port 3889 proto tcp

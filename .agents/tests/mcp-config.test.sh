@@ -12,10 +12,10 @@ bad() { printf 'not ok - %s\n' "$1" >&2; fail=1; }
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 cat >"$TMP/a.json" <<'EOF'
-{"heart":"h1","hosts":{"h1":{"roles":["heart"],"tailnet":"h1.tail.ts.net"},"d1":{"roles":["dev"],"tailnet":"d1.tail.ts.net"}}}
+{"heart":"h1","hosts":{"h1":{"roles":["heart"],"tailnet":"h1.<host>.tailnet.ts.net"},"d1":{"roles":["dev"],"tailnet":"d1.<host>.tailnet.ts.net"}}}
 EOF
 cat >"$TMP/b.json" <<'EOF'
-{"heart":"h2","hosts":{"h2":{"roles":["heart"],"tailnet":"h2.other.ts.net","lan":"192.168.1.9"},"d1":{"roles":["dev"],"tailnet":"d1.tail.ts.net"}}}
+{"heart":"h2","hosts":{"h2":{"roles":["heart"],"tailnet":"h2.<host>.tailnet.ts.net","lan":"192.0.2.9"},"d1":{"roles":["dev"],"tailnet":"d1.<host>.tailnet.ts.net"}}}
 EOF
 
 # every record server points at the local gateway, and the heart is absent
@@ -23,7 +23,7 @@ out="$(YMIR_HOST=d1 YMIR_FLEET_REGISTRY="$TMP/a.json" bash "$M" 2>/dev/null)"
 printf '%s' "$out" | grep -q '127.0.0.1:8316/mcp/well' && ok "well points at the gateway" || bad "well: $out"
 printf '%s' "$out" | grep -q '127.0.0.1:8316/mcp/bolthorn' && ok "bolthorn points at the gateway" || bad "bolthorn: $out"
 printf '%s' "$out" | grep -q '127.0.0.1:8316/mcp/skuld' && ok "skuld points at the gateway" || bad "skuld: $out"
-printf '%s' "$out" | grep -q 'h1.tail.ts.net' && bad "config leaked the heart address" || ok "no heart address in the config"
+printf '%s' "$out" | grep -q 'h1.<host>.tailnet.ts.net' && bad "config leaked the heart address" || ok "no heart address in the config"
 
 # the config OUTLIVES a heart-address change: two registries, one config
 out_b="$(YMIR_HOST=d1 YMIR_FLEET_REGISTRY="$TMP/b.json" bash "$M" 2>/dev/null)"

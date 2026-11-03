@@ -1053,7 +1053,7 @@ def say_unknown(tier: str = "stranger", passed: bool = True, seed: str = "") -> 
     return pick(REFUSALS_UNREACHED, seed or "unreached")
 
 
-def answer(text: str, tier: str, channel: str, sender: str = "", model: str = "", chat: str = "", sender_id: str = "", members: list[str] | None = None) -> dict:
+def answer(text: str, tier: str, channel: str, sender: str = "", model: str = "", chat: str = "", sender_id: str = "", members: list[str] | None = None, language: str = "auto") -> dict:
     if banned(chat):
         return {"answer": "", "refused": True, "intent": "banned", "tier": "banned", "digest": ""}
     facts = load_digest()
@@ -1068,6 +1068,15 @@ def answer(text: str, tier: str, channel: str, sender: str = "", model: str = ""
     mouth = model or os.environ.get("SKIRNIR_MODEL") or ""
     question = text.strip()
     key = re.sub(r"[^a-z0-9 ]", "", question.lower()).strip()
+    if language == "sv":
+        import unicodedata
+        normalized = "".join(c for c in unicodedata.normalize("NFKD", question.lower()) if not unicodedata.combining(c))
+        normalized = re.sub(r"[^a-z0-9 ]", " ", normalized)
+        for phrase, canonical in (("vad vet du", "what do you know"), ("vilka fakta har du", "what do you know"),
+                                  ("vem ar du", "who are you"), ("hej", "hello"), ("hejsan", "hello")):
+            if re.search(r"\b" + phrase + r"\b", normalized):
+                key = canonical
+                break
     # the name in front of a question is an ADDRESS, not content: strip it and match what is left
     key = re.sub(r"^\s*(sk[ií]rnir|skirmir|ymir|brokk|hey sk[ií]rnir|ok sk[ií]rnir)\b\s*", "",
                  key).strip()
@@ -1287,6 +1296,9 @@ def answer(text: str, tier: str, channel: str, sender: str = "", model: str = ""
             and looks_like_statement(question, key):
         kind, intent = "learn_plain", "learn-plain"
 
+    if channel == "voice-local" and kind in ("learn", "learn_plain", "research", "answer_ask", "ask_him"):
+        # Local assistant speech never opens a mail, learning or external tool road.
+        kind, intent, denied = "action", "voice-action-refused", True
     if kind == "learn" or kind == "learn_plain":
         if tier != "owner":
             reply = "I only learn from the Allfather."
@@ -1655,6 +1667,19 @@ def answer(text: str, tier: str, channel: str, sender: str = "", model: str = ""
             if said and not sounds_like_refusal(said):
                 reply, intent = said, f"model:{used[0]}"
 
+    if language == "sv":
+        if kind == "inventory" and tier == "owner":
+            reply = f"Jag har {len(facts)} godkända uppgifter att utgå från. Jag använder bara den kunskap som får delas här."
+        elif kind == "greeting":
+            reply = "Hej. Jag lyssnar. Vad vill du veta?"
+        elif kind == "action":
+            reply = "Jag kan svara här, men skickar, bokar eller ändrar inget via röstingången."
+        elif intent == "unknown":
+            reply = "Jag kan inte besvara den frågan med den godkända kunskap som får användas här."
+        else:
+            # No model or invented translation is substituted for an approved fact.
+            reply = "Jag saknar en verifierad svensk formulering för det svaret. Välj engelska för att höra källtexten."
+            intent, denied = "unknown", True
     reply = denorse(reply)
     if "voice" in (channel or ""):
         # the council's bar is 1.2 s to first audio: a spoken answer is ONE clause, never a table
@@ -1727,9 +1752,10 @@ def main() -> int:
     ap.add_argument("--sender-id", default="", help="the sender's numeric id, to resolve who they are")
     ap.add_argument("--group-members", default="", help="comma-separated person ids in a group")
     ap.add_argument("--model", default="", help="a local model id for free text (owner tier only)")
+    ap.add_argument("--language", default="auto", choices=("auto", "en", "sv"))
     args = ap.parse_args()
     members = [m.strip() for m in args.group_members.split(',') if m.strip()] or None
-    result = answer(args.text, args.tier, args.channel, args.sender, args.model, args.chat, args.sender_id, members)
+    result = answer(args.text, args.tier, args.channel, args.sender, args.model, args.chat, args.sender_id, members, args.language)
     print(json.dumps(result, ensure_ascii=False))
     return 0
 

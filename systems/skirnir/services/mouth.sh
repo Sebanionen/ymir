@@ -9,9 +9,15 @@
 # assistant's own mouth use: one voice for the whole house.
 set -u
 TEXT="${1:-}"; OUT="${2:-}"
+[ "${3:-en}" = en ] || { printf 'mouth: English only; Swedish speech is unavailable\n' >&2; exit 2; }
 [ -n "$TEXT" ] && [ -n "$OUT" ] || { printf 'mouth: usage: mouth.sh "text" out.ogg\n' >&2; exit 2; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LEASE="$SCRIPT_DIR/../../systems/snotra/services/tts-lease/tts-lease.sh"
+. "$SCRIPT_DIR/native-voice.sh"
+if native_voice_available; then
+  native_voice_file speak "$TEXT" "$OUT" "${3:-en}"
+  exit $?
+fi
+LEASE="$SCRIPT_DIR/../../snotra/services/tts-lease/tts-lease.sh"
 VOICE="${KOKORO_VOICE:-}"
 if [ -z "$VOICE" ] && [ -x "$HOME/.local/bin/kokoro-voice" ]; then
   VOICE="$("$HOME/.local/bin/kokoro-voice" 2>/dev/null | sed -n 's/.*voice: \([a-z_0-9]*\).*/\1/p' | head -1)"
@@ -58,6 +64,9 @@ fi
 # hold the voice: the idle-stop must never lower the card under a conversation (2026-10-23)
 bash "$LEASE" touch 2>/dev/null || true
 python3 "$SCRIPT_DIR/audio-tighten.py" "$TMP/say.wav" 2>/dev/null || true
-ffmpeg -hide_banner -loglevel error -y -i "$TMP/say.wav" -c:a libopus -b:a 32k -ar 48000 -ac 1 "$OUT" 2>/dev/null \
-  || { printf 'mouth: could not encode the voice note\n' >&2; exit 5; }
+case "$OUT" in
+  *.wav) cp "$TMP/say.wav" "$OUT" || exit 5 ;;
+  *) ffmpeg -hide_banner -loglevel error -y -i "$TMP/say.wav" -c:a libopus -b:a 32k -ar 48000 -ac 1 "$OUT" 2>/dev/null \
+     || { printf 'mouth: could not encode the voice note\n' >&2; exit 5; } ;;
+esac
 printf 'mouth[1]{voice,bytes,file}: "%s","%s","%s"\n' "$VOICE" "$(stat -c%s "$OUT")" "$OUT"

@@ -60,7 +60,7 @@ elif cmd=="set":
 PY
 }
 alive(){ local pid; pid="$(json "$STATE" get pid 2>/dev/null || true)"; [ -n "${pid:-}" ] && kill -0 "$pid" 2>/dev/null; }
-public_url(){ local host; host="$(hostname)"; printf 'https://%s.tailnet.ts.net' "$host"; }
+public_url(){ local host; host="$(hostname)"; printf 'https://%s.<host>.tailnet.ts.net' "$host"; }
 
 cmd_start(){
   while [ $# -gt 0 ]; do case "$1" in

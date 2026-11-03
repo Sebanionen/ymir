@@ -174,7 +174,7 @@ tools[4]{tool,does}:
 ## The constellation road — between two independent fleets (2026-11-03, plan 172)
 
 A2A is how two agents *talk*. It is not how two houses *trust*. When the peer is another
-operator's Ymir — Sebastian's, say, with its own hoard, gate and law — the road is three objects and
+operator's Ymir — a collaborator's house, say, with its own hoard, gate and law — the road is three objects and
 one door:
 
 ```
