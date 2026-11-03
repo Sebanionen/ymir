@@ -40,3 +40,22 @@ the local rule is a raid, and the next hand would not know which version they we
 
 `collab.sh standardise --check` on both repositories prints present/missing/different; `--apply` on a scratch repository installs twenty
 files, seats the hooks and writes the manifest. `collab.sh init --check` still owns the baton and is untouched by this change.
+
+## 2026-11-03 (appended) — the three faults the kit found in itself, and the acceptance still owed
+
+The kit is now in the tree; checking it against the tree found three faults, each the class the kit exists to refuse.
+
+- **A gate matched its own documentation.** `private-data.sh` flagged the sentence that described the pattern. A rule
+  that is waivable in writing is now waived **on the line it waives** (`allow-machine-path:`), not by loosening the
+  pattern — a gate that must be widened to pass stops being a gate.
+- **A gate named a home directory it does not read.** A check that reports a path the check never looks at is a false
+  accusation; it now reads only what it reads.
+- **`docs/collaboration.md` named paths that did not resolve.** The standard is an index, so a docs gate checks its own
+  claims; the paths were corrected rather than the claim softened.
+
+**Still owed, and named here so it is not mistaken for done:** the kit installed into a **second** repository and one
+real branch leaving *that* repository through a pull request, with a gate refusing something real. Until that happens,
+"a standard a repository can be given" is proved only inside this repository.
+
+Files: `bin/collab/kit/**` · `bin/collab/standardise.sh` · `bin/collab/collab.sh` · `docs/collaboration.md` ·
+`bin/records/developers.sh` · `bin/README.md` · `.agents/backend/README.md`
