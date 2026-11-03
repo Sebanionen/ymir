@@ -19,6 +19,10 @@
 #      lines are read (≥6 words, code punctuation absent), so a regex, an identifier or a CSS
 #      class cannot be mistaken for a sentence.
 #
+#   3  THE LAW MUST RIDE WHERE THE HARNESSES LOOK. A law nobody is told is no law: the repo
+#      AGENTS.md (Pi's ~/.pi/agent/AGENTS.md is a symlink to it) and every figure brief under
+#      .agents/agents/ must name Rule 43. Missing it is a finding, not a preference.
+
 # Three exceptions are LEGAL, and each must be declared in `language.allow` with its reason:
 #
 #   fixture    a test that proves unicode handling — the foreign text is the assertion
@@ -246,6 +250,19 @@ if [ "$MODE" = selftest ]; then
   fi
   printf '%s\n' "$out"
   printf 'language-guard: self-test FAILED — %s fault(s)\n' "$bad" >&2
+  exit 1
+fi
+
+# the law must ride where the harnesses look
+law_missing=""
+[ -f "$ROOT/AGENTS.md" ] && ! grep -q 'Rule 43' "$ROOT/AGENTS.md" && law_missing="AGENTS.md"
+for _brief in "$ROOT"/.agents/agents/*.md; do
+  [ -f "$_brief" ] || continue
+  grep -q 'Rule 43' "$_brief" || law_missing="${law_missing:+$law_missing, }${_brief#"$ROOT"/}"
+done
+if [ -n "$law_missing" ]; then
+  printf 'language_guard[1]{finding,path,detail}:\n'
+  printf '  "the tongue is not declared","%s","the law must ride every parchment the harnesses read — add the Rule 43 line"\n' "$law_missing"
   exit 1
 fi
 
