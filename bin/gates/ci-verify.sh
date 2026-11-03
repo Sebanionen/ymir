@@ -71,8 +71,10 @@ nodelete_base() {
 if nd_base="$(nodelete_base)"; then
   gate no-delete "Rule 11 — a tracked file is moved, never deleted (against $nd_base)" \
        bash "$ROOT/bin/no-delete-guard.sh" --base "$nd_base"
+  # `--check`, not `--base`: on a pull request the checkout is the host's merge commit, and the
+  # ward's merge-aware path (HEAD^1..HEAD^2) is the only range that is the contributor's own.
   gate identity  "Rule 04/39 — a commit publishes an account, never a private mailbox" \
-       bash "$ROOT/bin/gates/guards/identity-guard.sh" --base "$nd_base"
+       bash "$ROOT/bin/gates/guards/identity-guard.sh" --check
 else
   printf '  "%s","SKIP","%s"\n' "no-delete" "no base ref in this checkout — judged by the pre-push hook and on a PR"
 fi
