@@ -264,6 +264,160 @@ def todo(action: str = "list", content: str = "", index: int = -1) -> str:
         return "cleared"
     return "action must be list | add | update | remove | clear"
 
+
+@mcp.tool()
+def ymir_plan(slug: str, title: str = "", action: str = "new", realm: str = "", project: str = "ymir") -> str:
+    """The plan ledger: create the NEXT numbered plan with its index row (action=new), list it, or show the next number."""
+    if action == "new":
+        if not slug or not title:
+            return "new needs slug and title"
+        argv = ["bash", str(ROOT / "bin" / "records" / "plan.sh"), "new", slug, "--title", title, "--project", project]
+        if realm:
+            argv += ["--realm", realm]
+        return _run(argv, 60)
+    return _run(["bash", str(ROOT / "bin" / "records" / "plan.sh"), action], 60)
+
+
+@mcp.tool()
+def ymir_note(path: str, heading: str, body: str) -> str:
+    """Append a DATED section to an existing home document (append-only; a correction cites the old entry)."""
+    return _run(["bash", str(ROOT / "bin" / "records" / "note.sh"), path, heading, body], 60)
+
+
+@mcp.tool()
+def ymir_header(action: str = "check", path: str = "hodd") -> str:
+    """The declared-truth header of home documents: check (list the ones missing one) or apply (add a minimal one)."""
+    return _run(["bash", str(ROOT / "bin" / "records" / "header.sh"), action, path], 300)
+
+
+@mcp.tool()
+def ymir_push(message: str, paths: list[str]) -> str:
+    """Commit and push NAMED paths in the private home (never git add -A; the vault refuses a secret)."""
+    if not message or not paths:
+        return "push needs message and paths[]"
+    return _run(["bash", str(ROOT / "bin" / "vault" / "push.sh"), message, *paths], 180)
+
+
+@mcp.tool()
+def ymir_seats() -> str:
+    """Where the work actually is: every pane in herdr (or tmux), and a shell whose owner is gone named DEAD."""
+    return _run(["bash", str(ROOT / "bin" / "seat" / "seats.sh"), "list"], 120)
+
+
+@mcp.tool()
+def ymir_hall(runes: int = 5) -> str:
+    """The whole house in one read: the seat, the doors, the queue, the last runes carved."""
+    return _run(["bash", str(ROOT / "bin" / "agents" / "hall.sh"), "--runes", str(runes)], 120)
+
+
+@mcp.tool()
+def ymir_arm(action: str = "status", harness: str = "") -> str:
+    """The Gná arm, honestly: is the watch loop alive, and can THIS harness arm it? (hook <harness> names its hook.)"""
+    if action == "hook":
+        return _run(["bash", str(ROOT / "bin" / "pi" / "arm.sh"), "hook", harness or "claude"], 60)
+    return _run(["bash", str(ROOT / "bin" / "pi" / "arm.sh"), "status"], 60)
+
+
+@mcp.tool()
+def ymir_place(path: str, why: str, source: str = "") -> str:
+    """The ONLY sanctioned way a document enters the home: classify the destination against the
+    layout law (refusing what it cannot justify) and move it there. `path` is home-relative."""
+    env = dict(os.environ)
+    if source:
+        env["YMIR_PLACE_SOURCE"] = source
+    r = subprocess.run(["python3", str(ROOT / "bin" / "records" / "layout.py"), "place", path, "--why", why],
+                       capture_output=True, text=True, timeout=120, env=env, cwd=str(ROOT))
+    return (r.stdout or r.stderr).strip()
+
+
+@mcp.tool()
+def ymir_find_home(path: str, note: str = "", sample: str = "") -> str:
+    """Where should this file go? The placement oracle: the destination shelf, the reason, and the
+    next step. It NEVER moves anything."""
+    argv = ["python3", str(ROOT / "bin" / "records" / "layout.py"), "find-home", path]
+    if note:
+        argv += ["--note", note]
+    if sample:
+        argv += ["--sample", sample]
+    return _run(argv, 60)
+
+
+@mcp.tool()
+def ymir_layout(path: str) -> str:
+    """The layout law itself: which shelf a home-relative path belongs to, and why (or the refusal)."""
+    return _run(["python3", str(ROOT / "bin" / "records" / "layout.py"), "classify", path], 60)
+
+
+@mcp.tool()
+def ymir_import(sources: list[str], area: str = "", dry_run: bool = True) -> str:
+    """Bring material IN from outside the home: classified, then moved with git mv. dry_run proposes."""
+    argv = ["python3", str(ROOT / "bin" / "records" / "layout.py"), "import", *sources]
+    if area:
+        argv += ["--area", area]
+    if dry_run:
+        argv += ["--dry-run"]
+    return _run(argv, 180)
+
+
+@mcp.tool()
+def ymir_index(shelf: str = "hodd") -> str:
+    """What is uncalled, empty or stray in a shelf: empty dirs now, and the home's git strays by name."""
+    return _run(["python3", str(ROOT / "bin" / "records" / "layout.py"), "index", shelf], 120)
+
+
+@mcp.tool()
+def ymir_dellingr(path: str = "hodd", eldri: int = 90, forn: int = 365) -> str:
+    """Dellingr grades a document or shelf: nýr · eldri · forn · safn, from measurable signals only."""
+    return _run(["bash", str(ROOT / "bin" / "records" / "grade.sh"), path, "--eldri", str(eldri), "--forn", str(forn)], 180)
+
+
+@mcp.tool()
+def ymir_close_dead(pane: str) -> str:
+    """Close a shell whose owner is GONE. Refuses a pane that holds a live agent."""
+    return _run(["bash", str(ROOT / "bin" / "seat" / "seats.sh"), "close", pane], 120)
+
+
+@mcp.tool()
+def subagent(agent: str = "", task: str = "") -> str:
+    """Dispatch one of Ymir's Eindri figures (kvasir · sindri · bragi · huginn · forseti · mimir …).
+    Omit both to list the roster. The behaviour is the errand door (einherjar-spawn.sh)."""
+    if not agent:
+        return _run(["bash", str(ROOT / "bin" / "agents" / "agent-run.sh"), "--list"], 60)
+    return f"dispatch {agent}: run `bin/agents/agent-run.sh {agent} \"{task}\"` (the launch word sets the tone of the errand)"
+
+
+@mcp.tool()
+def well_recall(query: str, k: int = 5) -> str:
+    """Drink from the well before acting — Kaia's memory of what was already learned."""
+    return ymir_recall(query, k)
+
+
+@mcp.tool()
+def well_observe(lesson: str, tags: str = "") -> str:
+    """Water the well after: record what was learned, so the next hand starts ahead."""
+    return ymir_remember(lesson, tags)
+
+
+@mcp.tool()
+def gna_watch_arm() -> str:
+    """Pi's own name for the arm: start the first required watcher cycle — or read why it cannot be armed."""
+    return ymir_arm("status")
+
+
+@mcp.tool()
+def ymir_telegram(action: str = "list", machine: str = "", text: str = "") -> str:
+    """Telegram across the fleet: list the machines (bot id · chat · token ref), check a machine's bot,
+    or relay a line from THIS machine into another's chat (a Rune is carved)."""
+    if action == "relay":
+        if not machine or not text:
+            return "relay needs machine and text"
+        return _run(["bash", str(ROOT / "bin" / "notify" / "telegram-machines.sh"), "relay", machine, text], 120)
+    if action == "me":
+        return _run(["bash", str(ROOT / "bin" / "notify" / "telegram-machines.sh"), "me", machine or ""], 90)
+    if action == "ear":
+        return _run(["bash", str(ROOT / "bin" / "seat" / "hermes-telegram.sh"), "status"], 60)
+    return _run(["bash", str(ROOT / "bin" / "notify" / "telegram-machines.sh"), "list"], 60)
+
 if __name__ == "__main__":
     import sys as _sys
     if "--selftest" in _sys.argv:
