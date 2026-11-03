@@ -77,12 +77,26 @@ $(git config --get committer.email 2>/dev/null || true)"
     # account that opened the PR — a mailbox that is not in the PR's own commits at all. Judging
     # HEAD would fail every PR for a commit nobody wrote. So judge the PR's OWN side of the merge:
     # `origin/main..HEAD^2` when HEAD is a merge whose first parent is the base.
+    # NO MERGE-BASE, NO FETCH: GitHub's merge commit has the base as its FIRST parent and the PR's
+    # head as its SECOND, so `HEAD^1..HEAD^2` is exactly the commits the contributor wrote. That
+    # works on a shallow checkout, needs no fetched base branch, and cannot accidentally include a
+    # commit from the base — which is the whole fault this replaced (the base's own commits carry
+    # the mailbox this ward exists to refuse, so including one refused every PR, forever).
+    if [ "$(git rev-list --parents -n1 HEAD | awk '{print NF-1}')" -ge 2 ] \
+       && git rev-parse -q --verify HEAD^2 >/dev/null 2>&1; then
+      addrs="$(git log --format='%ae%n%ce' HEAD^1..HEAD^2 2>/dev/null)"
+      scope="this pull request's own commits (HEAD^1..HEAD^2, $(git rev-list --count HEAD^1..HEAD^2 2>/dev/null) commit(s))"
+      bad="$(printf '%s\n' "$addrs" | grep -v '^$' | sort -u | while IFS= read -r a; do allowed "$a" || printf '%s\n' "$a"; done)"
+      if [ -z "$bad" ]; then
+        printf 'identity_guard[1]{scope,verdict}:\n  "%s","PASS — every address is a noreply account or a house identity"\n' "$scope"
+        exit 0
+      fi
+      printf 'identity_guard[2]{scope,refused}:\n  "%s","a private mailbox would enter the public history"\n' "$scope"
+      printf '%s\n' "$bad" | sed -E 's/^(.).*@/\1***@/' | sed 's/^/  - (masked) /' >&2
+      exit 1
+    fi
     b="$(git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD main 2>/dev/null || true)"
     tip="HEAD"
-    if [ "$(git rev-list --parents -n1 HEAD | awk '{print NF-1}')" -ge 2 ] \
-       && [ "$(git rev-parse HEAD^1 2>/dev/null)" = "$b" ]; then
-      tip="HEAD^2"
-    fi
     [ -n "$b" ] || { printf 'identity_guard[1]{state,reason}:\n  "SKIP","no merge base to judge"\n'; exit 0; }
     addrs="$(git log --format='%ae%n%ce' "$b".."$tip" 2>/dev/null)"
     scope="this branch's commits ($(printf '%s' "$b" | cut -c1-8)..$tip)"
