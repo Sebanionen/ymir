@@ -1,0 +1,6 @@
+
+# WOVEN documents (Þættir, plan 174): a merge conflict is answered by re-weaving.
+FEATURES.md merge=regenerate
+bin/README.md merge=regenerate
+.agents/backend/README.md merge=regenerate
+.agents/assets/agents/capabilities.md merge=regenerate

@@ -1,0 +1,4 @@
+---
+section: planned-named-and-designed-not-yet-built
+---
+| People | **Skírnir — the voice raises itself** (`bin/assistant/{mouth,telegram,smoke}.sh`, `bin/time/housewatch.sh`) | `kokoro-serve` is idle-lowered on purpose, and the Telegram mouth was the one speaking door that never raised it: lowered at 12:29, every voice note until 19:30 came back as text. `mouth.sh` now takes the TTS lease, starts the server, waits for `:8765`, frees the rail and retries once if the card is full; `telegram.py` keeps the typing indicator alive while the engine thinks (`record_voice` for a voice note) and catches its 120 s timeout instead of dying; `housewatch` gained the voice surface (dark under a fresh lease is a HIGH, dark with no lease is *idle, as designed*) | [docs/features/skirnir-the-assistant.md](docs/features/skirnir-the-assistant.md) |

@@ -3,9 +3,13 @@
 The **master list of Ymir's features and functions.** One row per feature: what it
 is, what it gives you, and how to use it.
 
-**This file is append-only (Rule 06).** A feature lands → its row is added. A
-feature changes → its row is corrected by a NEW row or a note citing the old one;
-rows are never silently rewritten away. The list grows for the life of the project —
+**This file is WOVEN (Rule 06 · Þættir, plan 174).** It is generated from
+`docs/features/_catalogue/` — the header and one fragment per section — and must
+never be hand-edited. A feature lands → its row is added to the section fragment
+it belongs to, then `bin/records/weave-features.sh` weaves the file. A feature
+changes → its row is corrected by a NEW row or a note citing the old one; rows are
+never silently rewritten away. A merge conflict on this file is answered by
+re-weaving (the `merge=regenerate` driver), never by hand. The list grows for the life of the project —
 *"we can do so much"; this is the ledger of it.*
 
 **`how-to`** points at the plain-language page under [`docs/features/`](docs/features/)

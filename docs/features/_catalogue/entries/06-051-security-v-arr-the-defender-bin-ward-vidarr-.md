@@ -1,0 +1,4 @@
+---
+section: planned-named-and-designed-not-yet-built
+---
+| Security | **Víðarr — the defender** (`bin/ward/vidarr.sh` · `bin/ward/vidarr-agent.sh`) | The HAND of the defence, after the hound notices and the ward refuses: a live pi agent on `opencode-go/deepseek-v4.1-flash`, addressed in the room `the-watch`, whose only powers are the six allowlisted bites. `respond` runs the pass · `incident open|list` · `evidence <id>` collects a hashed bundle · **`report`** writes the account into `hodd/security/incidents/` · `stand-down` closes the hand. Every action is recorded before it is taken, with its un-bite, and every bite wakes the Gná arm through Hófvarpnir at CRITICAL — a defender who is only roused by a human typing is a diary | [docs/features/the-defender.md](docs/features/the-defender.md) |

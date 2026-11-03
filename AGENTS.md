@@ -498,8 +498,8 @@ agent building it. `README.md` links both; the index lists every page.
 ```
 feature_howtos[4]{rule}:
   "A user-facing feature has a page under docs/features/ — a feature with no page is not finished"
-  "The SAME change adds the FEATURES.md row and the page (or updates them)"
-  "FEATURES.md is append-only (Rule 06): add a row; correct by a new entry, never by erasing"
+  "The SAME change adds the row to its section fragment in docs/features/_catalogue/ and the page (or updates them)"
+  "FEATURES.md is WOVEN, never hand-edited (Rule 06 · Þættir): add the row to a fragment, then run bin/records/weave-features.sh; correct by a new entry, never by erasing"
   "Keep them current: when a command, flag, or limit moves, the page moves with it"
 ```
 

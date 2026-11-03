@@ -1,0 +1,4 @@
+---
+section: planned-named-and-designed-not-yet-built
+---
+| Security | **The bark reaches the pocket — Gotify or ntfy** | A finding at or above `alert.phone_at` (default HIGH) is sent to the phone through one self-hosted channel: **Gotify** (per-user app tokens = a revocable identity per machine sender, and an API that returns a message id, so delivery is proved) or **ntfy** (topics, for when several devices or people must hear it — with a write token for the hound and read tokens for devices, so a stranger cannot post "all clear"). Severity becomes the priority (CRITICAL 10 / ntfy 5 + a loud tag), the body is severity + finding line + Rune id and **no content**, MEDIUM is suppressed in quiet hours and CRITICAL never is, ten an hour at most with a storm collapsed to one line. `bin/ward/garmr/notify.py --test` proves the road before you need it | [docs/features/the-guardian.md](docs/features/the-guardian.md) |
