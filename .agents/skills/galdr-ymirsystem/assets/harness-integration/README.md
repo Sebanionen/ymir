@@ -418,6 +418,15 @@ Legend: ✅ implemented · ⚠️ partial/inert-by-design · ❌ not implemented
 | **Cursor** | ✅ `.cursor/hooks.json` `sessionStart` | ⚠️ interactive only | ✅ `stop` → `{"followup_message":...}` | ✅ `preToolUse` matcher `Shell` | ✅ `preToolUse` matcher `Shell` | ❌ |
 | **Grok** | ❌ no `.grok/` in Ymir | ❌ | ❌ | ❌ | ❌ | ❌ |
 
+### What a harness must own, and what is one door
+
+**Read `what-a-harness-must-own.md` (2026-11-04) before adding a tool to any harness.** It is the audit
+that measured the duplication — 39 MCP doors, 45 Pi tool names, 21 OpenCode tool names, **19 names in all
+three** — and the capability matrix per harness (Pi · OpenCode · Claude Code · Codex · Cursor · Gemini ·
+Kimi · Hermes · Muse · Zed): who has an MCP client, who has a lifecycle hook, and how a gap is closed.
+The law it earns: **a tool the model calls is one MCP door; a moment the harness decides (session start ·
+turn end · before a tool) is a five-file native seam; a spawner is ours.** Plan 183 carries the phases.
+
 ### Adapter files at a glance
 
 | Path | Exports / shape | Contract parts |

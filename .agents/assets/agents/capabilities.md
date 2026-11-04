@@ -342,6 +342,7 @@ capabilities[5]{surface,count}:
 | contracts-check.sh | contracts-check.sh — the typed surfaces' proof, in one command. | tested | keep (a human or a cron row must run it) |
 | design-check.sh | design-check.sh — one identity, two renderers: they must agree. | tested | keep (a human or a cron row must run it) |
 | extension-api-check.sh | extension-api-check.sh — a Ymir extension must speak Pi's ACTUAL tool  | tested+named | keep (a human or a cron row must run it) |
+| fresh-base-check.sh | fresh-base-check.sh — does this work start on the LATEST codebase? (Ru | uncalled | **decide** — unnamed and untested: move it to src/ or hodd/reference/ (Rule 11), never delete |
 | home-contract-check.sh | home-contract-check.sh — the contract that raises a home is itself che | tested | keep (a human or a cron row must run it) |
 | home-index-check.sh | home-index-check.sh — every shelf in the home has an index, and the in | tested | keep (a human or a cron row must run it) |
 | model-alias-check.sh | model-alias-check.sh — does every alias a body names resolve in the fl | tested+named | keep (a human or a cron row must run it) |
@@ -511,7 +512,7 @@ capabilities[5]{surface,count}:
 | gladsheim-ensure.sh | gladsheim-ensure.sh — seat the fleet room, whatever shape this machine | tested | keep (a human or a cron row must run it) |
 | gladsheim.sh | gladsheim.sh — the door to Gladsheim, the fleet room. | tested | keep (a human or a cron row must run it) |
 | harness-contract-install.sh | harness-contract-install.sh — every harness reads ONE contract, and an | tested | keep (a human or a cron row must run it) |
-| harness-extensions-install.sh | harness-extensions-install.sh — every harness gets the house's extensi | tested | keep (a human or a cron row must run it) |
+| harness-extensions-install.sh | harness-extensions-install.sh — every harness gets the house's extensi | tested+named | keep (a human or a cron row must run it) |
 | herdr-ensure.sh | herdr-ensure.sh — Þjazi: guarantee the terminal backend Ymir needs. | tested+named | keep (a human or a cron row must run it) |
 | herdr-run.sh | herdr-run.sh — raise an Eindri in herdr, by the grain that fits the er | tested+named | keep (a human or a cron row must run it) |
 | hermes-seat.sh | hermes-seat.sh — seat Ymir's tools into Hermes, the same packets the o | tested+named | keep (a human or a cron row must run it) |
