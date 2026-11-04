@@ -128,12 +128,8 @@
   },
   "mcp": {
     "engram": {
-      "type": "local",
-      "command": [
-        "__YMIR_HOME__/.local/bin/engram-mcp",
-        "--db",
-        "__YMIR_ROOT__/.agents/memory/kaia.engram"
-      ],
+      "type": "remote",
+      "url": "http://127.0.0.1:8316/mcp/well",
       "enabled": true
     }
   },

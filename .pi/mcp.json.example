@@ -1,11 +1,7 @@
 {
   "mcpServers": {
-    "engram": {
-      "command": "__YMIR_HOME__/.local/bin/engram-mcp",
-      "args": [
-        "--db",
-        "__YMIR_HOME__/hodd/memory/kaia.engram"
-      ]
+    "well": {
+      "url": "http://127.0.0.1:8316/mcp/well"
     }
   }
 }
