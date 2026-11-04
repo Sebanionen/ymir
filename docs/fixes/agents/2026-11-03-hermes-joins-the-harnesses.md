@@ -21,5 +21,5 @@ memory or mesh.
 - `hermes mcp list` — **seven** packets enabled: well · bolthorn · skuld · snotra ·
   a2abridge · engram · chrome-devtools.
 - `hermes-seat.sh --check` → *every packet is seated*; a second run writes 0 (idempotent).
-- `seat-surface.sh --check` → the seat file names sindri · names the operator · every
-  harness reads sindri on nidavellir (Hermes included).
+- `seat-surface.sh --check` → the seat file names the seat primary · names the operator · every
+  harness reads the seat primary on this host (Hermes included).

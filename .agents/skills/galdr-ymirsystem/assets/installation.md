@@ -1360,3 +1360,38 @@ installs receive the same Codex plugin source and deployment helper. Linux and
 macOS use the same Node helper; Windows follows the existing WSL runtime layer.
 A successful local CLI test does not establish that the entire Windows/WSL fleet
 runtime is installed or working; its shell and service checks remain required.
+
+## 2026-11-04 — the install seats the ARM, and the seat render writes only on change
+
+Appended. Two changes to the install chain, both about the same fault: a capability that is committed
+and correct but never seated by the install is a capability the machine does not have (plan 66 §7).
+
+**`step_loaders` now arms the session side.** After `valknut-load.sh --all` (which seats the packets,
+the skills and the extensions on Pi, OpenCode and Hermes), the install runs
+`bin/pi/arm.sh hook hermes --install`: a stable shim at `~/.hermes/agent-hooks/`, two `hooks:` entries
+(`on_session_start`, `pre_llm_call`) in `~/.hermes/config.yaml`, and the `(event, command)` consent
+pairs in `~/.hermes/shell-hooks-allowlist.json`. The hook runs the Sága digest at session start and
+returns it as context on the session's first turn — the session side of the Gná arm for a harness that
+has no extension API. A host without Hermes is `SKIP "no Hermes on this host — no session hook to
+seat"`, never a silent pass (RULES/25), and a hook that cannot be seated is a `WARN` naming the door.
+
+```
+install_arm[4]{step,what,skip,note}
+  "step_loaders","bin/pi/arm.sh hook hermes --install","no hermes on this host","the arm's session side; the watch LOOP is the ymir-syn-watch unit and is untouched"
+  "bin/agents/groa-update.sh","re-seats the same hook on every update","no hermes on this host","an update that moves the code under a hook's feet must re-point it — the shim resolves the house at run time, so it survives a worktree"
+  "--check","writes nothing","-","a dry run that writes is not a dry run: the arm block sits in the APPLY path only"
+  "honest limit","Codex/Cursor have no session hook surface","-","named as unarmable by the door itself; never faked"
+```
+
+**The seat render is idempotent by CONTENT.** `bin/seat/seat-surface.sh` writes `~/.hermes/SOUL.md`'s
+marked block and the repo's `.hermes.md` only when the bytes differ, so the install's identity step
+(`step_identity` → `seat-surface.sh`) and every Gróa run can repeat without churn — and "the renderer
+delivered the seat" becomes provable by running it twice and watching the second run print
+*already current (nothing written)*. The SOUL block's **door list is read from
+`bin/mcp/ymir-mcp.py --selftest`**, not restated in the template: one list, so a seat file cannot name
+fifteen doors while the packet registers thirty. `bin/gates/tests/test_hermes_seat.sh` compares the two
+sets on every run.
+
+Both facts are asserted, not asserted-about: `install` and `groa-update` are the two doors that deliver
+the seat, the packet and `.hermes.md`, and the test renders from the tree it stands in — so a second
+checkout re-rendering the machine's SOUL.md from older code shows up as a red row, not as a mystery.
