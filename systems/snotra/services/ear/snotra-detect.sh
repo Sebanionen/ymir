@@ -9,6 +9,20 @@ set -euo pipefail
 # repo root — so it always found nothing and exited 127. Copied here by the move from
 # bin/time/snotra/ (where three levels up WAS the root). Removed 2026-11-04: this file
 # is the door, and the door has nothing to point at.
+if [ -z "${YMIR_HOARD_LIB_LOADED:-}" ]; then
+  # The hoard library sits beside this file in a flat install (~/.fleet) and four
+  # levels up in the tree (systems/snotra/services/ear -> repo root). Both are tried;
+  # the fleet copy is what the unit actually runs.
+  _door_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  _root="$_door_dir"
+  while [ "$_root" != / ] && { [ ! -d "$_root/RULES" ] || [ ! -d "$_root/.agents" ]; }; do
+    _root="$(dirname "$_root")"
+  done
+  [ -d "$_root/RULES" ] || _root=""
+  for _lib in "$_door_dir/hoard-lib.sh" ${_root:+"$_root/bin/vault/hoard-lib.sh"}; do
+    [ -r "$_lib" ] && . "$_lib" 2>/dev/null && break
+  done
+fi
 if [ -z "${YMIR_HOME:-}" ] && command -v ymir_home_root >/dev/null 2>&1; then
   ymir_home_root YMIR_HOME
 fi

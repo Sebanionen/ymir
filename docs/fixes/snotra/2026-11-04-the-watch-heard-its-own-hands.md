@@ -77,3 +77,28 @@ removed here: this file *is* the door, and a door has nothing to point at.
   core before the PR was sealed. Until this merges, the installed copy is *newer* than main —
   the reverse of the drift that hid the bug, and the PR is what closes it.
 - The affected unit was restarted, not redesigned: one process, one door, same state.
+
+## Appended the same day — the third fault, and the numbers from the live unit
+
+The door could not find the hoard either. With `YMIR_HOME` unset — which is how the systemd unit
+runs it — it called `ymir_home_root`, a function that only exists once `bin/vault/hoard-lib.sh`
+has been **sourced**, and the move's rewrite had dropped the sourcing line. Every restart died
+with `error: the hoard home could not be resolved — bin/vault/hoard-lib.sh was not found`, nine
+times in a row, while `hoard-lib.sh` sat in `~/.fleet` right beside the script.
+
+It is sourced again, in the house's own shape (`. "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null ||
+true`), from the two places it can be: beside the file in a flat `~/.fleet` install, and
+`<repo>/bin/vault/` in the tree. Both were tested with `env -u YMIR_HOME`.
+
+Measured on the **live unit** after all three faults were mended:
+
+```
+live[3]{measure,before,after}:
+  "the watch's own CPU","85% of one core","2%"
+  "forks on the seat","178/second","65/second — the idle baseline"
+  "the box","11-13% of 16 cores","5%, the floor with the watch idle"
+```
+
+`status` answers, the unit is `active (running)` with `NRestarts=0`, and the arm/leave gates are
+the same code as before — nothing about how a meeting is detected has changed, only how often
+the watch lets itself look.

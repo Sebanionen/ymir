@@ -69,7 +69,11 @@ AUDIT_LOG="/var/log/audit/audit.log"
 # ONE file holds the rules, so a reboot cannot disarm the house (Rule 24).
 rules_text() {
   local home="$1"
-  cat <<RULES
+  # QUOTED heredoc: the block carries explanatory backticks (`a1`, `a2`, `pidfd_send_signal`),
+  # and unquoted they were command substitution — every install printed "a1: command not
+  # found" and blanked the very comment that explains the rules. Nothing here needs to
+  # expand, and the one watch that wanted $home below is emitted after the block.
+  cat <<'RULES'
 # Ymir — Garmr's senses. Installed by bin/ward/garmr.sh install. Runtime-only
 # rules vanish at reboot; this file is what brings them back.
 -b 8192
@@ -91,18 +95,26 @@ rules_text() {
 -a always,exit -F arch=b64 -S rt_tgsigqueueinfo -F a2=9 -k ymir-browserkill
 -a always,exit -F arch=b64 -S pidfd_send_signal -F a1=15 -k ymir-browserkill
 -a always,exit -F arch=b64 -S pidfd_send_signal -F a1=9 -k ymir-browserkill
--w /etc/passwd -p wa -k ymir-identity
--w /etc/shadow -p wa -k ymir-identity
--w /etc/group -p wa -k ymir-identity
--w /etc/sudoers -p wa -k ymir-identity
--w /etc/sudoers.d -p wa -k ymir-identity
--w ${home}/.ssh/authorized_keys -p wa -k ymir-identity
--w /etc/systemd/system -p wa -k ymir-persist
--w /etc/systemd/user -p wa -k ymir-persist
--w /etc/cron.d -p wa -k ymir-persist
--w /etc/crontab -p wa -k ymir-persist
--w /var/spool/cron -p wa -k ymir-persist
 RULES
+  # ── every watch below is guarded by the path's own existence ──────────────
+  # auditd refuses the ENTIRE ruleset with ENOENT — "Error sending add rule data
+  # request (No such file or directory)" — when a -w names a path that is not
+  # there, and then the house runs with no rules at all, silently, saying only
+  # `Failed to start Load Audit Rules` in the journal. That is what happened on
+  # 2026-11-04: two watches named paths this seat does not have (the hoard has no
+  # .ssh/, and this is a systemd box with no cron spool), so nothing was armed and
+  # auditd had burnt 11s of CPU policing an empty ruleset. Guarded, and the real
+  # key file — $HOME/.ssh/authorized_keys, where the fleet keys actually live — is
+  # watched as well as the hoard's, if a seat has one there.
+  for p in /etc/passwd /etc/shadow /etc/group /etc/sudoers /etc/sudoers.d; do
+    [ -e "$p" ] && printf -- '-w %s -p wa -k ymir-identity\n' "$p"
+  done
+  for p in "$HOME/.ssh/authorized_keys" "$home/.ssh/authorized_keys"; do
+    [ -e "$p" ] && printf -- '-w %s -p wa -k ymir-identity\n' "$p"
+  done
+  for p in /etc/systemd/system /etc/systemd/user /etc/cron.d /etc/crontab /var/spool/cron; do
+    [ -e "$p" ] && printf -- '-w %s -p wa -k ymir-persist\n' "$p"
+  done
   for dir in "$home/hodd/data/snotra" "$home/hodd/evidence" "$home/hodd/life/meetings" \
              "$home/hodd/memory/snotra" "$home/hodd/secrets"; do
     [ -d "$dir" ] && printf -- '-w %s -p wa -k ymir-sensitive\n' "$dir"
