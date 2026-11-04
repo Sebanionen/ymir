@@ -263,7 +263,7 @@ export function Skirnir() {
         </div>
         {error && <p role="alert" style={{ color: 'var(--ymir-danger)', overflowWrap: 'anywhere' }}>{error}</p>}
         <div><h3>Your question</h3><p data-testid="voice-transcript">{transcript || 'The transcription appears here once the question has been interpreted.'}</p></div>
-        <div><h3>Skírnir's answer</h3><p data-testid="voice-answer" style={{ whiteSpace: 'pre-wrap' }}>{answer || 'The answer appears here from Skírnir's existing knowledge and answer gate.'}</p>
+        <div><h3>Skírnir's answer</h3><p data-testid="voice-answer" style={{ whiteSpace: 'pre-wrap' }}>{answer || "The answer appears here from Skírnir's existing knowledge and answer gate."}</p>
           {answer && refused && <p className="muted">Skírnir marked the answer as a limitation or missing approved fact.</p>}
         </div>
         {audio && <div><audio ref={player} controls src={audio} aria-label="Skírnirs spoken answer" />
