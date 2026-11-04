@@ -1,0 +1,40 @@
+name: The publish artifact
+
+# The publish pretest left the per-push path on 2026-11-04 (the Allfather's word: *"stop testing the npm
+# installation on every push"*). It packs the real tarball, installs it in a sandbox and boots the apps —
+# minutes of work that proves nothing about a change that cannot touch the artifact, and the cost made every
+# push slow enough to invite the very override this house distrusts.
+#
+# It lives here instead: by hand, or when the artifact's OWN inputs change. `bin/gates/ci-verify.sh` still
+# runs it on request (`YMIR_PRETEST_ON_PUSH=1`), and any seat can run `bin/forge/npm/pr-pretest.sh` before a
+# release. The remote leg (heimdall) is a local-seat duty, not CI's — it needs a shelf CI cannot reach.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'bin/desktop/app-build.sh'
+      - 'bin/forge/npm/**'
+      - 'apps/**/package.json'
+      - 'apps/**/vite.config.*'
+      - 'packages/**/package.json'
+      - 'tools/**/package.json'
+
+jobs:
+  publish-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      # Pinned, never inherited: the app builds are TypeScript, and a runner with an older Node cannot
+      # build them — the failure would name the artifact when the fault was the runner.
+      - name: Seat the node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: The artifact installs and boots (local leg)
+        env:
+          NPM_PRETEST_SKIP_REMOTE: '1'
+        run: bash bin/forge/npm/npm-pretest.sh local
