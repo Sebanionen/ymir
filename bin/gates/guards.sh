@@ -23,13 +23,18 @@ _root() {
 ROOT="$(_root)"
 
 # ONE list. A new tree ward appears here or it does not run anywhere.
-WARDS=(runtime-guard.sh runtime-pinned-guard.sh defaults-guard.sh app-folder-guard.sh app-functional-guard.sh rules-number-guard.sh inventory-guard.sh registers-guard.sh fleet-version-guard.sh subsystem-docs-guard.sh path-ledger-guard.sh path-legality-guard.sh packaging-guard.sh public-data-guard.sh cron-guard.sh features-guard.sh weave-guard.sh vault-guard.sh confidential-guard.sh dead-code-guard.sh docs-claims-guard.sh home-contract-guard.sh language-guard.sh pkill-guard.sh)
+WARDS=(runtime-guard.sh runtime-pinned-guard.sh defaults-guard.sh app-folder-guard.sh app-functional-guard.sh rules-number-guard.sh inventory-guard.sh registers-guard.sh fleet-version-guard.sh subsystem-docs-guard.sh path-ledger-guard.sh path-legality-guard.sh packaging-guard.sh public-data-guard.sh cron-guard.sh features-guard.sh weave-guard.sh vault-guard.sh confidential-guard.sh dead-code-guard.sh docs-claims-guard.sh home-contract-guard.sh language-guard.sh pkill-guard.sh skills-share-guard.sh)
 #
 # weave-guard (2026-11-04, plan 175 §3): the weaver was seated and NOTHING CALLED IT — so a stale
 # index (RULES/README.md, a plan row, a feature page's catalogue row) was refused by no ward at all.
 # It runs weave.sh --check and refuses, naming the gap; it never fixes, because a silent fix hides
 # the hand-edit that caused the drift. The hook is convenience, CI keeps the last word.
 #
+# skills-share-guard (2026-11-04, plan 184): the skills door serves a BUILT copy, and a redaction
+# pass trusted to be complete is how a hostname leaves in a footnote. The ward refuses machine
+# paths, addresses, LAN hosts, ports, our people, mailboxes, phones, bench tables and our catalog's
+# model ids over `hodd/skills-share/published/` — the last word is a refusal, not a review. It
+# skips cleanly (and says so) on a machine that has published nothing yet.
 # path-legality-guard (2026-11-03): a tracked NAME must be legal on every host RULES/05 claims —
 # a `:` NTFS cannot hold made a Windows clone write no tree at all, for a month, unseen.
 # packaging-guard (2026-11-03): every path a shipped installer names must exist — the Windows

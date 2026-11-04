@@ -1,0 +1,8 @@
+name: hearth-keeping
+kind: craft
+owner: house
+description: Turn one repaired fault into a fix note a stranger can read.
+visibility: public
+version: 1.0.0
+templates:
+  - fix-note.md

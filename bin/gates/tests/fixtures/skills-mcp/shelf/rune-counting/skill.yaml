@@ -1,0 +1,10 @@
+name: rune-counting
+kind: machine
+owner: house
+description: Judge a door by what it printed, not by what its readme claims.
+visibility: share-method
+version: 0.2.0
+templates:
+  - check-row.md
+requires:
+  - hearth-keeping
