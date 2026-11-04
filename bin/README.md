@@ -15,11 +15,11 @@ bin[740]{file,does,kind,verdict,disposition,callers,lines}:
   "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
   "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
   "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
-  "README.md","`bin/` — every file, what it does, and whether it is alive","data","tested","keep",35,-
-  "README.md","Gróa — the updater, one per install","data","tested","keep",35,-
-  "README.md","collab — Vingólf, the assembly hall","data","tested","keep",35,-
-  "README.md","The collaboration kit — the same discipline in every repository","data","tested","keep",35,-
-  "README.md","Gná — the one mail desk (production)","data","tested","keep",35,-
+  "README.md","`bin/` — every file, what it does, and whether it is alive","data","tested","keep",36,-
+  "README.md","Gróa — the updater, one per install","data","tested","keep",36,-
+  "README.md","collab — Vingólf, the assembly hall","data","tested","keep",36,-
+  "README.md","The collaboration kit — the same discipline in every repository","data","tested","keep",36,-
+  "README.md","Gná — the one mail desk (production)","data","tested","keep",36,-
   "a2a-mcp.sh","a2a-mcp.sh — install/verify the Ymir MCP servers into the harnesses so every","tool","wired","keep",5,168
   "a2a-serve.py","a2a-serve.py — a real A2A 1.0 server (a2a-sdk) whose agent is a seated Eindri:","tool","wired","keep",2,104
   "a2a-serve.sh","a2a-serve.sh — run the a2a-sdk A2A 1.0 server for a seated Eindri.","tool","wired","keep",1,9
@@ -131,7 +131,7 @@ bin[740]{file,does,kind,verdict,disposition,callers,lines}:
   "eindri-start.sh","eindri-start.sh — start an Eindri as the Allfather asks.","tool","wired","keep",1,130
   "eindri-wake-lib.sh","eindri-wake-lib.sh — the ONE delivery ledger behind the Eindri push path.","lib","wired","keep",4,48
   "eindri-watch.sh","eindri-watch.sh — the control door on the Eindri→Brokk wake bridge.","tool","wired","keep",5,131
-  "einherjar-spawn.sh","einherjar-spawn.sh - gather an Eindri worker (Einherjar = the chosen who are","tool","wired","keep",11,1018
+  "einherjar-spawn.sh","einherjar-spawn.sh - gather an Eindri worker (Einherjar = the chosen who are","tool","wired","keep",12,1052
   "eir-doctor.sh","eir-doctor.sh — Eir, the healer: diagnose the running system, then mend it.","tool","wired","keep",6,543
   "electron-lib.sh","electron-lib.sh — is a desktop shell's runtime actually there?","lib","tested","keep",7,212
   "erindi-brief.sh","erindi-brief.sh - scaffold an Eindri worker brief at data/<task-id>/brief.md.","tool","wired","keep",4,378
@@ -677,7 +677,7 @@ bin[740]{file,does,kind,verdict,disposition,callers,lines}:
   "test_gna.py","'''The proofs plan 116 asks for before the desk is shown to a human.'''","data","wired","keep",3,603
   "test_hermes_seat.sh","test_hermes_seat.sh — the acceptance test for plan 177 H1/H2/H3: Hermes carries the seat, the","tool","wired","keep",0,193
   "test_mimir_bridge_health.py","﻿import importlib.util,json,subprocess,sys,tempfile,threading,unittest","data","wired","keep",0,29
-  "test_new_doors.sh","test_new_doors.sh — the production tests for the doors built 2026-11-03.","tool","wired","keep",0,62
+  "test_new_doors.sh","test_new_doors.sh — the production tests for the doors built 2026-11-03.","tool","wired","keep",0,65
   "test_outbound_gate.py","'''The outbound gate's proofs — plan 124 §7, his word 2026-10-24:","tool","wired","keep",0,346
   "test_registers.sh","test_registers.sh — one door for every generated register.","tool","wired","keep",0,43
   "test_telegram_buttons.sh","test_telegram_buttons.sh — the button grammar, proved both ways.","tool","wired","keep",0,77
