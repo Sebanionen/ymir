@@ -33,8 +33,10 @@ CHECK="$ROOT/bin/gates/checks/home-contract-check.sh"
 
 case "${1-}" in
   -v|-V|--version) printf '%s\n' "$VERSION"; exit 0 ;;
-  -h|--help|"") sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-  check|--all) ;;
+  # `check` is the DEFAULT: a bare invocation must judge, never print help and pass
+  # vacuously (the same fault features-guard.sh carried until 2026-11-04).
+  -h|--help) sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  check|--all|"") ;;
   --list) exec bash "$CHECK" --list ;;
   *) printf 'error: unknown action %s\nhelp: home-contract-guard.sh [check|--list]\n' "${1-}" >&2; exit 2 ;;
 esac

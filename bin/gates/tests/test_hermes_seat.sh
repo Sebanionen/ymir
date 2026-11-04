@@ -137,14 +137,14 @@ restore_md() { [ -s "$SAVED_MD" ] && cp "$SAVED_MD" "$HERMES_MD"; rm -f "$SAVED_
 trap restore_md EXIT INT TERM
 
 sandbox() {  # <primary> <machine_agent-name-or-empty> — renders into a throwaway HOME
-  SB="$(mktemp -d)"; mkdir -p "$SB/home/hodd/identity" "$SB/homedir/.hermes" "$SB/homedir/.pi/agent"
+  SB="$(mktemp -d)"; mkdir -p "$SB/hodroot/hodd/identity" "$SB/homedir/.hermes" "$SB/homedir/.pi/agent"
   {
     printf 'fleet:\n  name: the sandbox fleet\n  house: sandhouse\nseats:\n  sandhost:\n'
     printf '    primary: %s\n    role: smith\n    status: sealed\n' "$1"
     if [ -n "${2:-}" ]; then printf '    machine_agent:\n      name: %s\n      role: the keeper\n' "$2"; fi
-  } > "$SB/home/hodd/identity/seats.yaml"
-  printf 'version: 1\n' > "$SB/home/hodd/identity/operator.yaml"
-  HOME="$SB/homedir" YMIR_HOME="$SB/home" YMIR_HOST=sandhost \
+  } > "$SB/hodroot/hodd/identity/seats.yaml"
+  printf 'version: 1\n' > "$SB/hodroot/hodd/identity/operator.yaml"
+  HOME="$SB/homedir" YMIR_HOME="$SB/hodroot" YMIR_HOST=sandhost \
     bash "$ROOT/bin/seat/seat-surface.sh" >"$SB/out.log" 2>"$SB/err.log"
   SB_RC=$?
   SB_SOUL="$SB/homedir/.hermes/SOUL.md"

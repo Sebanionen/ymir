@@ -10,11 +10,11 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",714
+  "shell doors (bin/*.sh)",715
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
-  "generated","2026-11-03"
+  "generated","2026-11-04"
 
 | door | the job | verdict | tech decision |
 |---|---|---|---|
@@ -402,6 +402,7 @@ capabilities[5]{surface,count}:
 | subsystem-docs-guard.sh | subsystem-docs-guard.sh — the books a subsystem names must exist, and  | tested | keep (a human or a cron row must run it) |
 | syn-turnend-guard.sh | syn-turnend-guard.sh - refuse to let a Brokk turn end blind. | tested+named | keep (a human or a cron row must run it) |
 | vault-guard.sh | vault-guard.sh — nothing may copy content OUT of the vault (Rule 15). | tested+named | keep (a human or a cron row must run it) |
+| weave-guard.sh | weave-guard.sh — an index that does not name every file it indexes is  | tested | keep (a human or a cron row must run it) |
 | nidhogg.sh | nidhogg.sh — Níðhöggr, the gnawer at the root. The hallucination fi | tested | keep (a human or a cron row must run it) |
 | plan-audit.sh | plan-audit.sh — the plan CONTRACT, as a check over the ledger shelf. | tested | keep (a human or a cron row must run it) |
 | registers.sh | registers.sh — every generated register, through one door. | tested | keep (a human or a cron row must run it) |

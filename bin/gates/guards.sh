@@ -23,7 +23,12 @@ _root() {
 ROOT="$(_root)"
 
 # ONE list. A new tree ward appears here or it does not run anywhere.
-WARDS=(runtime-guard.sh runtime-pinned-guard.sh defaults-guard.sh app-folder-guard.sh app-functional-guard.sh rules-number-guard.sh inventory-guard.sh registers-guard.sh fleet-version-guard.sh subsystem-docs-guard.sh path-ledger-guard.sh path-legality-guard.sh packaging-guard.sh public-data-guard.sh cron-guard.sh features-guard.sh vault-guard.sh confidential-guard.sh dead-code-guard.sh docs-claims-guard.sh home-contract-guard.sh language-guard.sh pkill-guard.sh)
+WARDS=(runtime-guard.sh runtime-pinned-guard.sh defaults-guard.sh app-folder-guard.sh app-functional-guard.sh rules-number-guard.sh inventory-guard.sh registers-guard.sh fleet-version-guard.sh subsystem-docs-guard.sh path-ledger-guard.sh path-legality-guard.sh packaging-guard.sh public-data-guard.sh cron-guard.sh features-guard.sh weave-guard.sh vault-guard.sh confidential-guard.sh dead-code-guard.sh docs-claims-guard.sh home-contract-guard.sh language-guard.sh pkill-guard.sh)
+#
+# weave-guard (2026-11-04, plan 175 §3): the weaver was seated and NOTHING CALLED IT — so a stale
+# index (RULES/README.md, a plan row, a feature page's catalogue row) was refused by no ward at all.
+# It runs weave.sh --check and refuses, naming the gap; it never fixes, because a silent fix hides
+# the hand-edit that caused the drift. The hook is convenience, CI keeps the last word.
 #
 # path-legality-guard (2026-11-03): a tracked NAME must be legal on every host RULES/05 claims —
 # a `:` NTFS cannot hold made a Windows clone write no tree at all, for a month, unseen.
@@ -51,8 +56,11 @@ for w in "${WARDS[@]}"; do
     printf '  "%s","PASS",""\n' "$w"
   else
     # The ward's own last line names the fault and its remedy; carry it up rather than
-    # swallowing it, because a gate that does not say why is an obstacle.
-    printf '  "%s","FAIL","%s"\n' "$w" "$(printf '%s' "$out" | grep -E '^(defaults|runtime)-guard:' | tail -1 | cut -c1-96)"
+    # swallowing it, because a gate that does not say why is an obstacle. The pattern is the
+    # ward SUFFIX, not two named wards: it read `^(defaults|runtime)-guard:` until 2026-11-04,
+    # so every other ward's reason was thrown away and the FAIL row printed an empty finding
+    # (inventory-guard, registers-guard, and the new weave-guard all said nothing).
+    printf '  "%s","FAIL","%s"\n' "$w" "$(printf '%s' "$out" | grep -E '^[[:alnum:]_-]+-guard' | tail -1 | cut -c1-160)"
     fail=1
   fi
 done
