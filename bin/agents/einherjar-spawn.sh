@@ -793,8 +793,39 @@ PROMPT="$DATA/$ID/prompt.md"
 } >"$PROMPT" 2>/dev/null || cp "$BRIEF" "$PROMPT"
 BRIEF_REF=$PROMPT
 
+# The worker's extension set, rooted in ITS own worktree.
+#
+# Why this exists (measured 2026-11-04): the seat's settings name the PRIMARY checkout's extensions
+# tree absolutely, and Pi ALSO discovers the project tree under the working directory. In a Yggdrasil
+# worktree those are two different paths, so every tool was registered twice and Pi refused to load a
+# single extension — "Tool constellation_list conflicts with
+# …/.yggdrasil/<id>/.pi/extensions/constellation/index.ts" — and four spawned workers were born dead
+# while the dispatcher printed `spawned`. RULES/13 is the law it broke: one home per extension, two
+# load paths seats nobody. The mend: discovery off, and every extension named ONCE, from the worktree,
+# plus the npm packages the seat's own settings declare (discovery would have carried them).
+pi_ext_args() {  # <cwd> -> " -e <path> -e npm:<pkg> …"
+  local cwd=$1 p b pkg out=
+  for p in "$cwd"/.pi/extensions/*; do
+    [ -e "$p" ] || continue
+    b="$(basename "$p")"
+    case "$b" in README.md|lib) continue ;; esac
+    if [ -d "$p" ]; then
+      [ -f "$p/index.ts" ] && out="$out -e $(shell_quote "$p/index.ts")"
+      [ -f "$p/index.js" ] && [ ! -f "$p/index.ts" ] && out="$out -e $(shell_quote "$p/index.js")"
+    elif [ -f "$p" ]; then
+      case "$b" in *.ts|*.js) out="$out -e $(shell_quote "$p")" ;; esac
+    fi
+  done
+  if [ -f "$HOME/.pi/agent/settings.json" ]; then
+    for pkg in $(python3 -c 'import json,os;d=json.load(open(os.path.expanduser("~/.pi/agent/settings.json")));print("\n".join(d.get("packages",[])))' 2>/dev/null); do
+      out="$out -e $(shell_quote "$pkg")"
+    done
+  fi
+  printf '%s' "$out"
+}
+
 build_launch_command() {  # prints the worker command WITHOUT the leading exec
-  local brief_ref=$1 model_flag= effort_flag=
+  local brief_ref=$1 model_flag= effort_flag= ext_args=
   if [ -n "$MODEL" ] && [ "$MODEL" != default ]; then
     model_flag="--model $(shell_quote "$MODEL") "
   fi
@@ -814,7 +845,10 @@ build_launch_command() {  # prints the worker command WITHOUT the leading exec
         "$(shell_quote '{"permission":{"*":"allow"}}')" "$model_flag" "$(shell_quote "$brief_ref")"
       ;;
     pi|pi-signed)
-      printf 'pi %s%s"$(cat %s)"' "$model_flag" "$effort_flag" "$(shell_quote "$brief_ref")"
+      # One extension tree, named explicitly (see pi_ext_args above): a worker must not inherit the
+      # primary checkout's tree through the seat settings AND discover its own under the worktree.
+      [ -d "$LAUNCH_CWD/.pi/extensions" ] && ext_args="-ne$(pi_ext_args "$LAUNCH_CWD") "
+      printf 'pi %s%s%s"$(cat %s)"' "$model_flag" "$effort_flag" "$ext_args" "$(shell_quote "$brief_ref")"
       ;;
     *)
       local cmd=$RAW_LAUNCH
