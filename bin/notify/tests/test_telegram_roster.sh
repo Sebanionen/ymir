@@ -24,7 +24,7 @@ printf 'telegram roster\n'
 "$DOOR" --version >/dev/null && ok "the door reports a version" || bad "the door reports a version"
 
 "$DOOR" record --chat -1001 --user 42 --name Craig --username craigema --message m1 >/dev/null 2>&1
-grep -q '"42","Craig","craigema"' "$TMP/home/hodd/data/telegram-rosters/-1001.yaml" 2>/dev/null || true
+grep -q '"42","Craig","craigema"' "$YMIR_HOME/hodd/data/telegram-rosters/-1001.yaml" 2>/dev/null || true
 "$DOOR" list --chat -1001 | grep -q '"Craig"' && ok "a speaker is recorded" || bad "a speaker is recorded" "$("$DOOR" list --chat -1001)"
 
 "$DOOR" record --chat -1001 --user 42 --name Craig --message m1 >/dev/null 2>&1
@@ -32,7 +32,7 @@ count=$("$DOOR" list --chat -1001 | grep -o '"1"' | head -1)
 [ "$count" = '"1"' ] && ok "the same message is counted once" || bad "the same message is counted once" "$("$DOOR" list --chat -1001)"
 
 "$DOOR" record --chat -2002 --user 42 --name Craig --message m2 >/dev/null 2>&1
-[ -f "$TMP/home/hodd/data/telegram-rosters/-1001.yaml" ] && [ -f "$TMP/home/hodd/data/telegram-rosters/-2002.yaml" ] \
+[ -f "$YMIR_HOME/hodd/data/telegram-rosters/-1001.yaml" ] && [ -f "$YMIR_HOME/hodd/data/telegram-rosters/-2002.yaml" ] \
   && ok "two chats are two files" || bad "two chats are two files"
 "$DOOR" chats | grep -q '\-1001' && "$DOOR" chats | grep -q '\-2002' && ok "chats lists both rooms" || bad "chats lists both rooms" "$("$DOOR" chats)"
 
