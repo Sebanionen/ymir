@@ -49,6 +49,14 @@ gate() {  # <name> <description> <command...>
   fi
 }
 
+# SEAT THE MERGE DRIVER FIRST. `features-guard` requires `merge.regenerate.driver` to exist in the
+# clone's git config — a fresh checkout (every CI run) has it unset, so the ward failed on correct code
+# with "the merge driver is not seated", which is the same false red this house keeps paying for.
+# The install seats it on a real seat; CI seats it here, once, before the wards.
+if [ -x "$ROOT/bin/records/weave-features.sh" ]; then
+  "$ROOT/bin/records/weave-features.sh" --install >/dev/null 2>&1 || \
+    printf '  "%s","NOTE","%s"\n' weave-driver "the merge driver could not be seated in this clone"
+fi
 gate ward        "the tree wards (runtime, defaults)"   bash "$ROOT/bin/gates/guards.sh"
 # RULES/04 — the public tree carries TEMPLATES and LOGIC. The ward is in the list above; this is
 # the proof that it BITES (a ward never seen to refuse is decoration, and this one wore that coat).

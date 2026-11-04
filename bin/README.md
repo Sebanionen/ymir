@@ -76,7 +76,7 @@ bin[739]{file,does,kind,verdict,disposition,callers,lines}:
   "channel_email.py","bin/time/snotra/channel_email.py -> systems/snotra/services/cron/channel_email.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "channel_kb.py","bin/time/snotra/channel_kb.py -> systems/snotra/services/cron/channel_kb.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "channel_todo.py","bin/time/snotra/channel_todo.py -> systems/snotra/services/cron/channel_todo.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
-  "ci-verify.sh","ci-verify.sh — what CI must prove, in one command, for BOTH hosts.","tool","tested","keep",2,127
+  "ci-verify.sh","ci-verify.sh — what CI must prove, in one command, for BOTH hosts.","tool","tested","keep",2,135
   "clickup_adapter.py","bin/time/snotra/clickup_adapter.py -> systems/snotra/services/cron/clickup_adapter.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "clients.sh","clients.sh — the clients register: load, validate, and check.","tool","tested","keep",1,197
   "codex-plugin-install.mjs","// Valknut's Codex door.","data","wired","keep",3,125
@@ -709,7 +709,7 @@ bin[739]{file,does,kind,verdict,disposition,callers,lines}:
   "walls-test.sh","bin/assistant/walls-test.sh -> systems/skirnir/services/walls-test.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "ward-answer.sh","ward-answer.sh — answer a ward decision.","tool","wired","keep",0,82
   "ward-ask.sh","ward-ask.sh — Vörðr reports, then ASKS.","tool","wired","keep",1,82
-  "weave-features.sh","weave-features.sh — FEATURES.md is WOVEN from fragments, never hand-edited.","tool","wired","keep",5,51
+  "weave-features.sh","weave-features.sh — FEATURES.md is WOVEN from fragments, never hand-edited.","tool","wired","keep",6,51
   "weave-guard.sh","weave-guard.sh — an index that does not name every file it indexes is refused.","tool","wired","keep",2,85
   "weave.sh","weave.sh — the dispatcher for every WOVEN document and every INDEX (Þættir, plan 174/175).","tool","wired","keep",5,91
   "wedge-notify.sh","wedge-notify.sh — the Ymir wedge-alarm notifier.","tool","wired","keep",1,62
