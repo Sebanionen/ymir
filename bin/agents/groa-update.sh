@@ -67,6 +67,12 @@ fi
 REMOTE="${REMOTE:-origin}"
 BRANCH="${BRANCH:-main}"
 
+# Rule 45 — an update begins by asking whether the base it will mend is the current one.
+# Fetches and reports; never rebases (that is the caller's act) and never blocks a check run.
+if [ -x "$ROOT/bin/gates/checks/fresh-base-check.sh" ]; then
+  bash "$ROOT/bin/gates/checks/fresh-base-check.sh" 2>&1 | head -1
+fi
+
 declare -a ROWS; NUDGE_IDS=""
 reread=no
 changed_surface=0

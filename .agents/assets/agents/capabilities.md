@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",715
+  "shell doors (bin/*.sh)",716
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -342,7 +342,7 @@ capabilities[5]{surface,count}:
 | contracts-check.sh | contracts-check.sh — the typed surfaces' proof, in one command. | tested | keep (a human or a cron row must run it) |
 | design-check.sh | design-check.sh — one identity, two renderers: they must agree. | tested | keep (a human or a cron row must run it) |
 | extension-api-check.sh | extension-api-check.sh — a Ymir extension must speak Pi's ACTUAL tool  | tested+named | keep (a human or a cron row must run it) |
-| fresh-base-check.sh | fresh-base-check.sh — does this work start on the LATEST codebase? (Ru | uncalled | **decide** — unnamed and untested: move it to src/ or hodd/reference/ (Rule 11), never delete |
+| fresh-base-check.sh | fresh-base-check.sh — does this work start on the LATEST codebase? (Ru | tested | keep (a human or a cron row must run it) |
 | home-contract-check.sh | home-contract-check.sh — the contract that raises a home is itself che | tested | keep (a human or a cron row must run it) |
 | home-index-check.sh | home-index-check.sh — every shelf in the home has an index, and the in | tested | keep (a human or a cron row must run it) |
 | model-alias-check.sh | model-alias-check.sh — does every alias a body names resolve in the fl | tested+named | keep (a human or a cron row must run it) |

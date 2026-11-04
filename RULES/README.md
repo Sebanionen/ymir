@@ -5,7 +5,7 @@ UI, and agents obey it, and a change that contradicts a rule must first change
 the rule (append-only; never silently rewritten).
 
 ```
-rules_index[40]{file,subject}:
+rules_index[41]{file,subject}:
   "01-domains.md","domains (Greinar) · houses · Eindri"
   "02-agents.md","agents: home, kinds, profile contract, no mock"
   "03-houses.md","houses = companies; ownership, records, boundaries"
@@ -35,6 +35,7 @@ rules_index[40]{file,subject}:
   "41-the-hand-on-a-shared-system.md","the hand on a shared system: a name is not a licence; the owner comes from the registry, never from inference; a create in a shared system needs the operator's word naming it; one door; reversible first"
   "42-the-home-is-a-contract.md","the home is a contract: every file the runtime reads ships as a template, arrives by ONE door on install, is healed by an update, and is named in one contract a ward reads — a template no row names is a shape that lands in no home"
   "43-two-tongues.md","two tongues: English for the work, Old Norse for the names — nothing else; a foreign script or letter is refused, a foreign prose is caught by its function words, and the four exceptions (fixture · detector · quotation · table) are declared with a reason"
+  "45-start-on-the-latest.md","start on the latest: a base is fetched, not remembered — reading is free, taking a number or a branch point is not, a stale base refuses with its repair, offline is a stated skip"
   "README.md","this index"
   "37-a-surface-may-not-show-what-it-did-not-receive.md","a surface may not show what it did not receive"
 ```

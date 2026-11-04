@@ -733,6 +733,14 @@ if [ -z "$WT" ]; then
     exit 1
   else
     base=
+    # Rule 45 — FETCH first. A worktree is cut from refs/remotes/origin/<default>, so
+    # an unfetched remote ref hands the worker yesterday's code and calls it the tip.
+    # 2026-11-04: a seat seven commits behind asked the plan ledger for the next
+    # number, was handed one already taken, and two plans shared it. A failed fetch is
+    # STATED here, never silent — and it is never fatal: a seat offline must still be
+    # able to work from the tree it has.
+    git -C "$PROJECT_DIR" fetch --quiet --prune origin 2>/dev/null \
+      || echo "warning: could not fetch origin — this worktree's base is UNVERIFIED against the remote (Rule 45)" >&2
     remote_head=$(git -C "$PROJECT_DIR" symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null || true)
     if [ -n "$remote_head" ]; then
       remote_head=${remote_head#refs/remotes/}
