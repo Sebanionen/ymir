@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
+import { Plugin } from "@opencode/plugin";
 import { encodeRoddOperationalInput } from "./lib/rodd-operational-input.js";
 
 // Sýn — turn-end guard for OpenCode.
@@ -62,44 +63,46 @@ async function letWatchArmRun(sessionID, client) {
   return status === "armed" || status === "wake" || status === "failed";
 }
 
-export const SynTurnendGuard = async ({ client, directory, worktree }) => {
-  const root = worktree ? resolvePath(worktree) : await resolveRoot(directory);
+export default Plugin.define({
+  id: "ymir.syn.turnend-guard",
+  async setup(ctx) {
+    const root = await resolveRoot(ctx.location?.directory);
 
-  return {
-    event: async ({ event }) => {
-      if (event.type !== "session.idle") return;
+    const controller = new AbortController();
+    void (async () => {
+      for await (const event of ctx.event.subscribe({
+        types: ["session.idle"],
+        signal: controller.signal,
+      })) {
+        if (skipNextIdle) {
+          skipNextIdle = false;
+          continue;
+        }
 
-      if (skipNextIdle) {
-        skipNextIdle = false;
-        return;
+        const sessionID = event.data?.sessionID;
+        if (!sessionID) continue;
+
+        if (await letWatchArmRun(sessionID, ctx)) continue;
+
+        const result = await runGuard(root);
+        if (result.code !== 2) continue;
+
+        try {
+          const text = await encodeRoddOperationalInput(
+            root,
+            "turn-end-guard",
+            "TURN WOULD END BLIND - supervision is off. " +
+              "The watcher cycle is missing, failed, or unhealthy. Follow the harness recovery instruction below before ending the turn.\n\n" +
+              result.stderr,
+          );
+          await ctx.session.prompt({ sessionID, text });
+          skipNextIdle = true;
+        } catch {
+          skipNextIdle = false;
+        }
       }
+    })().catch(() => {});
 
-      const sessionID = event.properties?.sessionID;
-      if (!sessionID) return;
-
-      if (await letWatchArmRun(sessionID, client)) return;
-
-      const result = await runGuard(root);
-      if (result.code !== 2) return;
-
-      try {
-        const text = await encodeRoddOperationalInput(
-          root,
-          "turn-end-guard",
-          "TURN WOULD END BLIND - supervision is off. " +
-            "The watcher cycle is missing, failed, or unhealthy. Follow the harness recovery instruction below before ending the turn.\n\n" +
-            result.stderr,
-        );
-        await client.session.promptAsync({
-          path: { id: sessionID },
-          body: {
-            parts: [{ type: "text", text }],
-          },
-        });
-        skipNextIdle = true;
-      } catch {
-        skipNextIdle = false;
-      }
-    },
-  };
-};
+    return () => controller.abort();
+  },
+});

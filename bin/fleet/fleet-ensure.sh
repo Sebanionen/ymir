@@ -196,12 +196,20 @@ materialize_tools() {
 CARD
   fi
   [ -f "$DST/cards-root/index.html" ] || printf '<h1>Fleet cards — %s</h1>\n' "$(hostname -s)" > "$DST/cards-root/index.html"
-  # the well venv (mcp-proxy wrapping engram-mcp) — materialized HERE, so a
-  # seat never inherits the heart's hand-built venv path
+  # the well venv (mcp-proxy only) — materialized HERE, so a seat never inherits
+  # the heart's hand-built venv path.
+  #
+  # mcp-proxy is a stdio<->HTTP adapter and nothing more. It does NOT install the
+  # engine: the PyPI project named `engram-mcp` is a DIFFERENT program (a Notion
+  # agent with create_page/log_to_notion/send_alert tools) that squats the name
+  # the engine's console script also uses. Installing it here made the well door
+  # serve the wrong memory to every MCP client (found 2026-11-04). The engine is
+  # `engdbram` (import name `engram`) from prereq-ensure, and the unit runs its
+  # `engram-mcp` — the harness-integration asset has the full account.
   VENV="$DST/well-venv"
   if [ ! -x "$VENV/bin/mcp-proxy" ]; then
     if command -v python3 >/dev/null 2>&1; then
-      python3 -m venv "$VENV" 2>/dev/null && "$VENV/bin/pip" -q install mcp-proxy "mcp<2" engram-mcp >/dev/null 2>&1
+      python3 -m venv "$VENV" 2>/dev/null && "$VENV/bin/pip" -q install mcp-proxy >/dev/null 2>&1
     fi
   fi
 }
