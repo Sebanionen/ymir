@@ -110,7 +110,7 @@ try:
     first = (out.stdout or '').strip().splitlines()[0]
     if first.startswith('doors:'):
         rest = first.split(':', 1)[1].strip().split(', ')
-        head = rest[0].split()          # "30 todo" — the count and the first door share a field
+        head = rest[0].split()          # "30 <first door>" — the count and the name share a field
         count = head[0]
         doors = ' · '.join([head[1]] + rest[1:] if len(head) > 1 else rest) or '(none registered)'
 except Exception:

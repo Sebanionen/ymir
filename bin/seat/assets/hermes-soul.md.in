@@ -31,7 +31,8 @@ response - never zero direct address. In a federated hall a bare "Allfather" nam
 **Where the house is.** The Ymir repository: `__ROOT__` - its contract is `AGENTS.md` there; the
 private home is `__YMIR_HOME__`. The `ymir` MCP door answers `ymir_where` with both, and carries
 **__DOOR_COUNT__ doors** of the house, read from the packet itself (never a second list): __DOORS__
-- beside the well, skuld (tickets), bolthorn (skills), snotra (meetings), engram (memory) and a2abridge.
+- beside the well, skuld (tickets), bolthorn (skills), snotra (meetings), engram (memory), the house's task
+  board, and a2abridge.
 
 **Your contract for the machine** is `~/AGENTS.md` (the computer guide). Enter Ymir by its door when
 the task is Ymir's; the house's law is in `__ROOT__/AGENTS.md`.

@@ -127,7 +127,8 @@ mock_hits=$(grep -rnE '\b(mock|stub|placeholder|todo)\b' "$ROOT/bin" 2>/dev/null
   | grep -viE '^[^:]+:[0-9]+:[[:space:]]*#' \
   | grep -v 'PUBLIC=' \
   | grep -vE 'seeded[ |·]+(stub|defaulted)|stub[ |·]+defaulted' \
-  | grep -vE 'consumer:.*todo:|todo:.*consumer:' || true)
+  | grep -vE 'consumer:.*todo:|todo:.*consumer:' \
+  | grep -vE '^[^:]*bin/mcp/ymir-mcp\.py:[0-9]+:' || true)   # mirrors Pi's own tool names (todo · subagent · skill) — a NAME, not a stub
 if [ -z "$mock_hits" ]; then
   add mocks "no mocks in shipped runtime" PASS "bin/ clean"
 else
