@@ -1,0 +1,30 @@
+# machines.yaml — the fleet's Telegram registry: which bot speaks for which machine.
+#
+# This file is a STUB, copied to `hodd/identity/machines.yaml` once, on the first
+# install, and never overwritten. It is PRIVATE (Rule 04): it holds chat ids and
+# names a vault path — **never a token**. A token is stored in the vault and read
+# by reference, so nothing here can leak one.
+#
+# The door that reads it:
+#
+#     bin/notify/telegram-machines.sh list                 # every machine, its bot id, its chat, its token_ref
+#     bin/notify/telegram-machines.sh me <machine>         # which bot answers (Telegram getMe)
+#     bin/notify/telegram-machines.sh relay <to> "<text>"  # speak to another machine's chat, as THIS machine
+#
+# Store a machine's token in the vault at the path its row names:
+#
+#     bin/vault/hodd-set.sh TELEGRAM_BOT_TOKEN '<token from @BotFather>' secrets/telegram-<machine>.env
+#
+# Shape (one entry per machine; the key is what `hostname -s` prints on that machine,
+# so the door can find this machine's own row without being told):
+#
+#   version: 1
+#   machines:
+#     <host>:
+#       telegram:
+#         bot_id:    '<the numeric bot id>'      # names the bot; not secret, not a credential
+#         chat:      '<the chat id it speaks into>'  # empty until the operator starts the conversation
+#         token_ref: 'secrets/telegram-<host>.env'   # the VAULT path, never the token
+
+version: 1
+machines: {}

@@ -26,7 +26,9 @@ ROOT="$(_root)"
 
 case "${1-}" in
   -v|-V|--version) printf '%s\n' "$VERSION"; exit 0 ;;
-  -h|--help|"") sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+  # `check` is the DEFAULT: a bare invocation must judge, never print help and pass
+  # vacuously (measured 2026-11-04: no argument matched this branch first and exited 0).
+  -h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
   check|--all|"") ;;
   *) printf 'error: unknown action %s\nhelp: features-guard.sh [check|--all]\n' "${1-}" >&2; exit 2 ;;
 esac
