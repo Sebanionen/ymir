@@ -1,0 +1,12 @@
+# The share list for the skills-MCP fixtures — three invented skills, nothing real.
+# A share entry is DECLARED: what may leave, why, and in what form.
+skills:
+  - name: hearth-keeping
+    reason: the shape of a fix note, which is what a collaborator keeps asking for
+    form: skill
+  - name: rune-counting
+    reason: the method of proving a door, without any of the runs we made with it
+    form: method-only
+  - name: word-weaving
+    reason: the shape of a plan; the argument for it stays home
+    form: templates-only

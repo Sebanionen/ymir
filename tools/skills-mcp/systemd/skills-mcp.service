@@ -1,0 +1,60 @@
+[Unit]
+# skills-mcp — the skills door, as a USER unit on the heart (plan 184 §10, P3b).
+#
+# It is a door of Gimle's hall, not a service of its own: collaborators reach it THROUGH
+# Gimle's gate, and the door inherits Gimle's ward and Gimle's availability. If Gimle is
+# down the skills are down — said plainly in
+# docs/features/skills-mcp-for-collaborators.md, not discovered in a meeting.
+#
+# WHAT IT SERVES: only the built copy the heart PULLS from the private home —
+#   $YMIR_HOME/hodd/skills-share/published/
+# redacted, hashed, and already refused by bin/gates/guards/skills-share-guard.sh. The door
+# never sees a live skill shelf, a share.yaml draft, or anything unredacted.
+#
+# LOOPBACK ONLY. The bind address is 127.0.0.1 and the server refuses anything else itself;
+# the unit only makes the intent explicit. Publish it by pointing Gimle's gate at
+# http://127.0.0.1:8791/mcp — never by binding 0.0.0.0 and hoping a firewall is watching.
+#
+# HEALTH PROBE (the same question Gimle asks):
+#   curl -s -o /dev/null -w '%{http_code}\n' \
+#     -X POST http://127.0.0.1:8791/mcp \
+#     -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
+#     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"0"}}}'
+#   -> 200 and a JSON-RPC result naming the server. Anything else is "the door is closed".
+#   A quicker smoke test that does not speak MCP:
+#   curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8791/mcp    -> any HTTP answer
+#   (4xx is fine: it means the listener is alive and refusing an MCP-less request).
+#
+# INSTALL (never automatic — this is the heart's own operation):
+#   install -Dm644 tools/skills-mcp/systemd/skills-mcp.service \
+#     ~/.config/systemd/user/skills-mcp.service
+#   systemctl --user daemon-reload && systemctl --user enable --now skills-mcp.service
+#   After the home pull that brings a new published/ tree:
+#   systemctl --user restart skills-mcp.service
+#
+# The renderer substitutes __YMIR_APP_DIR__ (this checkout), __YMIR_HOME__ (the operator's
+# home) and __YMIR_SKILLS_MCP_PORT__ (8791).
+Description=skills-mcp — the skills door (loopback, three tools, behind Gimle)
+After=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=5
+
+[Service]
+Type=simple
+# No shell, no wrapper: python runs the server directly, and the door's own code refuses a
+# non-loopback bind rather than trusting this file.
+Environment=PYTHONUNBUFFERED=1
+Environment=SKILLS_MCP_ROOT=__YMIR_HOME__/hodd/skills-share/published
+ExecStart=/usr/bin/env python3 __YMIR_APP_DIR__/tools/skills-mcp/skills-mcp.py --http 127.0.0.1:__YMIR_SKILLS_MCP_PORT__
+Restart=on-failure
+RestartSec=5
+# A rejected bind or a missing SDK exits non-zero; systemd's restart burst limit turns a
+# crash loop into one loud failure instead of 2246 journal lines.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadOnlyPaths=__YMIR_HOME__/hodd/skills-share/published
+
+[Install]
+WantedBy=default.target
