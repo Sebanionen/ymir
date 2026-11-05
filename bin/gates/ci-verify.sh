@@ -58,6 +58,8 @@ if [ -x "$ROOT/bin/records/weave-features.sh" ]; then
     printf '  "%s","NOTE","%s"\n' weave-driver "the merge driver could not be seated in this clone"
 fi
 gate ward        "the tree wards (runtime, defaults)"   bash "$ROOT/bin/gates/guards.sh"
+gate dead-code-paths "the dead-code ward judges normal and Yggdrasil checkouts" \
+     python3 "$ROOT/tests/test_dead_code_worktrees.py"
 # RULES/04 — the public tree carries TEMPLATES and LOGIC. The ward is in the list above; this is
 # the proof that it BITES (a ward never seen to refuse is decoration, and this one wore that coat).
 gate public-data "RULES/04 — a secret, a name, a topology or a mailbox is refused, and the ward is proved to refuse" \
