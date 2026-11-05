@@ -11,7 +11,7 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 `disposition` says what happens to it: `keep`, `migrate → src/…` where the
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
-bin[759]{file,does,kind,verdict,disposition,callers,lines}:
+bin[761]{file,does,kind,verdict,disposition,callers,lines}:
   "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
   "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
   "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
@@ -685,6 +685,7 @@ bin[759]{file,does,kind,verdict,disposition,callers,lines}:
   "telegram-bot.sh","telegram-bot.sh — the horn answers (W0036).","tool","wired","keep",0,84
   "telegram-buttons.mjs","// telegram-buttons.mjs — the one place that knows Telegram's button grammar.","tool","wired","keep",1,368
   "telegram-buttons.sh","telegram-buttons.sh — make a Telegram button that actually renders.","tool","wired","keep",2,46
+  "telegram-format.py","'''telegram-format — make a reply readable on a phone before it is sent.","tool","wired","keep",1,144
   "telegram-machines.sh","telegram-machines.sh — Telegram across the FLEET: each machine's own bot, and the two roads between them.","tool","wired","keep",2,191
   "telegram-members.sh","telegram-members.sh — who is actually in a Telegram chat, as far as the Bot API will say.","tool","wired","keep",0,151
   "telegram-roster.py","'''telegram-roster.py — who speaks in a chat, remembered.","tool","wired","keep",1,235
@@ -700,6 +701,7 @@ bin[759]{file,does,kind,verdict,disposition,callers,lines}:
   "test_registers.sh","test_registers.sh — one door for every generated register.","tool","wired","keep",0,43
   "test_skills_mcp.sh","test_skills_mcp.sh — the skills door, proved by command.","tool","wired","keep",0,270
   "test_telegram_buttons.sh","test_telegram_buttons.sh — the button grammar, proved both ways.","tool","wired","keep",0,77
+  "test_telegram_format.sh","The ward for telegram-format: reads well, protects structure, refuses jargon.","tool","wired","keep",0,27
   "test_telegram_roster.sh","test_telegram_roster.sh — the roster records who speaks, once, per chat.","tool","wired","keep",0,52
   "toolchain.sh","toolchain.sh — the provider wrappers (W0033).","tool","wired","keep",0,75
   "topology.sh","topology.sh — what IS this machine in the fleet, and is it talking to the heart?","tool","tested","keep",6,139
@@ -772,6 +774,6 @@ bin[759]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=505, tested=254
+**Tally.** verdict: wired=507, tested=254
 
-**Tally.** disposition: keep=744, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=746, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
