@@ -11,15 +11,15 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 `disposition` says what happens to it: `keep`, `migrate → src/…` where the
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
-bin[766]{file,does,kind,verdict,disposition,callers,lines}:
+bin[768]{file,does,kind,verdict,disposition,callers,lines}:
   "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
   "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
   "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
-  "README.md","`bin/` — every file, what it does, and whether it is alive","data","tested","keep",38,-
-  "README.md","Gróa — the updater, one per install","data","tested","keep",38,-
-  "README.md","collab — Vingólf, the assembly hall","data","tested","keep",38,-
-  "README.md","The collaboration kit — the same discipline in every repository","data","tested","keep",38,-
-  "README.md","Gná — the one mail desk (production)","data","tested","keep",38,-
+  "README.md","`bin/` — every file, what it does, and whether it is alive","data","tested","keep",39,-
+  "README.md","Gróa — the updater, one per install","data","tested","keep",39,-
+  "README.md","collab — Vingólf, the assembly hall","data","tested","keep",39,-
+  "README.md","The collaboration kit — the same discipline in every repository","data","tested","keep",39,-
+  "README.md","Gná — the one mail desk (production)","data","tested","keep",39,-
   "SKILL.md","---","data","tested","keep",23,19
   "SKILL.md","---","data","tested","keep",23,19
   "SKILL.md","---","data","tested","keep",23,18
@@ -46,7 +46,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "ask.sh","bin/assistant/ask.sh -> systems/skirnir/services/ask.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","tested","keep",5,16
   "asks.sh","bin/assistant/asks.sh -> systems/skirnir/services/asks.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "audio-retention.sh","bin/time/snotra/audio-retention.sh -> systems/snotra/services/ear/audio-retention.sh — RETIRED SHIM","tool","wired","keep",0,12
-  "autoboot-lib.sh","autoboot-lib.sh — the boot policy: fleet roles → the Ymir programs they owe.","lib","wired","keep",3,259
+  "autoboot-lib.sh","autoboot-lib.sh — the boot policy: fleet roles → the Ymir programs they owe.","lib","wired","keep",3,260
   "ban.sh","bin/assistant/ban.sh -> systems/skirnir/services/ban.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "bifrost-bridge.sh","bifrost-bridge.sh — raise/lower the model bridge (Bifrost: the bridge between","tool","wired","keep",6,142
   "bifrost-ingress.sh","bifrost-ingress.sh — raise/lower the ingress stack (Bifrost · Heimdall · Gjallarhorn).","tool","wired","keep",0,79
@@ -141,7 +141,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "eindri-wake-lib.sh","eindri-wake-lib.sh — the ONE delivery ledger behind the Eindri push path.","lib","wired","keep",5,48
   "eindri-watch.sh","eindri-watch.sh — the control door on the Eindri→Brokk wake bridge.","tool","wired","keep",5,131
   "einherjar-spawn.sh","einherjar-spawn.sh - gather an Eindri worker (Einherjar = the chosen who are","tool","wired","keep",13,1092
-  "eir-doctor.sh","eir-doctor.sh — Eir, the healer: diagnose the running system, then mend it.","tool","wired","keep",6,543
+  "eir-doctor.sh","eir-doctor.sh — Eir, the healer: diagnose the running system, then mend it.","tool","wired","keep",6,629
   "electron-lib.sh","electron-lib.sh — is a desktop shell's runtime actually there?","lib","tested","keep",7,212
   "erindi-brief.sh","erindi-brief.sh - scaffold an Eindri worker brief at data/<task-id>/brief.md.","tool","wired","keep",4,378
   "escalate.py","'''escalate.py — the severity ladder (plan 98 §'the severity ladder').","tool","tested","keep",1,210
@@ -160,7 +160,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "fixes.sh","fixes.sh — the fix notes.","tool","wired","keep",3,162
   "fleet-apply.sh","fleet-apply.sh — apply fleet-wide preferences to every registered Eindri-home.","tool","wired","keep",1,83
   "fleet-deploy.sh","fleet-deploy.sh — refresh the machine's fleet services from THIS package.","tool","wired","keep",0,98
-  "fleet-ensure.sh","fleet-ensure.sh — the role-gated RAISE (plan 42's fleet services, plan 51's","tool","wired","keep",7,566
+  "fleet-ensure.sh","fleet-ensure.sh — the role-gated RAISE (plan 42's fleet services, plan 51's","tool","wired","keep",7,642
   "fleet-version-guard.sh","fleet-version-guard.sh — the three labels and the two trees must agree, or say so.","tool","wired","keep",1,62
   "fleet-version.sh","fleet-version.sh — is the fleet on ONE version?","tool","tested","keep",1,99
   "fm-afk-launch.sh","fm-afk-launch.sh - the single owner of the away-mode daemon TERMINAL lifecycle:","provenance","tested","keep",4,655
@@ -339,6 +339,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "gna_desk.py","'''Gná's desk — read-only, loopback, one account per request.","tool","wired","keep",1,254
   "gna_import.py","'''Gná's importer: one account, read-only, every message once.","tool","wired","keep",1,643
   "gna_judge.py","'''Gná's judge: rules first, and every verdict carries the rule that gave it.","tool","wired","keep",0,169
+  "gna_notify.py","'''gna_notify.py — tell the arm about mail that arrived, once, as it arrives.","tool","wired","keep",1,208
   "gna_store.py","'''Gná's store: one message once, and the account is the boundary.","tool","wired","keep",0,257
   "gong_ingest.py","bin/time/snotra/gong_ingest.py -> systems/snotra/services/cron/gong_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "google-auth.sh","bin/time/snotra/google-auth.sh -> systems/snotra/services/calendar/google-auth.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new door…","tool","wired","keep",0,16
@@ -376,8 +377,8 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "hnitbjorg.sh","hnitbjorg.sh — Hnitbjörg: the encrypted document vault.","tool","wired","keep",3,250
   "hoard-guard.sh","hoard-guard.sh — the ward for the PRIVATE HOME repo ($YMIR_HOME).","tool","wired","keep",3,150
   "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",199,116
-  "hodd-set.sh","hodd-set.sh — set ONE key in an age-encrypted secret file, with guards that make a","tool","wired","keep",3,106
-  "hodd.sh","hodd.sh — the Allfather's private hoard: path, init, ls, load, tenant.","tool","tested","keep",28,120
+  "hodd-set.sh","hodd-set.sh — set ONE key in an age-encrypted secret file, with guards that make a","tool","wired","keep",4,106
+  "hodd.sh","hodd.sh — the Allfather's private hoard: path, init, ls, load, tenant.","tool","tested","keep",29,135
   "home-contract-check.sh","home-contract-check.sh — the contract that raises a home is itself checked.","tool","wired","keep",2,160
   "home-contract-guard.sh","home-contract-guard.sh — the contract that raises a user's home is checked (Rule 42).","tool","wired","keep",1,57
   "home-index-check.sh","home-index-check.sh — every shelf in the home has an index, and the index is honest.","tool","wired","keep",1,82
@@ -462,7 +463,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "nornir-job-doctor.sh","nornir-job-doctor.sh — Eir, the healer, on the schedule.","tool","wired","keep",0,35
   "nornir-job-forgejo-git.sh","nornir-job-forgejo-git.sh — the local git round: issues and PRs on the forge.","tool","wired","keep",0,87
   "nornir-job-git-sync.sh","nornir-job-git-sync.sh - Yggdrasil, the world-tree kept in order.","tool","wired","keep",1,153
-  "nornir-job-gna-mail.sh","nornir-job-gna-mail.sh — the desk's own clock: import, then prove the desk answers.","tool","wired","keep",0,137
+  "nornir-job-gna-mail.sh","nornir-job-gna-mail.sh — the desk's own clock: import, then prove the desk answers.","tool","wired","keep",0,150
   "nornir-job-hall-snapshot.sh","nornir-job-hall-snapshot.sh — Óðrerir: refresh the Live Hall's board.","tool","wired","keep",0,31
   "nornir-job-memory-housekeeping.sh","nornir-job-memory-housekeeping.sh - Muninn, the raven of memory.","tool","wired","keep",0,153
   "nornir-job-nsr-compliance.sh","nornir-job-nsr-compliance.sh — the NorthStar compliance round, nightly.","tool","wired","keep",0,54
@@ -471,7 +472,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "nornir-job-snotra-mail.sh","nornir-job-snotra-mail.sh — Snotra listens for the answers.","tool","wired","keep",0,45
   "nornir-job-worktree-housekeeping.sh","nornir-job-worktree-housekeeping.sh — the daily reckoning of what the worktrees cost.","tool","wired","keep",0,40
   "note.sh","note.sh — append a DATED section to an existing document in the home (append-only, Rule 06).","tool","wired","keep",1,16
-  "notify.py","'''notify.py — the hound's mouth: one message to the phone, and a record that it landed.","tool","tested","keep",2,229
+  "notify.py","'''notify.py — the hound's mouth: one message to the phone, and a record that it landed.","tool","tested","keep",4,229
   "notion_adapter.py","bin/time/snotra/notion_adapter.py -> systems/snotra/services/cron/notion_adapter.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "npm-install-local-test.sh","npm-install-local-test.sh — the REAL local installation test.","tool","wired","keep",0,116
   "npm-pretest.sh","npm-pretest.sh — the pre-publish test gate (the Allfather's decree):","data","wired","keep",3,240
@@ -560,7 +561,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "room-squad.sh","bin/assistant/room-squad.sh -> systems/skirnir/services/room-squad.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "room-wall-test.sh","bin/assistant/room-wall-test.sh -> systems/skirnir/services/room-wall-test.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and…","tool","wired","keep",1,16
   "room.sh","bin/assistant/room.sh -> systems/skirnir/services/room.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",5,16
-  "rules-compliance-guard.sh","rules-compliance-guard.sh — a push proves the house's own rules were followed.","tool","wired","keep",1,106
+  "rules-compliance-guard.sh","rules-compliance-guard.sh — a push proves the house's own rules were followed.","tool","wired","keep",1,110
   "rules-number-guard.sh","rules-number-guard.sh — the house law is NUMBERED, so no two rules may share a number,","tool","tested","keep",1,83
   "rules.py","'''rules.py — the judgement, deterministic and first (plan 98 §4.2).","tool","wired","keep",1,102
   "runes-append.sh","runes-append.sh — the append-only Runes ledger, a THIN SHIM.","tool","tested","keep",27,117
@@ -575,7 +576,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "seat-prove.sh","seat-prove.sh — a spawn is not a seat until the agent list shows it.","tool","tested","keep",1,79
   "seat-stop.sh","seat-stop.sh — stop a seat WHOLE: every process working in its worktree, not just the pane.","tool","wired","keep",1,78
   "seat-surface.sh","seat-surface.sh — render THIS seat's own name into the AGENTS.md every harness reads.","tool","wired","keep",5,212
-  "seat-wire.sh","seat-wire.sh — one seat speaks into another seat's live pane, and says who it is.","tool","wired","keep",0,382
+  "seat-wire.sh","seat-wire.sh — one seat speaks into another seat's live pane, and says who it is.","tool","wired","keep",1,382
   "seat.sh","seat.sh — seat Gróa on THIS machine, once.","tool","tested","migrate → src/ymir_runtime/seat.py",11,106
   "seats.sh","seats.sh — where the work actually is: panes in either backend, and the dead shells named.","tool","wired","keep",2,34
   "secret-guard.sh","secret-guard.sh — refuse to commit obvious secrets or private env files.","tool","wired","keep",5,117
@@ -684,13 +685,13 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "syn-spawn-pretool-check.sh","syn-spawn-pretool-check.sh - PreToolUse seatbelt for spawning and for typing.","data","wired","keep",0,59
   "syn-turnend-guard.sh","syn-turnend-guard.sh - refuse to let a Brokk turn end blind.","tool","tested","keep",1,52
   "syn-watch-arm.sh","syn-watch-arm.sh — the ARM as a SERVICE, and this is its thin client.","tool","tested","keep",7,187
-  "syn-watch.sh","syn-watch.sh — Sýn as a SERVICE: one supervision watcher per home, seated","tool","tested","keep",4,53
+  "syn-watch.sh","syn-watch.sh — Sýn as a SERVICE: one supervision watcher per home, seated","tool","tested","keep",5,53
   "tailscale-sync.sh","tailscale-sync.sh — sync the Allfather's pi data across his OWN machines over","tool","wired","keep",0,205
   "teams_ingest.py","bin/time/snotra/teams_ingest.py -> systems/snotra/services/cron/teams_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "telegram-bot.sh","telegram-bot.sh — the horn answers (W0036).","tool","wired","keep",0,84
   "telegram-buttons.mjs","// telegram-buttons.mjs — the one place that knows Telegram's button grammar.","tool","wired","keep",1,368
-  "telegram-buttons.sh","telegram-buttons.sh — make a Telegram button that actually renders.","tool","wired","keep",2,46
-  "telegram-format.py","'''telegram-format — make a reply readable on a phone before it is sent.","tool","wired","keep",1,144
+  "telegram-buttons.sh","telegram-buttons.sh — make a Telegram button that actually renders.","tool","wired","keep",3,46
+  "telegram-format.py","'''telegram-format — make a reply readable on a phone before it is sent.","tool","wired","keep",2,147
   "telegram-machines.sh","telegram-machines.sh — Telegram across the FLEET: each machine's own bot, and the two roads between them.","tool","wired","keep",2,191
   "telegram-members.sh","telegram-members.sh — who is actually in a Telegram chat, as far as the Bot API will say.","tool","wired","keep",0,151
   "telegram-roster.py","'''telegram-roster.py — who speaks in a chat, remembered.","tool","wired","keep",1,235
@@ -708,6 +709,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "test_telegram_buttons.sh","test_telegram_buttons.sh — the button grammar, proved both ways.","tool","wired","keep",0,77
   "test_telegram_format.sh","The ward for telegram-format: reads well, protects structure, refuses jargon.","tool","wired","keep",0,27
   "test_telegram_roster.sh","test_telegram_roster.sh — the roster records who speaks, once, per chat.","tool","wired","keep",0,52
+  "test_telegram_templates.sh","The ward for the Telegram templates: every shape here must be one the bridge can render","tool","wired","keep",0,19
   "toolchain.sh","toolchain.sh — the provider wrappers (W0033).","tool","wired","keep",0,75
   "topology.sh","topology.sh — what IS this machine in the fleet, and is it talking to the heart?","tool","tested","keep",6,139
   "transcript_ingest.py","bin/time/snotra/transcript_ingest.py -> systems/snotra/services/cron/transcript_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
@@ -771,7 +773,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "ymir-say.sh","bin/time/snotra/ymir-say.sh -> systems/snotra/services/tts-lease/ymir-say.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new door and…","tool","wired","keep",10,16
   "ymir-setup-auth.sh","ymir-setup-auth.sh — set the operator's Ymir credential at first setup.","tool","wired","keep",3,121
   "ymir-state.sh","ymir-state.sh — the DOOR to the engine's STATE module (`src/ymir_runtime/state/`).","tool","wired","keep",3,44
-  "ymir-style.sh","ymir-style.sh — the cloth of the terminal halls.","tool","wired","keep",5,156
+  "ymir-style.sh","ymir-style.sh — the cloth of the terminal halls.","tool","wired","keep",5,158
   "ymir-update-check.sh","ymir-update-check.sh — does a newer Ymir stand on npm?","tool","wired","keep",3,71
   "ymir-vad.py","'''","tool","wired","keep",0,135
   "ymir-validate.sh","ymir-validate.sh — verify the installation actually works.","tool","wired","keep",4,332
@@ -779,6 +781,6 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=512, tested=254
+**Tally.** verdict: wired=514, tested=254
 
-**Tally.** disposition: keep=751, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=753, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1

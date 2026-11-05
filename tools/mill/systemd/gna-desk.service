@@ -1,0 +1,21 @@
+[Unit]
+Description=Gná — the one mail desk (:8490, read-only, loopback): the inbox the arm is told about, as it arrives
+Documentation=file://__YMIR_TREE__/docs/features/gna-the-one-mail-desk.md
+StartLimitIntervalSec=120
+StartLimitBurst=10
+
+[Service]
+Type=simple
+# Rule 07: the account row and the grant live in the HOME; the desk resolves them
+# through it, never through a path baked into a unit.
+Environment=YMIR_HOME=__YMIR_OPERATOR_HOME__
+Environment=GNA_DESK_PORT=__YMIR_GNA_DESK_PORT__
+# The desk reads the vault and the home store; it writes only its own state.
+ExecStart=/usr/bin/python3 __YMIR_BIN_DIR__/mail/gna_desk.py --port __YMIR_GNA_DESK_PORT__
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=ymir.target

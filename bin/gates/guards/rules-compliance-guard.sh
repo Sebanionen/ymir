@@ -41,6 +41,9 @@ added=$(git diff --name-only --diff-filter=A "$BASE..$HEAD")
 fail=0
 say() { printf 'rules-compliance[1]{file,line,rule,finding}:\n  "%s","%s","%s","%s"\n' "$1" "$2" "$3" "$4"; fail=1; }
 
+# A template is a SHAPE, copied into a message; a changelog inside it would be copied too.
+# Its history is the repository's. Exempt, with the reason written here.
+is_shape() { case "$1" in .agents/templates/*) return 0 ;; *) return 1 ;; esac; }
 is_meta() { case "$1" in RULES/README.md|docs/features/_catalogue/*|bin/README.md|.agents/backend/README.md|FEATURES.md|*/plans/README.md) return 0 ;; *) return 1 ;; esac; }
 
 # R1 — a NEW document carries its history.
@@ -48,6 +51,7 @@ while IFS= read -r f; do
   [ -n "$f" ] || continue
   case "$f" in *.md) ;; *) continue ;; esac
   is_meta "$f" && continue
+  is_shape "$f" && continue
   grep -qiE '^#+ *change[ -]?log' "$f" 2>/dev/null || \
     say "$f" "-" "RULES/06 · append-only" "a new document has no CHANGE LOG section"
 done <<EOF
