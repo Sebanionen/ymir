@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",720
+  "shell doors (bin/*.sh)",723
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -249,6 +249,7 @@ capabilities[5]{surface,count}:
 | fm-x-reply.sh | Post firstmate's composed answer back to the relay for a pending X-mode  | tested | keep (a human or a cron row must run it) |
 | bitrate-gate.sh | bitrate-gate.sh — a diffusion clip that "completes" is not a clip that | tested | keep (a human or a cron row must run it) |
 | plane.sh | plane.sh — THE door to Plane. No agent talks to the Plane API without  | tested | keep (a human or a cron row must run it) |
+| a2a-front.sh | a2a-front.sh — the thin door to bin/bridge/a2a-front.py (Rule 23: one  | tested | keep (a human or a cron row must run it) |
 | a2a-mcp.sh | a2a-mcp.sh — install/verify the Ymir MCP servers into the harnesses so | tested+named | keep (a human or a cron row must run it) |
 | a2a-serve.sh | a2a-serve.sh — run the a2a-sdk A2A 1.0 server for a seated Eindri. | tested | keep (a human or a cron row must run it) |
 | a2a-talk.sh | a2a-talk.sh — list A2A agents and talk to one (bidirectional reply). | tested+named | keep (a human or a cron row must run it) |
