@@ -63,9 +63,24 @@ PY
 # never reads ciphertext directly — it asks for the resolved path.
 resolve_secret() {  # <file> <result-var>
   local f=$1 var=$2 tmp key
-  # An EMPTY plaintext must not shadow the encrypted vault: a 0-byte
-  # platform.env once made every secret read as absent while the 7.6 KB
-  # platform.env.age sat unread (2026-09-23). Only a NON-EMPTY plaintext wins.
+  # THE SEALED COPY IS THE SOURCE OF TRUTH. `bin/vault/hodd-set.sh` writes the .age and
+  # NOTHING else, so a plaintext left beside it goes stale in silence — measured
+  # 2026-11-05: three keys were written into platform.env.age (the mail grant) and every
+  # reader still saw the 74-key plaintext, so `gna` reported "credentials missing" while
+  # the vault held them, and the mail import failed on every run.
+  #
+  # So: a readable .age that DECRYPTS wins. The plaintext is the fallback, and the older
+  # rule still holds inside it — an EMPTY plaintext never shadows the vault (2026-09-23).
+  if [ -r "$f.age" ]; then
+    key="$HOARD/secrets/age.key"
+    if [ -r "$key" ] && command -v age >/dev/null 2>&1; then
+      tmp="$(mktemp)"; chmod 600 "$tmp"
+      if age -d -i "$key" "$f.age" >"$tmp" 2>/dev/null && [ -s "$tmp" ]; then
+        printf -v "$var" '%s' "$tmp"; return 0
+      fi
+      rm -f "$tmp"
+    fi
+  fi
   if [ -s "$f" ]; then printf -v "$var" '%s' "$f"; return 0; fi
   if [ -r "$f.age" ]; then
     key="$HOARD/secrets/age.key"
