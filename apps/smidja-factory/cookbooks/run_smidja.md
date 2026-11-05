@@ -66,6 +66,45 @@ Two things that bite:
 
 `--smidja-id` is optional on **every** smidja. Given one, the run joins that session if it exists or creates it pinned to exactly that id: same `sessions/{smidja_id}/` dirs, same `context_handoff/`, envelopes appended, and each agent resumes its existing coding-agent context window via `agent_map.json`. That is how you chain smidja — plan under one id, then build under the same id.
 
+## Resume
+
+A run that fails at phase three does not start again from the top — it continues at phase three. **Resume** reads the trace, finds the last phase that is green **and** whose gate passed (the checkpoint), and re-enters the chain at the phase after it.
+
+```bash
+just resume <smidja_id>                        # continue at the phase after the checkpoint
+just resume <smidja_id> --from-phase build     # re-enter at a named phase instead
+just resume <smidja_id> --dry-run              # print the plan and launch nothing
+uv run smidja/smidja_resume.py <smidja_id>     # the script the recipe runs
+```
+
+The shape is a checkpoint discipline, the one pi-durable names (`github.com/zerwiz/pi-durable-news-agent`, `news/sweep-task.ts`): every phase commits as it closes, a restart re-enters at the phase the checkpoint names, and **finished work is never paid for twice**. Here the commit is the trace itself — the phase row, the envelope rows and the `ph.log()` payloads land together — so a phase that reads green in `smidja.db` is a phase whose work is on record.
+
+Three things are handed forward, never recomputed:
+
+- **the envelopes** of the committed phases (`envelopes.payload_json`, else `sessions/<id>/<agent>/envelope.json`), so the next agent receives `{{previous_envelope}}` exactly as it was;
+- **the verdicts** of committed code phases — the suite's result, the committed sha, the change capture — read back from their `log` events instead of being run again;
+- **each agent's session id** from `agent_map.json`, so its context window survives the restart.
+
+A replayed phase writes no new phase row. The console and the trace say `already committed — handed forward, not re-run`, because it did not run.
+
+### It refuses rather than guesses
+
+The refusal vocabulary is the feature — each one is a way a resume would lie:
+
+| Refusal | When |
+|---|---|
+| `no such run` | there is no session under that id (or `--from-phase` names a phase this run never recorded) |
+| `nothing green to resume from` | no phase is both green and gate-passed — or the record contradicts itself: a phase that reports success while its gate failed. Resuming past that hides the failure |
+| `the roster changed since this run` | an agent's model is not the model this run was started with |
+
+**What is deliberately NOT resumed: a model switch.** `agent_map.json` records the model each session was created with. A roster edit means a different session, and a bad resume is worse than none — so the run refuses, and names the agent, the model it used and the model the roster now names. Put the old model back to continue, or accept that a changed model starts cold and run afresh.
+
+A run whose processes are still alive is also refused, and that one is not in the table because it is not a fault in the record: stop it with `just kill <smidja_id>` first.
+
+### `--from-phase`
+
+`--from-phase <name>` re-enters at a named phase **of this run** — to redo a phase that passed, or to retry the broken one once its input changed. It may not jump over a phase that did not commit: a phase that is `fail`, or that never started, is never skipped. That is the same `nothing green to resume from` refusal, naming the phase it would have skipped.
+
 ## Observe
 
 The trace db is `smidja/smidja_data/smidja.db`. It is WAL, so reads never block the running writers — poll it as often as you like.

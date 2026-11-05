@@ -78,6 +78,7 @@ just sessions                   # last 10 runs
 just phases <smidja_id>         # phase status in sequence
 just tail   <smidja_id>         # live event tail
 just procs  <smidja_id>         # live pids
+just resume <smidja_id>         # continue at the last green phase (see below)
 
 # raw
 uv run apps/smidja/smidja_prompt.py --agent scout "…"
@@ -86,6 +87,29 @@ uv run apps/smidja/smidja_scout.py "…"
 
 The watch recipes use **`python3 -c`** over the SQLite db (the `sqlite3` CLI is not
 installed on this machine) — do not reintroduce `sqlite3`.
+
+## Resume — continue at the last green phase
+
+`just resume <smidja_id> [--from-phase <name>] [--dry-run]` (or
+`uv run apps/smidja/smidja_resume.py <smidja_id>`) reads the trace, takes the last phase
+that is green **and** whose gate passed as the checkpoint, and re-enters the chain at the
+phase after it — the failed one. It adopts pi-durable's checkpoint discipline
+(`github.com/zerwiz/pi-durable-news-agent`): every phase commits as it closes, a restart
+re-enters at the phase the checkpoint names, and finished work is never paid for twice.
+
+- **Handed forward, never recomputed:** the committed phases' envelopes (as
+  `{{previous_envelope}}`), their code verdicts (suite result, committed sha, change
+  capture — read back from the `log` events), and each agent's session id from
+  `agent_map.json`, so context survives.
+- **Replay is a phase flag:** `Run.phase()` returns a replayed handle (no phase row, no
+  agent) and `quality.*`, `changes.capture`, `git_helper.commit_all` consult
+  `run.replaying`. No chain is edited, so a chain already stamped into a repo resumes too.
+- **Refusals, and they are the feature:** `no such run` · `nothing green to resume from`
+  (including a phase that reports success on a failed gate — resuming past it hides the
+  failure) · `the roster changed since this run` (a changed model means a fresh session,
+  and a bad resume is worse than none). A live run is blocked separately: stop it first.
+
+The cookbook is `apps/smidja-factory/cookbooks/run_smidja.md` §Resume.
 
 ## The trace
 
