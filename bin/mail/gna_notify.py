@@ -141,14 +141,11 @@ def local_queue() -> Path:
     It is NOT reached through `seat-wire.sh nudge`: that door is for a PEER, and it refuses its
     own seat by design ("a seat that answers itself is a loop"). The local queue is written here,
     under the same lock the extensions use, in the same one-line shape every other raiser uses.
+
+    The home is resolved by the store's own resolver and nowhere else (Rule 04/07): a second
+    spelling of where the home lives is how a job writes to a store nobody reads.
     """
-    home = os.environ.get("YMIR_HOME") or ""
-    if not home:
-        try:
-            home = (Path.home() / ".config/ymir/home").read_text().strip()
-        except OSError:
-            home = str(Path.home() / "Documents/ymirhome")
-    return Path(home) / "state" / ".wake-queue"
+    return gna_store.ymir_home() / "state" / ".wake-queue"
 
 
 def nudge(text):

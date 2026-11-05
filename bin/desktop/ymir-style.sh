@@ -52,6 +52,7 @@ style_mark() {  # <state> → a glyph
     INFO|info)         printf '%s' '—' ;;
     BLOCKED|blocked)   printf '%s' '✕' ;;
     CONSENT|consent)   printf '%s' '?' ;;
+    unconfigured)      printf '%s' '?' ;;
     OK|ok)             printf '%s' '✓' ;;
     WARN|warn)         printf '%s' '·' ;;
     FAIL|fail)         printf '%s' '✕' ;;
@@ -62,6 +63,7 @@ style_mark() {  # <state> → a glyph
 style_colour() {  # <state> → the colour for it
   case "${1:-}" in
     DO|CONSENT|WARN|warn|do|consent) printf '%s' "$C_BRONZE" ;;
+    unconfigured)                    printf '%s' "$C_BRONZE" ;;
     OK|SKIP|INFO|ok|skip|info)       printf '%s' "$C_STEEL" ;;
     FAIL|BLOCKED|fail|blocked)       printf '%s' "$C_BLOOD" ;;
     *)                               printf '%s' "$C_FAINT" ;;

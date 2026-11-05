@@ -80,6 +80,24 @@ refuse_disposable_path() {  # <unit-file>
   fi
   return 0
 }
+# ── the PINNED RUNTIME (RULES/02 §7) ──────────────────────────────────────────
+# A unit that executes the WORKING tree is a machine running whatever branch the
+# last agent left checked out. The seat declares its pinned checkout in the home
+# ($YMIR_HOME/config/runtime.env → YMIR_RUNTIME_DIR, default ~/ymir-runtime), and
+# __YMIR_BIN_DIR__ resolves THERE — so every templated door is rendered against the
+# pinned runtime, not against the tree this ensure was run from. Where no pinned
+# checkout stands yet, the main tree is named instead (and the ward will say so).
+FLEET_BIN_DIR="$FLEET_TEMPLATE_ROOT/bin"
+{
+  _fr_conf="${AUTOBOOT_HOME_ROOT:+$AUTOBOOT_HOME_ROOT/config/runtime.env}"
+  [ -n "$_fr_conf" ] && [ -r "$_fr_conf" ] && . "$_fr_conf"
+  _fr_pin="${YMIR_RUNTIME_DIR:-$HOME/ymir-runtime}"
+  if [ -n "$_fr_pin" ] && [ -d "$_fr_pin/.git" ] && [ -d "$_fr_pin/bin" ]; then
+    FLEET_BIN_DIR="$_fr_pin/bin"
+  fi
+  unset _fr_conf _fr_pin
+}
+FLEET_TREE_DIR="$(dirname "$FLEET_BIN_DIR")"
 WELL_URL="${FLEET_WELL_URL:-http://127.0.0.1:8317/mcp}"
 WELL_OVERRIDE=""   # set only by --well-url: force this seat's well door past the gateway
 SKILLS_URL="${FLEET_SKILLS_URL:-http://127.0.0.1:8319/mcp}"
@@ -89,6 +107,7 @@ GATEWAY_PORT="${MCP_GATEWAY_PORT:-${YMIR_MCP_GATEWAY_PORT:-8316}}"
 PORT_BASE="${FLEET_PORT_BASE:-8317}"
 CHECK_ONLY=0
 EMBED_MISSING=0
+MAIL_UNCONFIGURED=0
 # the web-stack roots, resolved once per ensure (bin/fleet/fleet-ensure.sh sets them)
 APP_DIR=""
 VIZ_DIR=""
@@ -97,6 +116,7 @@ ENV_FILE=""
 HLIDSKJALF_PORT="${HLIDSKJALF_PORT:-3888}"
 HLIDSKJALF_API_PORT="${HLIDSKJALF_API_PORT:-3889}"
 SMIDJA_PORT="${SMIDJA_VIZ_API_PORT:-8437}"
+GNA_DESK_PORT="${GNA_DESK_PORT:-8490}"
 
 say() { printf '%s\n' "$*"; }
 
@@ -116,7 +136,7 @@ fi
 # Which unit files the templates can materialize (all programs + the target)
 PROGRAM_UNIT_SRC() {  # <program> → the template path
   case "${1-}" in
-    well-mcp|ratatoskr|mill-worker|cards|skills-mcp|skuld|snotra|snotra-detect|embed|mcp-gateway)
+    well-mcp|ratatoskr|mill-worker|cards|skills-mcp|skuld|snotra|snotra-detect|gna-desk|embed|mcp-gateway)
       printf '%s\n' "$FLEET_TEMPLATE_ROOT/tools/mill/systemd/$1.service" ;;
     syn-watch)
       printf '%s\n' "$FLEET_TEMPLATE_ROOT/tools/mill/systemd/ymir-syn-watch.service" ;;
@@ -257,22 +277,51 @@ web_app_dirs() {  # resolve the app/viz/env/db roots once, into globals
 # above wins only when the operator did not pin one.
 VIZ_DB="${SMIDJA_DB:-}"
 
+# ── Gná's desk (plan 193 §14): ARMED ONLY WHERE AN ACCOUNT IS DECLARED ────
+# A desk with nothing to read must never be armed: a seat that answers /health with
+# no account looks exactly like an empty inbox, and "no mail" would then be a claim
+# the machine cannot make — an unconfigured desk must never read as silence. The
+# account row is the operator's word, never a default, so the ensure NAMES what is
+# missing and arms nothing.
+mail_accounts_file() { printf '%s\n' "$HOME_ROOT/hodd/memory/mail/accounts.yaml"; }
+mail_accounts_declared() {  # exit 0 iff the scope file carries at least one account row
+  local f; f="$(mail_accounts_file)"
+  [ -r "$f" ] || return 1
+  python3 - "$f" <<'PY' 2>/dev/null
+import sys, yaml
+try:
+    rows = (yaml.safe_load(open(sys.argv[1])) or {}).get("accounts") or []
+except Exception:
+    raise SystemExit(1)
+raise SystemExit(0 if any(isinstance(r, dict) and r.get("id") for r in rows) else 1)
+PY
+}
+
 materialize_web_unit() {  # <program> — substitute the per-seat roots into the template
-  local p="$1" template dst
+  local p="$1" template dst tmp
   template="$(PROGRAM_UNIT_SRC "$p")"
   dst="$HOME/.config/systemd/user/$(autoboot_unit_of "$p")"
+  # Render BESIDE the unit and refuse there, then seat it: a refused render must leave
+  # the PREVIOUS unit standing. Measured 2026-11-05 — an ensure run from a Yggdrasil
+  # worktree wrote the worktree's app dirs into three live units and only then refused
+  # them, leaving the seat pointed at a disposable path it had just called unlawful.
+  tmp="$dst.render.$$"
   sed -e "s|__YMIR_APP_DIR__|$APP_DIR|g" \
       -e "s|__YMIR_VIZ_DIR__|$VIZ_DIR|g" \
       -e "s|__YMIR_VIZ_DB__|$VIZ_DB|g" \
       -e "s|__YMIR_ENV_FILE__|$ENV_FILE|g" \
-      -e "s|__YMIR_BIN_DIR__|$FLEET_TEMPLATE_ROOT/bin|g" \
+      -e "s|__YMIR_BIN_DIR__|$FLEET_BIN_DIR|g" \
+      -e "s|__YMIR_TREE__|$FLEET_TREE_DIR|g" \
+      -e "s|__YMIR_OPERATOR_HOME__|$HOME_ROOT|g" \
+      -e "s|__YMIR_GNA_DESK_PORT__|$GNA_DESK_PORT|g" \
       -e "s|__YMIR_OPERATOR_STATE__|$HOME_ROOT/state|g" \
       -e "s|__YMIR_OPERATOR_CONFIG__|$HOME_ROOT/config|g" \
       -e "s|__YMIR_HLIDSKJALF_PORT__|$HLIDSKJALF_PORT|g" \
       -e "s|__YMIR_HLIDSKJALF_API_PORT__|$HLIDSKJALF_API_PORT|g" \
       -e "s|__YMIR_SMIDJA_PORT__|$SMIDJA_PORT|g" \
-      "$template" > "$dst"
-  refuse_disposable_path "$dst" || return 1
+      "$template" > "$tmp" || { rm -f "$tmp"; return 1; }
+  refuse_disposable_path "$tmp" || { rm -f "$tmp"; return 1; }
+  mv -f "$tmp" "$dst"
 }
 
 materialize_units() {  # <owed...> — every owed unit + the target; purge the stale
@@ -300,10 +349,16 @@ materialize_units() {  # <owed...> — every owed unit + the target; purge the s
         fi
         ;;
       # the templated units: their ExecStart carries the DURABLE roots
-      # (__YMIR_BIN_DIR__ = the main tree, never a disposable worktree), which
+      # (__YMIR_BIN_DIR__ = the pinned runtime, never a disposable worktree), which
       # is what the watch needs to reach the doors it calls.
-      hlidskjalf-spa|hlidskjalf-gate|mimir|bifrost|smidja|nornir|mcp-gateway|syn-watch|snotra-detect)
-        materialize_web_unit "$p"
+      hlidskjalf-spa|hlidskjalf-gate|mimir|bifrost|smidja|nornir|mcp-gateway|syn-watch|snotra-detect|gna-desk)
+        case "$p" in
+          gna-desk)
+            if mail_accounts_declared; then materialize_web_unit "$p"
+            else say "fleet: gna-desk — NOT ARMED: $(mail_accounts_file) holds no account row" >&2; fi ;;
+          *)
+            materialize_web_unit "$p" ;;
+        esac
         ;;
       *)  # the mill/offices — %h-native templates, copied as they ship
         if [ -f "$(PROGRAM_UNIT_SRC "$p")" ]; then
@@ -406,6 +461,7 @@ raise_units() {  # <owed...>
     case "$p" in
       embed) [ "${EMBED_MISSING:-0}" = 1 ] && continue ;;
       a2abridge-directory) [ "${A2A_MISSING:-0}" = 1 ] && continue ;;
+      gna-desk) mail_accounts_declared || continue ;;
     esac
     if systemctl --user enable --now "$(autoboot_unit_of "$p")" >/dev/null 2>&1; then
       say "fleet: $(autoboot_unit_of "$p") enabled + started"
@@ -493,11 +549,27 @@ status() {
 }
 
 ensure() {
-  local owed="" roles=""
+  local owed="" roles="" _p="" _keep=""
   EMBED_MISSING=0
   A2A_MISSING=0
+  MAIL_UNCONFIGURED=0
   autoboot_owed_roles AUTOBOOT_HOST_ROLES
   autoboot_owed owed
+  # Gná's desk is owed only where an ACCOUNT IS DECLARED (plan 193 §14). A seat with
+  # no account row is not owed a desk: raise it and the silence looks like an empty
+  # inbox. Name what is missing, arm nothing, and let the two other roles carry on.
+  if ! mail_accounts_declared; then
+    case " $owed " in *" gna-desk "*)
+      MAIL_UNCONFIGURED=1
+      _keep=""
+      for _p in $owed; do [ "$_p" = gna-desk ] || _keep="$_keep $_p"; done
+      owed="${_keep# }"; unset _keep _p
+      say "fleet: gna-desk — NOT ARMED: no account row in $(mail_accounts_file)"
+      say "fleet:   a desk with nothing to read is not an empty inbox; add one row (id + the names of"
+      say "fleet:   its vault keys, never their values) and re-run: bin/fleet/fleet-ensure.sh ensure"
+      ;;
+    esac
+  fi
   say "fleet: $AUTOBOOT_HOST owes (${AUTOBOOT_HOST_ROLES}): $owed"
   mkdir -p "$HOME/.config/systemd/user"
   materialize_tools
@@ -536,6 +608,10 @@ case "${1-}" in
     shift
     p="${1-}"
     [ -n "$p" ] || { say "error: unit needs a program name (e.g. syn-watch)" >&2; exit 2; }
+    if [ "$p" = gna-desk ] && ! mail_accounts_declared; then
+      say "fleet: gna-desk — NOT ARMED: no account row in $(mail_accounts_file)" >&2
+      exit 1
+    fi
     web_app_dirs
     materialize_web_unit "$p" ;;
   *) say "error: unknown command (status|ensure|verify|unit)" >&2; exit 2 ;;

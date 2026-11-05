@@ -126,3 +126,40 @@ unreadable (check `$YMIR_HOME/hodd/memory/mail/accounts.yaml` parses). `inbound-
 exit 1 after MX exists means the send left but nothing landed — check the routing row, the
 destination verification, and the mailbox the address forwards to. Exit 3 is not a failure:
 it is the door telling you what the world is missing before you trust an empty inbox.
+
+## Seated by the fleet, and reported by Eir
+
+**One door seats the desk.** `bin/fleet/fleet-ensure.sh ensure` renders
+`gna-desk.service` from `tools/mill/systemd/gna-desk.service` against the **pinned runtime**
+(`~/ymir-runtime`, RULES/02 §7), enables it under `ymir.target` and starts it — the same raise,
+the same proof and the same verify as the other role-owed programs. It is owed by `heart`,
+`forge` and `dev`; a `hand` has no systemd and reports a clean skip.
+
+**Armed only where an account is declared.** If
+`$YMIR_HOME/hodd/memory/mail/accounts.yaml` carries no account row, the ensure **names the
+missing file and arms nothing**. That is deliberate: a desk with nothing to read answers
+`/health` exactly like an empty inbox, and *"no mail"* would then be a claim the machine
+cannot make. Add the row (its `grant` / `client` / `client_secret` are **names of vault
+keys**, never values) and re-run the ensure.
+
+**Eir reports three named truths**, not a yes/no:
+
+| State | What it means | What mends it |
+|---|---|---|
+| **green** | the desk answers `/health` **and** declares an account | — |
+| **unconfigured** | the desk answers, but no account row exists | declare a row in `accounts.yaml`, then `bin/fleet/fleet-ensure.sh ensure` |
+| **broken** | the desk does not answer at all | `bin/mail/install.sh` (Eir's own fix action) |
+
+The detail names the account the desk answers for, and — when the grant is missing — **the
+three vault key names** the account row declares. The values never leave the vault.
+
+**The digest rhythm.** While the desk stands, `bin/time/nornir-job-gna-mail.sh` runs
+**every two hours through the working day (07:00–18:00) and incrementally**: each run tells
+the arm only what it has not told it before, batched into one line, so a run never re-reads
+a week and never floods the arm. The rows ship commented in `config/cron.yaml.example`;
+copy them into your own home at your own minute.
+
+**Your own desk, on your own mailbox.** Nothing here is shared: your own account row in
+*your* `accounts.yaml`, your own OAuth grant in *your* vault, `bin/mail/install.sh` on *your*
+machine. Our store, our spine and our notifications stay ours — and your refresh token is
+never ours to hold.
