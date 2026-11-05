@@ -64,17 +64,11 @@ fi
 # local config made every fresh clone — CI included — fail a ward about a merge that
 # never happens there, and turned four collaborators' PRs red for nothing.
 if git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1; then
-<<<<<<< ours
-  driver="$(git -C "$ROOT" config --get merge.regenerate.driver 2>/dev/null || true)"
-  [ -n "$driver" ] || {
-    printf '  "the merge driver is not seated","FEATURES.md · bin/README.md · capabilities.md","run bin/records/weave-features.sh --install (a woven document without its driver conflicts by hand, on every merge)"\n'
-=======
   declared="$(git -C "$ROOT" check-attr merge -- FEATURES.md 2>/dev/null | sed 's/.*: merge: //' || true)"
   script_ok=1
   [ -f "$ROOT/bin/records/regenerate-on-merge.sh" ] || script_ok=0
   if [ "$declared" != "regenerate" ] || [ "$script_ok" -ne 1 ]; then
     printf '  "the merge driver is not declared","FEATURES.md","FEATURES.md needs merge=regenerate in .gitattributes and bin/records/regenerate-on-merge.sh in the tree (a woven document without its driver conflicts by hand)"\n'
->>>>>>> theirs
     stale=$((stale + 1))
   elif [ -z "$(git -C "$ROOT" config --get merge.regenerate.driver 2>/dev/null || true)" ]; then
     printf '  "the merge driver is declared but not seated in this clone","FEATURES.md","run bin/records/weave-features.sh --install for this clone (CI does not merge, so it is a note here, not a fault)"\n'

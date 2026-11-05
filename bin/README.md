@@ -71,7 +71,7 @@ bin[761]{file,does,kind,verdict,disposition,callers,lines}:
   "calendar-auth.sh","bin/time/snotra/calendar-auth.sh -> systems/snotra/services/calendar/calendar-auth.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new…","tool","wired","keep",0,16
   "calendar-invite.sh","bin/time/snotra/calendar-invite.sh -> systems/snotra/services/calendar/calendar-invite.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the…","tool","wired","keep",2,16
   "calendar-watch.sh","calendar-watch.sh — do not walk into a meeting by accident.","tool","wired","keep",0,81
-  "capabilities.md","What Ymir can do — the capability register","data","wired","keep",7,28
+  "capabilities.md","What Ymir can do — the capability register","data","wired","keep",6,28
   "capabilities.sh","A GENERATED FILE MUST BE A FUNCTION OF CONTENT ALONE (0.1.94/0.1.95/0.1.97 — three","tool","wired","keep",9,257
   "catalog.sh","catalog.sh — THE door to what this machine can serve.","tool","wired","keep",3,77
   "channel_calendar.py","bin/time/snotra/channel_calendar.py -> systems/snotra/services/cron/channel_calendar.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
@@ -147,7 +147,7 @@ bin[761]{file,does,kind,verdict,disposition,callers,lines}:
   "extension-api-check.sh","extension-api-check.sh — a Ymir extension must speak Pi's ACTUAL tool API.","tool","wired","keep",1,113
   "fathom_ingest.py","bin/time/snotra/fathom_ingest.py -> systems/snotra/services/cron/fathom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "feature-inventory.sh","feature-inventory.sh — every feature the system CLAIMS, in one checklist.","tool","wired","keep",0,88
-  "features-guard.sh","features-guard.sh — every feature page is catalogued (Rule 14).","tool","wired","keep",2,89
+  "features-guard.sh","features-guard.sh — every feature page is catalogued (Rule 14).","tool","wired","keep",2,83
   "fix-note.md","Fix note template","data","wired","keep",2,22
   "fixes-components.sh","The components of this product — one directory of notes each, and no invented names.","tool","wired","keep",1,4
   "fixes-guard.sh","fixes-guard — a behaviour change leaves a note, or says why it did not need one.","tool","tested","keep",6,26
