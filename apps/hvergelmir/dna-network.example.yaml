@@ -1,0 +1,63 @@
+# dna-network.example.yaml: copy to dna-network.yaml (gitignored) and edit.
+#
+# Every device runs apps/dna-server-api plus a crontab line for apps/dna-server-cron.
+# `just net <verb> <id>` looks the id up here; no recipe names a machine.
+# Without a dna-network.yaml, only `local` exists.
+#
+# Kinds
+#   local    this Mac: the API and the UI run as background processes; the crontab line is opt in
+#   ssh      a Mac (launchd) or Linux box (systemd) reachable with passwordless ssh, e.g. an always-on Mac mini
+#   exe-dev  an exe.dev VM: the ssh driver plus VM create and a private HTTPS share
+#
+# Tokens and keys never live here. env_keys are copied by name from the root .env.
+#
+# UIs
+#   ui        the device serves its own UI (a second service, the hub). ssh devices opt in with a URL, open to
+#             that network. exe-dev devices always serve it at https://<vm>.exe.xyz behind the exe.dev login.
+#   hub_port  the port for `just browser start <id>` / `just browser all` on this Mac (devices without a ui),
+#             and for local's own UI.
+
+defaults:
+  port: 4850
+  node: 24
+  code_dir: ~/pi-durable-news-agent  # outside ~/Documents, so cron needs no Full Disk Access on macOS
+  env_keys: [OPENROUTER_API_KEY, OPENAI_API_KEY, FIRECRAWL_API_KEY, DNA_CLIENT_TOKEN, DNA_CRON_TOKEN]
+  cron: "* * * * *"                  # the tick; the API's schedule (every 5 min by default, 1 to 60 or off) picks which ticks sweep
+
+devices:
+  local:
+    name: This Mac
+    kind: local
+    url: http://127.0.0.1:4850
+    hub_port: 4851                    # this Mac's UI: http://localhost:4851
+
+  # An always-on Mac mini on your network: launchd services for the API and the UI, plus the crontab line.
+  # Turn on Remote Login (System Settings, General, Sharing) and copy your ssh key to it first.
+  # mini:
+  #   name: Mac mini
+  #   kind: ssh
+  #   ssh: you@your-mac-mini.local
+  #   service: launchd
+  #   url: http://your-mac-mini.local:4850
+  #   ui: http://your-mac-mini.local:4851   # the mini serves its own UI, open to your network
+  #   hub_port: 4853
+
+  # Optional: any Linux box with passwordless ssh and sudo, run with systemd.
+  # linux:
+  #   name: Linux box
+  #   kind: ssh
+  #   ssh: you@your-linux-box
+  #   service: systemd
+  #   url: http://your-linux-box:4850
+  #   hub_port: 4855
+
+  # Optional: an exe.dev VM, created for you by `just net up vm`.
+  # vm:
+  #   name: exe.dev VM
+  #   kind: exe-dev
+  #   vm: my-news-agent
+  #   service: systemd
+  #   url: http://127.0.0.1:4852          # private: reached through `just net tunnel vm`
+  #   tunnel: { local: 4852, remote: 4850 }   # the API, for the CLI, TUI and tests
+  #   hub_port: 4854                           # its UI is https://<vm>.exe.xyz, private behind the exe.dev login
+  #   create: { cpu: 2, memory: 4GB, disk: 20GB }

@@ -1,0 +1,29 @@
+{
+  "name": "durable-news-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A durable pi news agent that keeps finding new news and ranks it as Hype, Facts and Signal with jev. The npm workspace root: every app in apps/ plus the shared packages.",
+  "workspaces": [
+    "apps/shared/packages/*",
+    "apps/dna-*"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "check": "npm run check --workspaces --if-present",
+    "test": "npm test --workspaces --if-present",
+    "lint": "oxlint apps/dna-* apps/shared",
+    "fmt": "oxfmt -c shared-app-configuration/.oxfmtrc.json apps/dna-* apps/shared",
+    "fmt:check": "oxfmt --check -c shared-app-configuration/.oxfmtrc.json apps/dna-* apps/shared"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "^24.0.0",
+    "oxfmt": "0.72.0",
+    "oxlint": "1.87.0",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

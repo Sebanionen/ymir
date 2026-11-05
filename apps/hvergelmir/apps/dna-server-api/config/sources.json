@@ -1,0 +1,198 @@
+{
+  "sources": [
+    {
+      "kind": "hn_front",
+      "name": "Hacker News front page",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "hn_search",
+      "name": "Hacker News search",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "atom",
+      "name": "Simon Willison",
+      "url": "https://simonwillison.net/atom/everything/",
+      "interval_min": 15,
+      "weight": 1.2
+    },
+    {
+      "kind": "rss",
+      "name": "OpenAI News",
+      "url": "https://openai.com/news/rss.xml",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "Google DeepMind",
+      "url": "https://deepmind.google/blog/rss.xml",
+      "interval_min": 15,
+      "weight": 0.9
+    },
+    {
+      "kind": "rss",
+      "name": "Hugging Face Blog",
+      "url": "https://huggingface.co/blog/feed.xml",
+      "interval_min": 15,
+      "weight": 0.9
+    },
+    {
+      "kind": "rss",
+      "name": "Latent Space",
+      "url": "https://www.latent.space/feed",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "r/LocalLLaMA",
+      "url": "https://www.reddit.com/r/LocalLLaMA/top/.rss?t=day",
+      "interval_min": 30,
+      "weight": 0.8
+    },
+    {
+      "kind": "github_releases",
+      "name": "pi releases",
+      "url": "https://github.com/earendil-works/pi/releases.atom",
+      "interval_min": 15,
+      "weight": 1.5
+    },
+    {
+      "kind": "github_releases",
+      "name": "Claude Code releases",
+      "url": "https://github.com/anthropics/claude-code/releases.atom",
+      "interval_min": 15,
+      "weight": 1.3
+    },
+    {
+      "kind": "web_page",
+      "name": "Anthropic News",
+      "url": "https://www.anthropic.com/news",
+      "interval_min": 30,
+      "weight": 1.2
+    },
+    {
+      "kind": "github_releases",
+      "name": "Codex CLI releases",
+      "url": "https://github.com/openai/codex/releases.atom",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "github_releases",
+      "name": "Gemini CLI releases",
+      "url": "https://github.com/google-gemini/gemini-cli/releases.atom",
+      "interval_min": 15,
+      "weight": 0.9
+    },
+    {
+      "kind": "web_page",
+      "name": "Anthropic Engineering",
+      "url": "https://www.anthropic.com/engineering",
+      "interval_min": 30,
+      "weight": 1.1
+    },
+    {
+      "kind": "rss",
+      "name": "TechCrunch AI",
+      "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "The Verge AI",
+      "url": "https://www.theverge.com/rss/ai-artificial-intelligence/index.xml",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "Ars Technica AI",
+      "url": "https://arstechnica.com/ai/feed/",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "Lobsters AI",
+      "url": "https://lobste.rs/t/ai.rss",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "r/ClaudeAI",
+      "url": "https://www.reddit.com/r/ClaudeAI/new/.rss",
+      "interval_min": 30,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "The Decoder",
+      "url": "https://the-decoder.com/feed/",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "GitHub Blog",
+      "url": "https://github.blog/feed/",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "rss",
+      "name": "MarkTechPost",
+      "url": "https://www.marktechpost.com/feed/",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "atom",
+      "name": "Epoch AI",
+      "url": "https://epoch.ai/atom.xml",
+      "interval_min": 15,
+      "weight": 1.1
+    },
+    {
+      "kind": "rss",
+      "name": "METR",
+      "url": "https://metr.org/feed.xml",
+      "interval_min": 15,
+      "weight": 1.1
+    },
+    {
+      "kind": "atom",
+      "name": "Aider blog",
+      "url": "https://aider.chat/feed.xml",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "github_releases",
+      "name": "SWE-bench releases",
+      "url": "https://github.com/SWE-bench/SWE-bench/releases.atom",
+      "interval_min": 15,
+      "weight": 1.0
+    },
+    {
+      "kind": "web_page",
+      "name": "Hugging Face Papers",
+      "url": "https://huggingface.co/papers",
+      "interval_min": 30,
+      "weight": 1.0
+    },
+    {
+      "kind": "web_page",
+      "name": "ARC Prize blog",
+      "url": "https://arcprize.org/blog",
+      "interval_min": 30,
+      "weight": 1.0
+    }
+  ]
+}
