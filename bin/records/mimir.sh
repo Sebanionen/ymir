@@ -105,9 +105,10 @@ runpy.run_path(__import__("os").environ["MIMIR_POLICY"], run_name="__main__")
 # ── the recall printer: one shape for both doors ─────────────────────────────
 _recall_print() {  # <json-or-empty> <localhost|bridge>
   TAG="$TAG" ACTOR="$ACTOR" SINCE="$SINCE" UNTIL="$UNTIL" STORE_TYPE="$STORE_TYPE" \
-  TASK="$TASK" ARCHIVED="$ARCHIVED" WHERE="$2" python3 - "$WELL" "$Q" "$K" "$1" <<'PYR'
+  TASK="$TASK" ARCHIVED="$ARCHIVED" WHERE="$2" python3 -c "$(cat <<'PYR'
 import json, os, sys
-well, q, k, payload = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
+well, q, k = sys.argv[1], sys.argv[2], int(sys.argv[3])
+payload = sys.stdin.read()
 tag, actor = os.environ.get("TAG",""), os.environ.get("ACTOR","")
 since, until = os.environ.get("SINCE",""), os.environ.get("UNTIL","")
 store_type, archived = os.environ.get("STORE_TYPE",""), os.environ.get("ARCHIVED","0") == "1"
@@ -138,12 +139,19 @@ rows = []
 if payload.strip():
     try:
         d = json.loads(payload)
-    except Exception:
-        d = []
-    rs = d.get("results", d if isinstance(d, list) else [])
+        if isinstance(d, dict) and isinstance(d.get("results"), list):
+            rs = d["results"]
+        elif isinstance(d, list):
+            rs = d
+        else:
+            raise ValueError("missing results")
+    except (ValueError, TypeError):
+        print("error: well bridge returned an invalid recall response", file=sys.stderr)
+        sys.exit(1)
     for r in rs:
         e = r.get("episode", r)
         if keep(e): rows.append((r.get("score", 0), e))
+used_local = not rows
 if not rows:
     # THE BRIDGE'S ANSWER IS NOT THE STORE. An episode written seconds earlier is in
     # the file (grep proves it) and absent from the semantic index, so an empty bridge
@@ -167,16 +175,26 @@ if not rows:
         if hit: scored.append((0.5 * hit / max(1, len(words)), e))
     scored.sort(key=lambda x: x[0])
     rows = scored[-k:]
-print(f"recall[{len(rows)}]{{score,source,store,title}}:")
 # Best first, whichever door answered: the bridge ranks descending and the local
 # fallback ascends, so the printer owns the order rather than trusting either.
 rows.sort(key=lambda r: r[0] if isinstance(r[0], (int, float)) else 0.0, reverse=True)
+rows = rows[:k]
+if not rows and os.environ.get("WHERE") == "local":
+    print("error: well bridge unavailable and no matching local log entries", file=sys.stderr)
+    sys.exit(1)
+print(f"recall[{len(rows)}]{{score,source,store,title}}:")
+if used_local:
+    reason = "bridge returned no matches" if os.environ.get("WHERE") == "bridge" else "bridge unavailable"
+    print(f"retrieval: local log ({reason})")
+else:
+    print("retrieval: bridge")
 for sc, e in rows:
     t = (e.get("content","").split("\n")[0] or "").replace('"', "").strip()[:90]
     src = (e.get("agents") or [e.get("source","well")])[0] if isinstance(e.get("agents"), list) else e.get("source","well")
     st = next((str(x).split(":",1)[1] for x in tags_of(e) if str(x).startswith("store:")), "episodic")
     print(f'  {sc},"{src}","{st}","{t}"')
 PYR
+)" "$WELL" "$Q" "$K" <<<"$1"
 }
 
 case "$CMD" in
@@ -250,6 +268,10 @@ except (ValueError, KeyError):
       esac
     done
     [ -n "$Q" ] || { printf 'error: recall needs a query\nhelp: bin/records/mimir.sh recall "<query>"\n' >&2; exit 2; }
+    case "$K" in
+      ""|*[!0-9]*) printf 'error: --k must be an integer from 1 to 1000\n' >&2; exit 2 ;;
+    esac
+    [ "$K" -ge 1 ] 2>/dev/null && [ "$K" -le 1000 ] 2>/dev/null || { printf 'error: --k must be an integer from 1 to 1000\n' >&2; exit 2; }
     case "$STORE_TYPE" in
       ""|episodic|semantic|procedural) ;;
       *) printf 'error: --store must be episodic|semantic|procedural (got %s)\n' "$STORE_TYPE" >&2; exit 2 ;;
@@ -267,7 +289,7 @@ except (ValueError, KeyError):
       [ "$ARCHIVED" = "1" ] && qs="$qs&include_archived=1"
       out=$(curl -fsS --max-time 8 "$BRIDGE/recall?$qs" 2>/dev/null) || out=""
     fi
-    _recall_print "$out" "$([ -n "$out" ] && echo bridge || echo local)"
+    _recall_print "$out" "$([ -n "$out" ] && echo bridge || echo local)" || exit $?
     # The well records a RECALL as well as a write: a memory that is never drunk
     # from is a shelf, and the health row must be able to see the difference.
     exit 0

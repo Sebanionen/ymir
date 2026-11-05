@@ -239,3 +239,10 @@ and the installed `codex plugin add --help` / `codex plugin marketplace add --he
 ## 2026-11-02 — bounded Gná arm
 
 gna_watch_arm now uses bounded canonical start/status commands with an actual Codex thread ID. Windows routes through WSL Linux Python, never native process liveness. Native Codex thread heartbeat owns automatic wake delivery; status alone does not prove it. Poll leaves events pending until the processing turn acknowledges handled work. See docs/features/gna-in-codex.md and tests/test_gna_codex.mjs.
+
+### Well command contract
+
+The Codex well tools call the same `mimir.sh` door as the other harnesses.
+Recall passes `--k <limit>`; `ymir_well(search)` is an alias for hybrid
+recall, and `ymir_well(stats)` calls health. These aliases do not imply
+additional native `mimir.sh` commands. OpenCode uses the same mapping.

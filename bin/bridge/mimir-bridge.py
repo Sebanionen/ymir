@@ -543,7 +543,12 @@ class Handler(BaseHTTPRequestHandler):
                 }})
             if u.path == "/recall":
                 query = (q.get("q") or [""])[0]
-                k = int((q.get("k") or ["5"])[0])
+                try:
+                    k = int((q.get("k") or ["5"])[0])
+                except ValueError:
+                    return self._json(400, {"error": "k must be an integer from 1 to 1000"})
+                if not 1 <= k <= 1000:
+                    return self._json(400, {"error": "k must be an integer from 1 to 1000"})
                 mode = (q.get("mode") or ["hybrid"])[0]
                 agent = (q.get("agent_id") or [None])[0]
                 cross = (q.get("cross_agent") or ["1"])[0] not in ("0", "false", "")
@@ -585,6 +590,8 @@ class Handler(BaseHTTPRequestHandler):
                         seen.add(ep["id"])
                         results.append({"score": h.score, "distance": h.distance,
                                         "importance": h.importance, "episode": ep})
+                        if len(results) >= k:
+                            break
                     # A recall is a fact about the memory too: record that the well
                     # was drunk from, so "never consulted" is visible in the health row.
                     flush_access(eng)

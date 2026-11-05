@@ -228,7 +228,7 @@ export function createTools({ root, home, state, env = process.env }) {
     (a) =>
       shell(
         "bin/records/mimir.sh",
-        ["recall", a.query, String(a.limit ?? 5)],
+        ["recall", a.query, "--k", String(a.limit ?? 5)],
         home,
       ),
   );
@@ -624,7 +624,7 @@ export function createTools({ root, home, state, env = process.env }) {
   );
   add(
     "ymir_well",
-    "Call canonical memory recall, observe, search or stats.",
+    "Call the well: recall or search (hybrid recall), observe, or stats (health).",
     { action: E("recall", "observe", "search", "stats"), query: S, limit: N },
     ["action"],
     (a) => {
@@ -632,10 +632,10 @@ export function createTools({ root, home, state, env = process.env }) {
       return shell(
         "bin/records/mimir.sh",
         [
-          a.action,
+          a.action === "stats" ? "health" : a.action === "search" ? "recall" : a.action,
           ...(a.query ? [a.query] : []),
           ...(["recall", "search"].includes(a.action)
-            ? [String(a.limit ?? 5)]
+            ? ["--k", String(a.limit ?? 5)]
             : []),
         ],
         home,
