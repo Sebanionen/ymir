@@ -22,6 +22,11 @@ export default function PlansBoard() {
   const [msg, setMsg] = useState<{ cls: string; text: string } | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
+  // WHICH DOOR ANSWERED. Skuld is the WRITE door (plans_create); the ledger of numbered
+  // files is the READ source. Naming the door on screen is how the operator knows the
+  // book is empty rather than the board being broken.
+  const [source, setSource] = useState<'skuld' | 'ledger'>('skuld');
+  const [files, setFiles] = useState<Record<string, string>>({});
 
   const statuses = useMemo(() => Array.from(new Set(rows.map((r) => cells(r).st))), [rows]);
   const visible = useMemo(
@@ -44,8 +49,39 @@ export default function PlansBoard() {
   }, []);
 
   async function loadPlans() {
-    const p = await skuldCall('plans_list', { namespace: 'ymir' });
-    setRows((p.split('\n') ?? []).filter((r) => r.includes('|')));
+    // A board that says "no plans" while the ledger carries every plan as a numbered
+    // file is the bug (2026-11-05). So an empty — or silent — Skuld is not the empty
+    // state; it is the signal to read the record itself. The ledger's rows are shaped
+    // exactly as Skuld answers, so ONE table serves both doors.
+    let fromBook: string[] = [];
+    try {
+      const p = await skuldCall('plans_list', { namespace: 'ymir' });
+      fromBook = (p.split('\n') ?? []).filter((r) => r.includes('|'));
+    } catch {
+      // a silent door falls through to the ledger, exactly as an empty one does
+    }
+    if (fromBook.length > 0) {
+      setSource('skuld');
+      setFiles({});
+      setRows(fromBook);
+      return;
+    }
+    try {
+      const r = await fetch('/api/plans', { credentials: 'include', signal: AbortSignal.timeout(20_000) });
+      const d = (await r.json()) as {
+        plans?: { n: number; slug: string; state: string; title: string; file: string }[];
+      };
+      const list = (d.plans ?? []).filter((p) => Number.isFinite(p.n));
+      const map: Record<string, string> = {};
+      for (const p of list) map[String(p.n)] = p.file;
+      setSource('ledger');
+      setFiles(map);
+      setRows(list.map((p) => `${p.n}|ymir|${p.state}|-|${p.title}`));
+    } catch {
+      setSource('ledger');
+      setFiles({});
+      setRows([]);
+    }
   }
 
   const d = detail ? detail.split('|') : [];
@@ -65,6 +101,9 @@ export default function PlansBoard() {
             the plans <span className="mono dim" style={{ marginLeft: '.4rem', fontSize: '.72rem' }}>{visible.length}</span>
           </div>
           <button type="button" className="td-act" onClick={() => setNewOpen((v) => !v)}>+ new plan</button>
+          <span className="mono dim" style={{ fontSize: '.68rem' }}>
+            {source === 'ledger' ? `the ledger · ${rows.length} files` : 'skuld · the book'}
+          </span>
           <SkuldStatusChip />
         </div>
         <div className="panel-body flush">
@@ -125,7 +164,13 @@ export default function PlansBoard() {
             </thead>
             <tbody>
               {visible.length === 0 && (
-                <tr><td colSpan={4} className="dim" style={{ padding: '.6rem .7rem' }}>no plans cut yet — the tickets board waits at #/tickets</td></tr>
+                <tr>
+                  <td colSpan={4} className="dim" style={{ padding: '.6rem .7rem' }}>
+                    {source === 'ledger'
+                      ? 'the ledger answered no plans — no numbered file sits in the ledger either'
+                      : 'no plans cut yet — the tickets board waits at #/tickets'}
+                  </td>
+                </tr>
               )}
               {visible.map((r) => {
                 const c = cells(r);
@@ -133,6 +178,12 @@ export default function PlansBoard() {
                   <tr
                     key={c.id}
                     onClick={async () => {
+                      // A ledger row has no ticket-backed body to fetch: the file IS the
+                      // plan, and the sheet names it rather than pretending to read it.
+                      if (source === 'ledger') {
+                        setDetail(r);
+                        return;
+                      }
                       const raw = await skuldCall('plans_get', { id: parseInt(c.id, 10) });
                       setDetail(raw);
                     }}
@@ -162,6 +213,13 @@ export default function PlansBoard() {
             <div className="td-row">
               <span className="mono dim">rides tickets: {esc(cells(detail).tickets || '-')}</span>
             </div>
+            {source === 'ledger' && (
+              <div className="td-row">
+                <span className="mono dim">
+                  the plan is the file: {esc(files[String(d[0])] ?? '(the ledger did not name it)')}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}

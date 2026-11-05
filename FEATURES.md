@@ -81,6 +81,7 @@ its row here and write its page (see `AGENTS.md` → *Feature how-tos*).
 | Board | Óðrerir (live hall) | The fleet's planning glass — a live board of what is happening | [docs/features/odrerir-the-live-hall.md](docs/features/odrerir-the-live-hall.md) |
 | Desktop | Sessrúmnir (desktop shell) | The desktop app for the portal | [docs/features/sessrumnir-the-desktop.md](docs/features/sessrumnir-the-desktop.md) |
 | Ingress | Bifrost + Heimdall + Gjallarhorn | Routing, OAuth guard, and the outbound tunnel | [docs/features/bifrost-and-heimdall-the-doors.md](docs/features/bifrost-and-heimdall-the-doors.md) |
+| The near loop | The four dials · what is blocked on you · who is working now | One page in Óðrerir (`#/near`) answering "what waits on me" and "what are this agent's four dials" | [docs/features/near-loop.md](docs/features/near-loop.md) |
 
 ## Fleet & models
 

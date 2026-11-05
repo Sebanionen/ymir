@@ -13,6 +13,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statS
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { Database } from 'bun:sqlite';
 import { dirname, extname, join, resolve } from 'node:path';
+import { readdir as readdirAsync, readFile as readFileAsync } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
 import { createVoiceHandler, voiceAccess } from './voice.ts';
@@ -178,6 +179,171 @@ async function runAsync(cmd: string[], ttlMs = 3000): Promise<string> {
       return '';
     }
   });
+}
+
+/* ---- the seat doors (near the loop) -------------------------------------- */
+// The four dials, what waits on the operator, and this session's context are owned
+// by three doors in bin/seat/. The gate is a CARRIER only: it runs the door, memoises
+// the read, and never re-implements what the door already knows. A door that cannot
+// answer says so — it is never painted as a zero (the 2026-10-23 fault).
+async function seatDoor<T>(door: string, ttlMs: number): Promise<T | { error: string }> {
+  const key = `door:${door}`;
+  const hit = MEMO.get(key);
+  if (hit && Date.now() - hit.t < ttlMs) return hit.v as T;
+  const failed = (error: string) => ({ error }); // never cached: a re-read must retry
+  let raw = '';
+  try {
+    const proc = Bun.spawn(['timeout', '10', 'bash', `bin/seat/${door}.sh`, '--json'], {
+      cwd: ROOT,
+      stdout: 'pipe',
+      stderr: 'ignore',
+    });
+    // THE READ IS BOUNDED TOO. A door that starts its own child (core-four asks the model
+    // catalog) can leave the pipe open after `timeout` kills the shell — and then a plain
+    // `await new Response(stdout).text()` never returns, which hung this endpoint forever
+    // on 2026-11-06. A stuck pipe is the door failing to answer, and it says so.
+    raw = await Promise.race([
+      new Response(proc.stdout).text(),
+      new Promise<string>((resolve) => setTimeout(() => resolve(''), 11_000)),
+    ]);
+    try {
+      proc.kill('SIGKILL');
+    } catch {
+      // already gone
+    }
+  } catch {
+    return failed(`bin/seat/${door}.sh could not be started`);
+  }
+  raw = raw.trim();
+  if (!raw) return failed(`bin/seat/${door}.sh did not answer in time`);
+  try {
+    const parsed = JSON.parse(raw) as T;
+    MEMO.set(key, { t: Date.now(), v: parsed });
+    return parsed;
+  } catch {
+    return failed(`bin/seat/${door}.sh answered with something that is not JSON: ${raw.slice(0, 120)}`);
+  }
+}
+
+interface PlanRow {
+  n: number;
+  slug: string;
+  title: string;
+  state: string;
+  file: string;
+}
+
+/** A plan's status leads with its state; the middot or dash that follows is the
+ *  detail, and the board has a cell, not a paragraph. */
+function tidyState(raw: string): string {
+  const s = raw.toLowerCase().replace(/[*`]/g, '').trim();
+  return s.split(/[\u00b7\u2014,;(]/)[0].trim().split(/\s+/).slice(0, 3).join(' ') || 'undeclared';
+}
+
+/** THE LEDGER'S OWN INDEX carries each plan's state in the LAST cell of its row —
+ *  plans/README.md is what bin/gates/plan-audit.sh holds the ledger to ("a row that
+ *  names the plan AND carries a status"). The oldest section's rows end in a PATH
+ *  instead, which is a table and not a state, so a `.md` last cell is skipped. */
+async function ledgerIndex(root: string): Promise<Record<number, string>> {
+  const out: Record<number, string> = {};
+  let text = '';
+  try {
+    text = await readFileAsync(join(root, 'README.md'), 'utf8');
+  } catch {
+    return out; // no index: the body's own status line is the only word there is
+  }
+  for (const line of text.split('\n')) {
+    const m = /^\|\s*(\d+)\s*\|(.+)\|\s*$/.exec(line);
+    if (!m) continue;
+    const cells = m[2].split('|').map((c) => c.trim());
+    const last = (cells[cells.length - 1] ?? '').replace(/[*`]/g, '').trim();
+    if (!last || /^[-: ]+$/.test(last) || /\.md$/.test(last)) continue;
+    out[Number(m[1])] = tidyState(last);
+  }
+  return out;
+}
+
+/** The plan's own word for its state, when its index row did not give one. Plans
+ *  carry two shapes — a TOON `"status","…"` header and a Markdown `**Status:** …`
+ *  line — and 114 of 149 declare neither, so `undeclared` is the honest answer and
+ *  the board shows it as such rather than guessing. */
+function planState(body: string): string {
+  const head = body.slice(0, 1500);
+  const raw =
+    /^\s*"status"\s*,\s*"([^"]+)"/m.exec(head)?.[1] ??
+    /^\*\*Status:?\*\*:?\s*(.+)$/m.exec(head)?.[1] ??
+    '';
+  return raw ? tidyState(raw) : 'undeclared';
+}
+
+/** Where the ledger lives. Discovered, never hardcoded (Rule 07): a realm keeps its
+ *  plans at `<realm>/{projects,workspace}/ymir/plans`, the same shelf
+ *  bin/records/weave.sh finds. */
+async function ledgerRoot(): Promise<string> {
+  if (process.env.YMIR_PLANS_DIR) return process.env.YMIR_PLANS_DIR;
+  const base = join(HOME_DIR, 'svartalfaheim');
+  const found: string[] = [];
+  try {
+    for (const realm of await readdirAsync(base, { withFileTypes: true })) {
+      if (!realm.isDirectory() || realm.name.startsWith('.')) continue;
+      for (const mid of ['projects', 'workspace']) {
+        const p = join(base, realm.name, mid, 'ymir', 'plans');
+        if (existsSync(p)) found.push(p);
+      }
+    }
+  } catch {
+    // a home with no realm shelf is an empty ledger, and the board says so
+  }
+  return found[0] ?? join(base, 'work', 'projects', 'ymir', 'plans');
+}
+
+/** THE LEDGER, read where it lives: one numbered file per plan. Skuld's plans table
+ *  is the WRITE door, and it has been empty while the ledger carried every plan as a
+ *  file (2026-11-05) — a board that says "no plans" over 149 files is the bug this
+ *  read answers. `old-plans/` is the RETIRED shelf and is skipped by name: its
+ *  numbers repeat the living ones, and a retired plan shown as live is a lie. */
+async function planLedger(): Promise<{ count: number; ledger: string; plans: PlanRow[] }> {
+  const root = await ledgerRoot();
+  const index = await ledgerIndex(root);
+  const rows: PlanRow[] = [];
+  const walk = async (dir: string, depth: number): Promise<void> => {
+    if (depth > 2) return;
+    let ents;
+    try {
+      ents = await readdirAsync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of ents) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) {
+        if (e.name === 'old-plans' || e.name.startsWith('.')) continue;
+        await walk(full, depth + 1);
+        continue;
+      }
+      const m = /^(\d+)-(.+)\.md$/.exec(e.name);
+      if (!m) continue;
+      let body = '';
+      try {
+        body = (await readFileAsync(full, 'utf8')).slice(0, 8000);
+      } catch {
+        continue;
+      }
+      const title = (body.match(/^#\s+(.+)$/m)?.[1] ?? m[2].replace(/-/g, ' '))
+        .replace(/^Plan\s+\d+\s*[\u2014:-]\s*/i, '')
+        .trim();
+      rows.push({
+        n: Number(m[1]),
+        slug: m[2],
+        title,
+        state: index[Number(m[1])] ?? planState(body),
+        file: full.startsWith(root) ? full.slice(root.length + 1) : e.name,
+      });
+    }
+  };
+  await walk(root, 0);
+  rows.sort((a, b) => b.n - a.n || a.slug.localeCompare(b.slug));
+  return { count: rows.length, ledger: 'svartalfaheim', plans: rows };
 }
 
 /* ---- Yggdrasil worktrees ------------------------------------------------- */
@@ -2508,6 +2674,25 @@ const server = Bun.serve({
             return { error: String(e).slice(0, 120) };
           }
         }));
+      }
+      if (p === '/api/core-four') {
+        // THE FOUR DIALS in one read: the model, the window and both compaction
+        // thresholds, the prompt surfaces in force, the tool count by source.
+        return json(await seatDoor('core-four', 30_000));
+      }
+      if (p === '/api/pending') {
+        // WHAT WAITS ON HIM: open PRs, the wake queue, mail drafts, his own decisions.
+        // A short memo, because this is a live question and a stale answer is a wrong one.
+        return json(await seatDoor('pending', 15_000));
+      }
+      if (p === '/api/context') {
+        // THIS session's context, as the harness already wrote it: used · window ·
+        // remaining · the two thresholds · compactions seen · the verdict.
+        return json(await seatDoor('context', 15_000));
+      }
+      if (p === '/api/plans') {
+        // THE LEDGER — the READ source. Skuld stays the WRITE door (plans_create).
+        return json(await memoAsync('plans', 30_000, planLedger));
       }
       if (p === '/api/worktrees') return json(await worktrees());
       if (p === '/api/me') return json({ login: loginOf(req) ?? 'operator', realm: 'work' });
