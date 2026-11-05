@@ -4,12 +4,24 @@
 # It exists so a caller nobody has repointed yet still works. It is retired by the dated follow-up in
 # docs/fixes/snotra/2026-10-24-snotra-becomes-a-system.md, and .agents/paths-ledger.yaml records the move.
 set -euo pipefail
-_d="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-_root="$(cd "$_d/../../.." && pwd)"
-_new="$_root/systems/snotra/services/ear/snotra-detect.sh"
-if [ ! -e "$_new" ]; then
-  printf 'snotra: the door moved to systems/snotra/services/ear/snotra-detect.sh and is not there\n' >&2
-  exit 127
+# The 'RETIRED SHIM' guard that used to sit here computed its target as $_d/../../../
+# — three levels up from systems/snotra/services/ear, which is <repo>/systems, not the
+# repo root — so it always found nothing and exited 127. Copied here by the move from
+# bin/time/snotra/ (where three levels up WAS the root). Removed 2026-11-04: this file
+# is the door, and the door has nothing to point at.
+if [ -z "${YMIR_HOARD_LIB_LOADED:-}" ]; then
+  # The hoard library sits beside this file in a flat install (~/.fleet) and four
+  # levels up in the tree (systems/snotra/services/ear -> repo root). Both are tried;
+  # the fleet copy is what the unit actually runs.
+  _door_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  _root="$_door_dir"
+  while [ "$_root" != / ] && { [ ! -d "$_root/RULES" ] || [ ! -d "$_root/.agents" ]; }; do
+    _root="$(dirname "$_root")"
+  done
+  [ -d "$_root/RULES" ] || _root=""
+  for _lib in "$_door_dir/hoard-lib.sh" ${_root:+"$_root/bin/vault/hoard-lib.sh"}; do
+    [ -r "$_lib" ] && . "$_lib" 2>/dev/null && break
+  done
 fi
 if [ -z "${YMIR_HOME:-}" ] && command -v ymir_home_root >/dev/null 2>&1; then
   ymir_home_root YMIR_HOME
@@ -33,6 +45,9 @@ CAPTURE_OUT="$STATE_DIR/.snotra-outfile"
 LATEST_FILE="$STATE_DIR/.snotra-meetings-latest"
 
 POLL_SECONDS="${SNOTRA_POLL_SECONDS:-2}"
+# The shortest gap between two ticks. See the loop in run(): a tick opens its own
+# PipeWire clients, and those are events on the same bus the watch listens to.
+TICK_MIN_GAP_MS="${SNOTRA_TICK_GAP_MS:-1000}"
 ARM_DEBOUNCE="${SNOTRA_ARM_DEBOUNCE:-3}"
 RELEASE_GRACE="${SNOTRA_RELEASE_GRACE:-5}"
 SILENCE_DB="${SNOTRA_SILENCE_DB:--45}"
@@ -936,8 +951,18 @@ run() {
 
   rebaseline
   start_subscribe || { say "error: cannot watch the PipeWire bus" >&2; return 1; }
+  # A tick is not free of the bus it watches. Every snapshot opens four pactl
+  # clients and a python3, and each of those connects and disconnects on the same
+  # PipeWire bus that pactl subscribe reports — so a tick generates the events
+  # that wake the read that runs the next tick. Left event-triggered, the watch
+  # hears only its own hands: measured 2026-11-04 at 178 forks/second and ~0.85
+  # of a core, on a machine where nothing was happening.
+  # So a tick is spaced: when one is due, run it; when one is not, block on the bus
+  # for the remainder of the floor and swallow what arrives. Blocking (not polling)
+  # is what keeps the guard itself free — a `read -t 0` drain spins at 97% CPU.
+  local line="" rc=0 last_tick_us=0 now_us=0 gap_us=$(( TICK_MIN_GAP_MS * 1000 )) rem_us=0 rem_s=""
   while :; do
-    local line="" rc=0
+    line="" rc=0
     if ! IFS= read -r -t "$POLL_SECONDS" -u "$FIFO_FD" line; then
       rc=$?
       if [ "$rc" -le 128 ]; then
@@ -949,7 +974,15 @@ run() {
         start_subscribe || { sleep 5; continue; }
       fi
     fi
+    now_us="${EPOCHREALTIME//[!0-9]/}"
+    rem_us=$(( gap_us - ( now_us - last_tick_us ) ))
+    if [ "$rem_us" -gt 0 ]; then
+      printf -v rem_s '%d.%06d' $(( rem_us / 1000000 )) $(( rem_us % 1000000 ))
+      IFS= read -r -t "$rem_s" -u "$FIFO_FD" _ || true
+      continue
+    fi
     tick || log "tick failed"
+    last_tick_us="${EPOCHREALTIME//[!0-9]/}"
   done
 }
 
