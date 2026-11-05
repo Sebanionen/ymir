@@ -177,7 +177,13 @@ done
 # a pattern in ONE pass: `grep -F -f` is multi-pattern, never a loop. The semantics are
 # unchanged — a name is "used" if it appears on any line that is not a function
 # definition, exactly what the per-name count asked.
-mapfile -t SHELLS < <(find "$ROOT/bin" "$ROOT/scripts" -type f -name '*.sh' -not -path '*/.yggdrasil/*' -not -path '*/node_modules/*' 2>/dev/null)
+mapfile -t SHELLS < <(find "$ROOT/bin" "$ROOT/scripts" \
+  -type d \( -name .yggdrasil -o -name node_modules \) -prune -o \
+  -type f -name '*.sh' -print 2>/dev/null)
+if [ "${#SHELLS[@]}" -eq 0 ]; then
+  printf 'error: dead-code guard found no shell files to judge; check the checkout and find command\n' >&2
+  exit 1
+fi
 # The USAGE index covers the WHOLE tree: a bin/ function is called from skill scripts
 # under .agents/, from tests under tools/, from apps — a search that reads only bin/
 # and scripts/ reports those callers missing and calls a live function dead. Only the
@@ -186,7 +192,8 @@ USAGE_FILES=()
 for r in bin scripts apps packages tools src .agents; do
   [ -d "$ROOT/$r" ] || continue
   while IFS= read -r _f; do USAGE_FILES+=("$_f"); done < <(
-    find "$ROOT/$r" -type f -name '*.sh' -not -path '*/.yggdrasil/*' -not -path '*/node_modules/*' 2>/dev/null)
+    find "$ROOT/$r" -type d \( -name .yggdrasil -o -name node_modules \) -prune -o \
+      -type f -name '*.sh' -print 2>/dev/null)
 done
 NAMES="$(mktemp)"; DEFCOUNT="$(mktemp)"; OCC="$(mktemp)"
 for f in "${SHELLS[@]:-}"; do
