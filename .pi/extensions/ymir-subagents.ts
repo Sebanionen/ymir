@@ -113,8 +113,12 @@ function findAgentsDir(cwd: string): string | undefined {
     if (parent === dir) break;
     dir = parent;
   }
-  const home = process.env.HOME ?? "";
-  const global = join(home, ".agents", "agents");
+  // The repo root the install recorded: the canonical agents tree beside it.
+  // Windows Pi starts in a native folder, not the checkout, so the walk above
+  // cannot reach it; the recorded root can, even when it is a UNC path.
+  const rooted = join(ROOT, ".agents", "agents");
+  if (existsSync(rooted)) return rooted;
+  const global = join(homedir(), ".agents", "agents");
   return existsSync(global) ? global : undefined;
 }
 
