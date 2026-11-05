@@ -108,6 +108,20 @@ def parse_audit_line(line: str, current: dict) -> tuple[dict, list[dict]]:
 _EXEC_CFG: dict | None = None
 
 
+_HOUND_CFG: dict | None = None
+
+
+def _hound_cfg() -> dict:
+    """The reader's budget, read once per process."""
+    global _HOUND_CFG
+    if _HOUND_CFG is None:
+        try:
+            _HOUND_CFG = dict(common.load_config().get("hound", {}) or {})
+        except Exception:
+            _HOUND_CFG = {}
+    return _HOUND_CFG
+
+
 def _exec_cfg() -> dict:
     """The exec policy, read ONCE per process (a YAML parse per audit group is its own cost)."""
     global _EXEC_CFG
@@ -219,6 +233,8 @@ def follow_audit(path: str, on_findings) -> None:
     handle = None
     inode = None
     group: dict = {}
+    state: dict = {}
+    cfg = _hound_cfg()
     while True:
         if not os.path.exists(path):
             time.sleep(5)
@@ -238,16 +254,47 @@ def follow_audit(path: str, on_findings) -> None:
                 pass
             else:
                 handle.seek(0)
-        line = handle.readline()
+        # ── PRODUCTION BUDGET (2026-10-31) ────────────────────────────────────────────────
+        # A tailer that reads as fast as the writer writes is not a guardian, it is a second
+        # load. The audit log on this box carries ~17,000 records a minute; a reader must have a
+        # DECLARED budget, so a flood degrades FRESHNESS and never the machine — and it must say
+        # when it is behind instead of going quietly stale (the failure this house has paid for).
+        #
+        #   max_lines_per_tick  bounded work, so CPU is a function of policy, not of traffic
+        #   tick_seconds        the floor between batches
+        #   lag_alert_bytes     past this backlog, one finding says "the senses are behind"
+        budget = int(cfg.get("max_lines_per_tick", 4000) or 0)
+        tick = float(cfg.get("tick_seconds", 1.0) or 1.0)
+        lag_alert = int(cfg.get("lag_alert_bytes", 8 * 1024 * 1024) or 0)
+        lines = 0
+        while budget <= 0 or lines < budget:
+            line = handle.readline()
+            if not line:
+                break
+            lines += 1
+            # Cheap key test BEFORE any regex: a record this hound wants carries its key as
+            # `key="ymir-…"` on the line. Everything else is somebody else's audit traffic.
+            if 'key="ymir-' not in line:
+                continue
+            group, emitted = parse_audit_line(line, group)
+            if emitted:
+                on_findings(emitted)
         if not line:
             if group:
                 on_findings(_close(group))
                 group = {}
-            time.sleep(1)
-            continue
-        group, emitted = parse_audit_line(line, group)
-        if emitted:
-            on_findings(emitted)
+        try:
+            backlog = os.path.getsize(path) - handle.tell()
+        except OSError:
+            backlog = 0
+        if lag_alert and backlog > lag_alert and not state.get("lagged"):
+            state["lagged"] = True
+            on_findings([{"ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "sense": "hound",
+                          "kind": "lag", "comm": "hound", "target": path, "backlog_bytes": backlog,
+                          "note": "the audit log is outrunning the budget — raise max_lines_per_tick or narrow the audit rules"}])
+        elif state.get("lagged") and backlog <= lag_alert:
+            state["lagged"] = False
+        time.sleep(tick)
 
 
 def read_audit_once(path: str) -> list[dict]:

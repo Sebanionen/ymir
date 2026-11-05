@@ -42,3 +42,38 @@ goes with it.
 Also owed: a `garmr status` readout (trace size · files retained · evidence-shelf size · last
 escalation · whether the audit rules are missing and the senses are deaf), so the guardian can
 answer *am I working?* without a human reading a directory listing.
+
+## The reader's budget — the third fix (measured: 12.6 % → 4.6 %)
+
+Cutting what the hound *wrote* was not enough, because a tailer that reads as fast as auditd writes is
+not a guardian — it is a second load. The reader now has a **declared budget** in
+`$YMIR_HOME/config/guardian.yaml`:
+
+- `max_lines_per_tick: 4000` — bounded work per pass, so CPU follows *policy*, not traffic;
+- `tick_seconds: 1.0` — the floor between passes;
+- `lag_alert_bytes: 8388608` — past this backlog the hound writes **one** `kind: lag` finding saying
+  it is behind, and clears it when it catches up. A guardian that goes quietly stale is the failure
+  this house has paid for twice; a guardian that says "I am behind" is production.
+
+The per-line test is now a substring before any regex — a record this hound wants carries
+`key="ymir-…"` on its own line — so the ~17,000 records a minute that belong to other rules cost a
+`find()`, not a parse.
+
+**Measured across the three fixes:** 26.9 % → 16.5 % (exec policy) → 12.6 % (fast path) →
+**4.6 %** (reader budget), with the novelty signal, the security shelf and the dedupe all intact.
+
+**The last of it is at the source, and needs root.** Production shape for
+`/etc/audit/rules.d/ymir.rules` — the same evidence, a fraction of the volume:
+
+```
+# keep: risk-bearing execution (this is the novelty signal that matters)
+-a always,exit -F arch=b64 -S execve -F dir=/tmp       -k ymir-exec
+-a always,exit -F arch=b64 -S execve -F dir=/var/tmp   -k ymir-exec
+-a always,exit -F arch=b64 -S execve -F dir=/dev/shm   -k ymir-exec
+-a always,exit -F arch=b64 -S execve -F euid=0         -k ymir-exec   # privileged execution
+# drop: -a always,exit -F arch=b64 -S execve -k ymir-exec   (every exec, ~17k/min)
+# keep unchanged: kill/tkill/tgkill · sensitive opens · identity · persistence
+```
+
+With that in place the hound's budget can be spent on freshness instead of on filtering, and the
+guardian gets *better* at the same cost — which is what production means here.
