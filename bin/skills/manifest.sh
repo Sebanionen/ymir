@@ -74,7 +74,7 @@ note() { printf 'note: %s\n' "$*" >&2; }
 
 # ── the flat-yaml reader ────────────────────────────────────────────────────────
 # A manifest is deliberately too simple to need a parser: one `key: value` per line,
-# lists as `  - item`. These three readers are the whole language.
+# lists as `  - item`. These two readers handle the fields currently read.
 
 yget() { # <file> <key> — the value of a top-level key, unquoted, trimmed
   local f="$1" k="$2" line
@@ -101,19 +101,6 @@ ycont() { # <file> <key> — how many EXTRA lines the key's value spans (0 = one
     on && /^[A-Za-z_][A-Za-z0-9_]*:/ { exit }
     on { n++; next }
     END { print n+0 }
-  ' "$1"
-}
-
-ylist() { # <file> <key> — the items of a list key, one per line
-  awk -v k="$2" '
-    $0 ~ "^" k ":" {
-      rest = $0; sub("^" k ":[[:space:]]*", "", rest)
-      if (rest ~ /^\[.*\]$/) { gsub(/[][]/, "", rest); n = split(rest, a, ","); for (i=1;i<=n;i++) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", a[i]); if (a[i] != "") print a[i] }; exit }
-      on = 1; next
-    }
-    on && /^[[:space:]]*-[[:space:]]*/ { sub(/^[[:space:]]*-[[:space:]]*/, ""); gsub(/^[[:space:]]+|[[:space:]]+$/, ""); gsub(/^["\x27]|["\x27]$/, ""); if ($0 != "") print; next }
-    on && /^[[:space:]]*$/ { next }
-    on { exit }
   ' "$1"
 }
 
