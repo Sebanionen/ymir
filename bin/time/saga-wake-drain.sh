@@ -81,7 +81,7 @@ esac
 
 if [ -s "$FMQ" ]; then
   printf 'FM wake queue: %s pending (fm-queued wakes below)\n' "$(awk 'END{print NR}' "$FMQ")"
-  while IFS= read -r line; do
+  while IFS= read -r line || [ -n "$line" ]; do
     [ -n "$line" ] && printf 'WAKE %s\n' "$line"
   done <"$FMQ"
   printf 'FM_ACK_REQUIRED: acknowledge handled fm wakes to drop them from the fm queue\n'
@@ -97,7 +97,7 @@ else
   count=$(awk 'END{print NR}' "$QUEUE")
   printf 'wake queue: %s pending\n' "${count:-0}"
   dropped=0
-  while IFS= read -r line; do
+  while IFS= read -r line || [ -n "$line" ]; do
     [ -n "$line" ] || continue
     # A wake is presented until Brokk acks it. The errand's status (done/failed)
     # does NOT make it an echo: a self-finishing worker's terminal wake is the
