@@ -40,3 +40,7 @@ bin/collab/kit/scripts/collab-connect.sh snippet --endpoint http://<host>:8321 -
 `409` — that token has already been used; mint a fresh one.
 `429` — rate limit; wait a minute.
 `502` — the front is up and the node behind it is not.
+
+## CHANGE LOG
+
+- **2026-11-05** — first written (Hœnir) with the ward and the kit.

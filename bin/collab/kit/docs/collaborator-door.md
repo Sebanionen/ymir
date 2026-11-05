@@ -67,3 +67,7 @@ bin/collab/kit/scripts/collab-connect.sh mint --peer andre --skill well-recall -
 > endpoint that answers and we will ask for one skill — never for your machine.
 
 — the kit · read `bin/collab/kit/README.md` for the ten pieces this sits beside.
+
+## CHANGE LOG
+
+- **2026-11-05** — first written (Hœnir) with the ward and the kit.
