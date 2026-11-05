@@ -40,8 +40,25 @@ def repo_root() -> Path:
     return Path.cwd().resolve()
 
 
+# ── the run this process is executing ───────────────────────────────────────
+# A commit phase is CODE: it calls this module directly, with no run in hand.
+# Binding the run once (runner.Run.__init__) lets the commit refuse to land the
+# same tree twice when the phase is being REPLAYED by a resume — the commit is
+# already in the trace, and repeating it would either fail on a clean tree or
+# stack an empty commit on top of a real one.
+_BOUND_RUN = None
+
+
+def bind(run) -> None:
+    """Tell this module which run it belongs to. One run per process, by design."""
+    global _BOUND_RUN
+    _BOUND_RUN = run
+
+
 def commit_all(message: str) -> str:
     """Stage the working tree and commit it. Returns the new short sha."""
+    if _BOUND_RUN is not None and getattr(_BOUND_RUN, "replaying", False):
+        return _BOUND_RUN.resume_plan.sha_for(_BOUND_RUN.replaying_phase)
     if not is_repo():
         raise RuntimeError(
             "not a git repository — a commit phase needs one. Run `git init` in the "
