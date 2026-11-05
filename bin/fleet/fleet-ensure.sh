@@ -66,6 +66,30 @@ if [ -z "${FLEET_TEMPLATE_ROOT:-}" ]; then
     unset _ftr_common _ftr_main
   fi
 fi
+# RULES/02 §7 — a UNIT MUST NOT EXECUTE FROM A WORKING TREE. The main tree above is
+# durable but it is still the directory agents check branches out in, so on any seat
+# with a pinned runtime checkout (~/ymir-runtime, moved only by runtime-deploy.sh)
+# that checkout — and only it — is a legal target. Measured 2026-11-05: all five user
+# units on nidavellir executed <main>/bin/... so runtime-pinned-guard refused EVERY
+# push from that seat, and no door existed to repin them. This is that door, and it
+# says so when it has to fall back.
+if [ -z "${YMIR_RUNTIME_PIN_RESOLVED:-}" ]; then
+  YMIR_RUNTIME_PIN_RESOLVED=1
+  _pin="${YMIR_RUNTIME_DIR:-}"
+  if [ -z "$_pin" ]; then
+    _cfg="$HOME_ROOT/config/runtime.env"
+    [ -r "$_cfg" ] && _pin="$(sed -n 's/^YMIR_RUNTIME_DIR="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' "$_cfg" | head -1)"
+  fi
+  # an unexpanded $HOME in the config is resolved here, never guessed later
+  case "$_pin" in "\$HOME"/*) _pin="$HOME/${_pin#\$HOME/}" ;; esac
+  if [ -n "$_pin" ] && [ -d "$_pin/.git" ] && [ -d "$_pin/tools/mill/systemd" ]; then
+    FLEET_TEMPLATE_ROOT="$_pin"
+    say "fleet:   units pinned to the runtime checkout $_pin (RULES/02 §7)" 2>/dev/null || true
+  elif [ -n "$_pin" ]; then
+    printf 'fleet: WARNING: the pinned runtime %s is not a usable checkout; the units will execute from %s, which is a WORKING TREE and will be refused by runtime-pinned-guard\n' "$_pin" "$FLEET_TEMPLATE_ROOT" >&2
+  fi
+  unset _pin _cfg
+fi
 # A unit that names a disposable tree is a boot failure waiting to happen: refuse
 # it loudly rather than seat it.
 refuse_disposable_path() {  # <unit-file>
