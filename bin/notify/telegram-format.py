@@ -24,6 +24,7 @@ SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 
 def is_protected(line: str) -> bool:
     s = line.lstrip()
+    stripped = s.strip()
     return (
         s.startswith("```")
         or s.startswith("    ")
@@ -32,6 +33,8 @@ def is_protected(line: str) -> bool:
         or s.startswith("#")
         or re.match(r"^([-*+]|\d+[.)])\s+", s) is not None
         or "telegram_button" in line
+        # a button payload is machine text: `[{label|prompt}{label|prompt}]`
+        or (stripped.startswith("[{") and stripped.endswith("}]"))
     )
 
 

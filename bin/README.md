@@ -690,7 +690,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "telegram-bot.sh","telegram-bot.sh — the horn answers (W0036).","tool","wired","keep",0,84
   "telegram-buttons.mjs","// telegram-buttons.mjs — the one place that knows Telegram's button grammar.","tool","wired","keep",1,368
   "telegram-buttons.sh","telegram-buttons.sh — make a Telegram button that actually renders.","tool","wired","keep",2,46
-  "telegram-format.py","'''telegram-format — make a reply readable on a phone before it is sent.","tool","wired","keep",1,144
+  "telegram-format.py","'''telegram-format — make a reply readable on a phone before it is sent.","tool","wired","keep",1,147
   "telegram-machines.sh","telegram-machines.sh — Telegram across the FLEET: each machine's own bot, and the two roads between them.","tool","wired","keep",2,191
   "telegram-members.sh","telegram-members.sh — who is actually in a Telegram chat, as far as the Bot API will say.","tool","wired","keep",0,151
   "telegram-roster.py","'''telegram-roster.py — who speaks in a chat, remembered.","tool","wired","keep",1,235
