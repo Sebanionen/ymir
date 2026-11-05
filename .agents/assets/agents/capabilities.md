@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",731
+  "shell doors (bin/*.sh)",732
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -465,6 +465,7 @@ capabilities[5]{surface,count}:
 | test_telegram_buttons.sh | test_telegram_buttons.sh — the button grammar, proved both ways. | tested | keep (a human or a cron row must run it) |
 | test_telegram_format.sh | The ward for telegram-format: reads well, protects structure, refuses ja | tested | keep (a human or a cron row must run it) |
 | test_telegram_roster.sh | test_telegram_roster.sh — the roster records who speaks, once, per cha | tested | keep (a human or a cron row must run it) |
+| test_telegram_templates.sh | The ward for the Telegram templates: every shape here must be one the br | tested | keep (a human or a cron row must run it) |
 | collaborators.sh | collaborators.sh — the people we work with: clients, collaborators, ad | tested | keep (a human or a cron row must run it) |
 | inbox-watch.sh | inbox-watch.sh — notice when someone answers, without a human opening  | tested | keep (a human or a cron row must run it) |
 | inbox.sh | inbox.sh — read the mail that matters to a collaborator, and prove you | tested | keep (a human or a cron row must run it) |
