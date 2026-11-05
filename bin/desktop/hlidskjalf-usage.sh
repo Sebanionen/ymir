@@ -84,7 +84,7 @@ pi_files = []
 for root in ("~/.pi/agent/sessions", "~/.pi/sessions"):
     pi_files += glob.glob(os.path.expanduser(root + "/**/*.jsonl"), recursive=True)
 if pi_files:
-    agg = {"input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "messages": 0}
+    agg = {"input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "messages": 0, "cost": 0.0}
     models = {}
     for f in pi_files:
         try:
@@ -97,6 +97,7 @@ if pi_files:
                     except Exception:
                         continue
                     t = d.get("tokens") or d.get("usage") or {}
+                    cost_seen = 0
                     # pi nests it one level down: {"type":"message","message":{"usage":{...}}}
                     # with camelCase cache keys. Reading only the top level counted 23
                     # messages where the session files held hundreds of turns.
@@ -110,26 +111,61 @@ if pi_files:
                     cw = (t.get("cache") or {}).get("write") or t.get("cacheWrite") or t.get("cache_creation_input_tokens") or 0
                     agg["input"] += inp; agg["output"] += outp
                     agg["cache_read"] += cr; agg["cache_write"] += cw; agg["messages"] += 1
-                    m = d.get("modelID") or d.get("model") or "unknown"
-                    mm = models.setdefault(m, {"input": 0, "output": 0, "messages": 0})
+                    # The model pi actually used lives one level down, beside the usage:
+                    # {"type":"message","message":{"model":"deepseek-v4.1-flash","usage":{...}}}
+                    # Reading only the top level filed 92% of the volume under "unknown".
+                    msg = d.get("message") if isinstance(d.get("message"), dict) else {}
+                    m = d.get("modelID") or d.get("model") or msg.get("model") or "unknown"
+                    c = t.get("cost") or {}
+                    cost = c.get("total") if isinstance(c, dict) else (c or 0)
+                    try:
+                        cost = float(cost or 0)
+                    except Exception:
+                        cost = 0.0
+                    agg["cost"] = agg.get("cost", 0.0) + cost
+                    mm = models.setdefault(m, {"input": 0, "output": 0, "messages": 0, "cost": 0.0})
                     mm["input"] += inp; mm["output"] += outp; mm["messages"] += 1
+                    mm["cost"] = mm.get("cost", 0.0) + cost
         except Exception:
             continue
     out["sources"]["pi"] = {"model": "harness", **agg}
     out["by_model"] += [{"source": "pi", "model": k, **v} for k, v in
                         sorted(models.items(), key=lambda kv: -(kv[1]["input"] + kv[1]["output"]))[:20]]
 
-tot = {"messages": 0, "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0}
+tot = {"messages": 0, "input": 0, "output": 0, "cache_read": 0, "cache_write": 0, "reasoning": 0, "cost": 0.0}
 for s in out["sources"].values():
     for k in tot:
         tot[k] += int(s.get(k) or 0)
 tot["total"] = tot["input"] + tot["output"]
 prompt = tot["input"] + tot["cache_read"]
 # local = our own hardware; online = a cloud API. By model id, honestly.
-LOCAL_MARKERS = ("llama", "lmstudio", "ollama", "local", "qwen3.6-35b-a3b")
+LOCAL_MARKERS = ("llama", "lmstudio", "ollama", "local")
+# The registry is the truth: a model served by llama-swap or a llama.cpp seat is OUR
+# hardware, whatever its id sounds like. Measured 2026-11-05: 245M tokens of pi work
+# were reported as "online" because the id `deepseek-v4.1-flash` matched no marker.
+LOCAL_MODELS = set()
+LOCAL_PROVIDERS = set()
+try:
+    reg = json.load(open(os.path.expanduser("~/.pi/agent/models.json")))
+    for provider, spec in (reg.get("providers") or {}).items():
+        if not isinstance(spec, dict):
+            continue
+        if any(k in provider.lower() for k in ("llama", "local", "ollama", "lmstudio")):
+            LOCAL_PROVIDERS.add(provider)
+            ms = spec.get("models") or []
+            # pi's registry carries models as a LIST of {id,…}; a dict is accepted too.
+            entries = ms if isinstance(ms, list) else list(ms.keys())
+            for e in entries:
+                name = e.get("id") or e.get("name") if isinstance(e, dict) else e
+                if name:
+                    LOCAL_MODELS.add(str(name))
+                    if str(name).endswith("-fast"):
+                        LOCAL_MODELS.add(str(name)[:-5])
+except Exception:
+    pass
 for m in out["by_model"]:
-    mid = str(m.get("model", "")).lower()
-    m["kind"] = "local" if any(k in mid for k in LOCAL_MARKERS) else "online"
+    mid = str(m.get("model", ""))
+    m["kind"] = "local" if (mid in LOCAL_MODELS or any(k in mid.lower() for k in LOCAL_MARKERS)) else "online"
 
 def _empty():
     return {"tokens": 0, "calls": 0, "input": 0, "output": 0, "cache_read": 0}
@@ -150,13 +186,13 @@ out["runs"] = {
     "total": int(tot["messages"]), "success": int(tot["messages"]), "fail": 0, "running": 0,
     "success_rate": 100.0 if tot["messages"] else 0.0,
     "tokens": int(tot["input"]) + int(tot["output"]),
-    "cost": 0,
+    "cost": round(float(tot.get("cost") or 0), 6),
     "by_source": {"opencode": int(oc.get("messages") or 0), "pi": int(pi.get("messages") or 0)},
 }
 out["by_chain"] = [
     {"chain": m.get("source", "harness"), "workflow": m.get("source", "harness"),
      "runs": int(m.get("messages") or 0), "success": int(m.get("messages") or 0),
-     "rate": 100.0, "tokens": int(m.get("input") or 0) + int(m.get("output") or 0), "cost": 0}
+     "rate": 100.0, "tokens": int(m.get("input") or 0) + int(m.get("output") or 0), "cost": round(float(m.get("cost") or 0), 6)}
     for m in out["by_model"][:12]
 ]
 
@@ -168,7 +204,7 @@ out["totals"] = tot
 out["gate"] = {
     "totals": {
         "runs": int(tot["messages"]), "success": int(tot["messages"]), "fail": 0,
-        "running": 0, "tokens": int(tot["input"]) + int(tot["output"]), "cost": 0,
+        "running": 0, "tokens": int(tot["input"]) + int(tot["output"]), "cost": round(float(tot.get("cost") or 0), 6),
     },
     "usage": {
         "input": int(tot["input"]), "output": int(tot["output"]),
@@ -184,7 +220,7 @@ out["gate"] = {
                    "input": lo["online"]["input"],  "output": lo["online"]["output"], "cache_read": lo["online"]["cache_read"]},
         "per_model": [
             {"model": m["model"], "agent": m.get("source", "harness"), "kind": m.get("kind", "online"),
-             "cells": int(m.get("messages") or 0), "tokens": int(m.get("input") or 0) + int(m.get("output") or 0), "cost": 0}
+             "cells": int(m.get("messages") or 0), "tokens": int(m.get("input") or 0) + int(m.get("output") or 0), "cost": round(float(m.get("cost") or 0), 6)}
             for m in out["by_model"]
         ],
     },
@@ -192,7 +228,7 @@ out["gate"] = {
     "by_model": [
         {"model": m["model"], "agent": m.get("source", "harness"), "kind": m.get("kind", "online"),
          "cells": int(m.get("messages") or 0),
-         "tokens": int(m.get("input") or 0) + int(m.get("output") or 0), "cost": 0}
+         "tokens": int(m.get("input") or 0) + int(m.get("output") or 0), "cost": round(float(m.get("cost") or 0), 6)}
         for m in out["by_model"]
     ],
 }
