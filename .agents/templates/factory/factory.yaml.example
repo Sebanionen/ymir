@@ -1,0 +1,40 @@
+# factory.yaml — one small factory: one problem, one chain, one roster, one trigger.
+# Copy with `bin/desktop/factory-new.sh <name>`; never edit the template in place.
+version: 1
+factory:
+  name: <one-problem-in-kebab-case>
+  problem: "<the single problem this factory solves, in one sentence>"
+  owner: "<the figure who owns it — a seat primary, not a shared noun>"
+
+  # WHAT runs — a Smíðja chain, phase by phase.
+  chain: <smidja/smidja_<chain>.py>
+  phases: [recon, plan, build, verify]
+
+  # WHO runs it — a roster, role to model. Two models is fine; ten is drift.
+  roster:
+    planner: <provider/model>
+    builder: <provider/model>
+    reviewer: <provider/model>
+
+  # WHEN it runs without being asked — a trigger, or `manual` and nothing else.
+  trigger:
+    kind: cron            # cron | manual | on-push
+    schedule: "0 6 * * *" # only when kind: cron
+    timezone: Europe/Stockholm
+
+  # WHAT it may touch — a factory that can reach everything is not a factory.
+  scope:
+    paths: [<relative/path>]
+    doors: [<door or mcp name>]
+    never: [secrets, hoard, another-project]
+
+  # WHERE its work lands — a worktree, a PR, a plan, or all three.
+  delivery:
+    worktree: true
+    pull_request: true
+    record: docs/fixes/<component>/
+
+  # HOW you watch it — the near-loop surface.
+  surface:
+    panel: hlidskjalf
+    wake_on: [failure, question, pr-opened]

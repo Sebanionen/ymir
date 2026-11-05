@@ -188,6 +188,29 @@ def ymir_secret_keys(filter: str = "") -> str:
 
 
 @mcp.tool()
+def ymir_context(json_output: bool = False) -> str:
+    """What THIS agent's context actually holds: used, window, remaining, the compaction
+    thresholds, and whether a compaction already fired. Read it before deciding the
+    context is out — the number is on disk, and guessing it costs work."""
+    out = _run(["bash", str(ROOT / "bin" / "seat" / "context.sh")] + (["--json"] if json_output else []), 60)
+    return out
+
+
+@mcp.tool()
+def ymir_core_four() -> str:
+    """The four dials that decide an agent's outcome, in one read: model, context window
+    and compaction thresholds, the prompt surfaces in force, and the tool counts."""
+    return _run(["bash", str(ROOT / "bin" / "seat" / "core-four.sh")], 60)
+
+
+@mcp.tool()
+def ymir_pending() -> str:
+    """Everything blocked on the operator, in one list: open pull requests, wake lines,
+    mail drafts, and the status lines that say 'needs the operator'."""
+    return _run(["bash", str(ROOT / "bin" / "seat" / "pending.sh")], 60)
+
+
+@mcp.tool()
 def ymir_studio(action: str = "status") -> str:
     """The OpenDesign studio (the container on :7456) — status, start, or stop."""
     return _run(["bash", str(ROOT / "bin" / "pi" / "opendesign.sh"), action], 180)
