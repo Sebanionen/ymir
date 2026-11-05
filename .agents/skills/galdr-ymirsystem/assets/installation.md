@@ -467,7 +467,7 @@ and the fix, never a shrug.
 ## The steps
 
 ```
-install[35]{step,what,self-heals}:
+install[36]{step,what,self-heals}:
   "panes","the run shown in a herdr pane","bin/seat/herdr-run.sh sits a pane beside the caller when inside herdr; inline otherwise — a pane that cannot be raised never loses the work"
   "prereqs","git python3 bun docker|podman gh · mcp<2","bin/engine/prereq-ensure.sh installs bun+uv+mcp in user space; engram is an honest optional SKIP"
   "memory-well","the engram engine (Mimirsbrunn)","optional; reported with the exact next command, never a fake fix"
