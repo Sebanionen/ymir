@@ -61,7 +61,8 @@ def make_db(path: Path) -> sqlite3.Connection:
 
 
 def seed_run(conn: sqlite3.Connection, run_id: str, *, usage: int | None,
-             model: str = "llama-swap/qwen3.6-35b-a3b", window: int = 262144) -> None:
+             model: str = "llama-swap/qwen3.6-35b-a3b", window: int = 262144,
+             with_start: bool = True, thinking: str = "high") -> None:
     """One engineer phase + one agent phase, with the records a real run writes."""
     conn.execute("INSERT INTO sessions (smidja_id, status, engineer, started_at)"
                  " VALUES (?,?,?,?)", (run_id, "running", "zerwiz", "2026-11-05T10:00:00Z"))
@@ -73,20 +74,21 @@ def seed_run(conn: sqlite3.Connection, run_id: str, *, usage: int | None,
             (f"{run_id}_{seq:02d}_{name}", run_id, seq, name, kind, owner, "seeded",
              "success", 0, 0, "2026-11-05T10:00:00Z", "2026-11-05T10:00:01Z"))
     build = f"{run_id}_02_build"
-    conn.execute(
-        "INSERT INTO events (event_id, smidja_id, phase_id, type, name, payload_json,"
-        " started_at) VALUES (?,?,?,?,?,?,?)",
-        (f"{run_id}-start", run_id, build, "agent_start", "sindri",
-         json.dumps({"model": model, "thinking": "high",
-                     "tools": ["bash", "write", "read"]}),
-         "2026-11-05T10:00:01Z"))
+    if with_start:
+        conn.execute(
+            "INSERT INTO events (event_id, smidja_id, phase_id, type, name, payload_json,"
+            " started_at) VALUES (?,?,?,?,?,?,?)",
+            (f"{run_id}-start", run_id, build, "agent_start", "sindri",
+             json.dumps({"model": model, "thinking": thinking,
+                         "tools": ["bash", "write", "read"]}),
+             "2026-11-05T10:00:01Z"))
     if usage is not None:
         conn.execute(
             "INSERT INTO events (event_id, smidja_id, phase_id, type, name, payload_json,"
             " tokens, started_at) VALUES (?,?,?,?,?,?,?,?)",
             (f"{run_id}-end", run_id, build, "agent_end", "sindri",
              json.dumps({"context": tel.phase_context(
-                 model=model, used=usage, window=window,
+                 model=model, thinking=thinking, used=usage, window=window,
                  input_tokens=usage - 1000, cache_read=900, output=100,
                  finish="stop")}),
              usage, "2026-11-05T10:05:00Z"))
@@ -165,14 +167,32 @@ class TraceColumnsTest(unittest.TestCase):
         payload = json.loads(trace_verb.render_json(
             trace_verb.build_trace(self.db, "run0002", self.base)))
         build = [p for p in payload["phases"] if p["phase"] == "build"][0]
-        for key in ("input", "cache_read", "output", "window", "percent"):
+        for key in ("input", "cache_read", "output", "window", "percent",
+                    "model", "thinking"):
             self.assertIn(key, build)
         self.assertEqual(build["input"], 41_203 - 1_000)
         self.assertEqual(build["cache_read"], 900)
         self.assertEqual(build["output"], 100)
         self.assertEqual(build["window"], 262_144)
         self.assertEqual(build["percent"], 15.7)
+        self.assertEqual(build["thinking"], "high")
+        self.assertEqual(build["model"], "llama-swap/qwen3.6-35b-a3b")
         self.assertFalse(payload["context_pressed"])
+
+    def test_the_receipt_alone_names_the_model_and_thinking(self):
+        """The phase's own record answers both, even with no `agent_start`.
+
+        The model and thinking level live on the `agent_end` receipt precisely so
+        the trace never depends on the start event surviving in the ledger.
+        """
+        seed_run(self.conn, "run0004", usage=41_203, with_start=False,
+                 model="opencode-go/deepseek-v4.1-flash", thinking="xhigh")
+        trace = trace_verb.build_trace(self.db, "run0004", self.base)
+        build = trace["rows"][1]
+        self.assertEqual(build["model"], "opencode-go/deepseek-v4.1-flash")
+        self.assertEqual(build["thinking"], "xhigh")
+        rendered = trace_verb.render(trace)
+        self.assertIn('"opencode-go/deepseek-v4.1-flash","xhigh"', rendered)
 
     def test_run_with_no_usage_rows_does_not_crash(self):
         seed_run(self.conn, "run0003", usage=None)

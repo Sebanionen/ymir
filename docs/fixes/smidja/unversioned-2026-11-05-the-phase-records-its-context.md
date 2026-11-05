@@ -75,3 +75,15 @@ work`). Neither is dressed as a success it never was.
 - **`input`/`cache_read`/`output` for runs recorded before this change**: the trace
   falls back to `raw_output.jsonl`'s last valid assistant turn, so the numbers are
   real, but they are the *file's* last turn rather than the phase's receipt.
+
+### Correction, appended 2026-11-05 — the receipt also names the model and the thinking level
+
+The first cut put `model` on the receipt but left `thinking` only on `agent_start`.
+That reads correctly only while the start event survives in the ledger, and it
+splits one phase's identity across two events for no reason. Both are now written
+onto the `agent_end` receipt (`model`, `thinking`), and the trace prefers the
+receipt, falling back to `agent_start` for runs recorded before this change.
+`test_the_receipt_alone_names_the_model_and_thinking` seeds a phase with no
+`agent_start` at all and asserts the row still reads
+`"opencode-go/deepseek-v4.1-flash","xhigh"` — the column set is unchanged:
+phase, owner, model, thinking, tools, tokens, window, percent, verdict.

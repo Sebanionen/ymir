@@ -591,6 +591,7 @@ def _execute(run, phase: Phase, call: AgentCall, agent, agent_dir) -> EnvelopeBa
     last_usage = reading.last_usage or {}
     receipt = context_telemetry.phase_context(
         model=current_model,
+        thinking=agent.thinking,
         used=reading.context_tokens,
         window=window,
         source=window_source,

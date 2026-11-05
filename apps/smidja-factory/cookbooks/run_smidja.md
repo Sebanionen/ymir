@@ -138,8 +138,8 @@ What each column is, and where it came from:
 | column | meaning |
 |---|---|
 | `phase` · `owner` | the phase name and the agent it ran as (`phases` table) |
-| `model` | the model the phase ACTUALLY ran on — the fallback model when one was used (`agent_start` → `agent_end.context.model`) |
-| `thinking` | the thinking level the phase ran at (`agent_start`) |
+| `model` | the model the phase ACTUALLY ran on — the fallback model when one was used (the receipt's own `model`, then `agent_start`) |
+| `thinking` | the thinking level the phase ran at (the receipt's own `thinking`, then `agent_start`) |
 | `tools` | the phase's declared capability list; `all` when the roster allows every tool, `—` for an engineer or code phase that ran no agent |
 | `tokens` | **occupancy**, not spend: what the last turn left in the window (input + cache read + output) |
 | `window` | that model's ceiling, from the same doors the house uses — pi's model catalog, then `bin/model/catalog.sh`, then `bin/seat/core-four.sh` |

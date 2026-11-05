@@ -212,15 +212,19 @@ def _row_for_phase(phase: dict, evs: list[dict], agents: dict[str, dict],
     start_payload = started.get("payload") or {}
     end_payload = ended.get("payload") or {}
 
-    model = start_payload.get("model") or (end_payload.get("context") or {}).get("model") or ""
-    thinking = start_payload.get("thinking") or ""
+    receipt = end_payload.get("context") or {}
+    # The receipt is the phase's OWN record, so it wins: it names the model the
+    # phase actually ran on (the fallback after a model_error, not the roster's
+    # intent) and the thinking level it ran at. `agent_start` is the fallback for
+    # a run recorded before receipts carried them.
+    model = (receipt.get("model") or start_payload.get("model") or "")
+    thinking = (receipt.get("thinking") or start_payload.get("thinking") or "")
     observed = [str(e.get("name") or "").split(":", 1)[0]
                 for e in evs if e["type"] == "tool_call"]
     # A non-agent phase has no capability list at all; `all` would be a claim
     # about a phase that never ran an agent.
     tools = _tools_label(start_payload.get("tools"), observed) if kind == "agent" else EMPTY
 
-    receipt = end_payload.get("context") or {}
     agent_dir = data_dir / "sessions" / run_id / owner
     stream = _last_turn_from_stream(agent_dir / "raw_output.jsonl")
 

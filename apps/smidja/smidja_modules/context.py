@@ -241,19 +241,25 @@ def window_for(model: str, hint: int = 0,
 
 def phase_context(model: str, used: int, window: int, source: str = "",
                   input_tokens: int = 0, cache_read: int = 0, output: int = 0,
-                  finish: str = "") -> dict:
+                  finish: str = "", thinking: str = "") -> dict:
     """The context block written to ``agent_end`` — the phase's own receipt.
 
     ``used`` is the last turn's window occupancy (input + cache read + output),
     not the phase's spend: spend bills every turn, occupancy is how full the
     window stands right now. The two are deliberately different numbers and both
     are recorded (spend in ``usage``, occupancy here).
+
+    ``model`` and ``thinking`` are recorded here as well as on ``agent_start``,
+    because this receipt is the phase's own record: the trace must be able to
+    answer "which model, at which thinking level" from one event, without
+    depending on the start event still being present in the ledger.
     """
     window = int(window or 0)
     used = int(used or 0)
     pct = percent(used, window)
     return {
         "model": model or "",
+        "thinking": thinking or "",
         "input": int(input_tokens or 0),
         "cache_read": int(cache_read or 0),
         "output": int(output or 0),
