@@ -1,0 +1,417 @@
+{
+  "harness": "tools/jev/bench/decision-bench.ts (vendored @dna/jev, provider local)",
+  "measured_at": "2026-11-05T23:53:26.760Z",
+  "host": "heimdall",
+  "gpu": "NVIDIA RTX A5000 Laptop GPU 16384 MiB",
+  "endpoint": "http://127.0.0.1:9099/v1/systemone",
+  "engine": "llama.cpp b11719 CUDA (5eacac37), throwaway server :9099, direct model (no router)",
+  "model": {
+    "requested": "julia-1@q8_0",
+    "resolved": "julia-1@q8_0",
+    "provider": "local"
+  },
+  "placement": {
+    "ctx_verified_by_props": 4096,
+    "n_gpu_layers": 999,
+    "batch": 2048,
+    "ubatch": 2048,
+    "kv": "q8_0/q8_0",
+    "parallel": 1,
+    "threads": 8,
+    "seed": 42,
+    "temp": 0,
+    "flash_attn": "on",
+    "vram_resident_mib": 370,
+    "card_baseline_mib": 55
+  },
+  "door_proof": {
+    "state": "Customer message: I was charged twice for my order last week and nobody has replied.",
+    "question": {
+      "type": "choice",
+      "instructions": "Which team should handle this customer message?",
+      "criteria": {
+        "billing": "A charge, refund, invoice or payment is wrong, duplicated or unexplained",
+        "shipping": "An order is late, lost, damaged in transit, or has to be returned",
+        "technical": "A product, account or integration does not work as documented"
+      }
+    },
+    "response": {
+      "model": "julia-1@q8_0",
+      "answers": {
+        "route": {
+          "type": "choice",
+          "choice": "billing",
+          "probabilities": {
+            "billing": 0.9994931625235761,
+            "shipping": 0.00042541656199669015,
+            "technical": 8.14209144273106e-05
+          },
+          "confidence": 0.9992397437853642
+        }
+      },
+      "usage": {
+        "input_tokens": 76,
+        "output_tokens": 0
+      }
+    },
+    "response_text": "{\"model\":\"julia-1@q8_0\",\"answers\":{\"route\":{\"type\":\"choice\",\"choice\":\"billing\",\"probabilities\":{\"billing\":0.9994931625235761,\"shipping\":0.00042541656199669015,\"technical\":8.14209144273106e-05},\"confidence\":0.9992397437853642}},\"usage\":{\"input_tokens\":76,\"output_tokens\":0}}"
+  },
+  "bare_label_counter_probe": {
+    "note": "same model, same state, same question; the only change is that the options carry no descriptions",
+    "response": {
+      "model": "julia-1@q8_0",
+      "answers": {
+        "route": {
+          "type": "choice",
+          "choice": "shipping",
+          "probabilities": {
+            "billing": 0.07126174237500657,
+            "shipping": 0.8943524567389909,
+            "technical": 0.03438580088600256
+          },
+          "confidence": 0.8415286851084863
+        }
+      },
+      "usage": {
+        "input_tokens": 38,
+        "output_tokens": 0
+      }
+    }
+  },
+  "bench_runs": [
+    {
+      "run": 1,
+      "rounds": 100,
+      "options_3": {
+        "decisions_per_second": 87.98,
+        "mean_ms": 11.37,
+        "p95_ms": 13.42,
+        "input_tokens": 76
+      },
+      "options_12": {
+        "decisions_per_second": 72.75,
+        "mean_ms": 13.75,
+        "p95_ms": 15.5,
+        "input_tokens": 155
+      }
+    },
+    {
+      "run": 2,
+      "rounds": 100,
+      "options_3": {
+        "decisions_per_second": 86.42,
+        "mean_ms": 11.57,
+        "p95_ms": 13.71,
+        "input_tokens": 76
+      },
+      "options_12": {
+        "decisions_per_second": 72.23,
+        "mean_ms": 13.84,
+        "p95_ms": 16.63,
+        "input_tokens": 155
+      }
+    },
+    {
+      "run": 3,
+      "rounds": 100,
+      "options_3": {
+        "decisions_per_second": 83.97,
+        "mean_ms": 11.91,
+        "p95_ms": 14.03,
+        "input_tokens": 76
+      },
+      "options_12": {
+        "decisions_per_second": 67.36,
+        "mean_ms": 14.85,
+        "p95_ms": 20.62,
+        "input_tokens": 155
+      }
+    },
+    {
+      "run": 4,
+      "rounds": 100,
+      "options_3": {
+        "decisions_per_second": 77.06,
+        "mean_ms": 12.98,
+        "p95_ms": 15.45,
+        "input_tokens": 76
+      },
+      "options_12": {
+        "decisions_per_second": 66.03,
+        "mean_ms": 15.15,
+        "p95_ms": 17.14,
+        "input_tokens": 155
+      }
+    },
+    {
+      "run": 5,
+      "rounds": 100,
+      "options_3": {
+        "decisions_per_second": 79.66,
+        "mean_ms": 12.55,
+        "p95_ms": 14.5,
+        "input_tokens": 76
+      },
+      "options_12": {
+        "decisions_per_second": 65.08,
+        "mean_ms": 15.36,
+        "p95_ms": 18.33,
+        "input_tokens": 155
+      }
+    }
+  ],
+  "hfs_runs": {
+    "command": {
+      "name": "hfs",
+      "version": 2
+    },
+    "vocabulary": {
+      "categories": {
+        "label_threshold": 50,
+        "tie_order": [
+          "signal",
+          "facts",
+          "hype"
+        ],
+        "attention": {
+          "signal": 0.5,
+          "facts": 0.35,
+          "hype": -0.25,
+          "relevance": 0.4
+        }
+      },
+      "levels": {
+        "hype": {
+          "type": "score",
+          "instructions": "How much of the item in `title` and `excerpt` (the page text) is hype: largely baseless, overhyped, overrated, not driven by true value, exaggerated, heavy opinion or investment bias, or far more popular than its substance? Use `section_keywords.hype` and the reader's `taste_examples` as hints.",
+          "criteria": [
+            "No hype",
+            "Some promotional tone",
+            "Mostly hype",
+            "Pure hype"
+          ]
+        },
+        "facts": {
+          "type": "score",
+          "instructions": "How checkable are the claims in `excerpt` and `findings`, judged from what the text itself shows? A primary source (the maker's own announcement, release notes, a changelog, documentation, code, a paper) or specific, checkable details (versions, numbers, dates, named sources) score high. Claims with no source score low. Score the evidence the text shows, not whether you checked it yourself. Use `section_keywords.facts` as hints.",
+          "criteria": [
+            "No source for its claims",
+            "Reported secondhand",
+            "Primary source or specific, checkable details",
+            "Primary source with code, numbers or a release"
+          ]
+        },
+        "signal": {
+          "type": "score",
+          "instructions": "How useful, valuable and specifically actionable is the item in `title` and `excerpt` for an engineer who builds with AI agents, right now? Use `section_keywords.signal` as hints.",
+          "criteria": [
+            "Not actionable",
+            "Background only",
+            "Useful soon",
+            "Act on it now"
+          ]
+        }
+      }
+    },
+    "runs": [
+      {
+        "expect": "hype",
+        "title": "This new AI agent will replace every engineer by next month, insiders say",
+        "answers": {
+          "hype": {
+            "type": "score",
+            "score": 2.0469763013506532,
+            "legend": {
+              "0": "No hype",
+              "1": "Some promotional tone",
+              "2": "Mostly hype",
+              "3": "Pure hype"
+            },
+            "probabilities": {
+              "0": 8.633168872853034e-06,
+              "1": 1.836481756872017e-05,
+              "2": 0.9529610695075907,
+              "3": 0.04701193250596773
+            },
+            "confidence": 0.9529524363387178
+          },
+          "facts": {
+            "type": "score",
+            "score": 1.9796715321362912,
+            "legend": {
+              "0": "No source for its claims",
+              "1": "Reported secondhand",
+              "2": "Primary source or specific, checkable details",
+              "3": "Primary source with code, numbers or a release"
+            },
+            "probabilities": {
+              "0": 0.06454713092123911,
+              "1": 0.024302761405296663,
+              "2": 0.7780815522893983,
+              "3": 0.13306855538406592
+            },
+            "confidence": 0.7135344213681591
+          },
+          "signal": {
+            "type": "score",
+            "score": 0.576708828553936,
+            "legend": {
+              "0": "Not actionable",
+              "1": "Background only",
+              "2": "Useful soon",
+              "3": "Act on it now"
+            },
+            "probabilities": {
+              "0": 0.806296055657181,
+              "1": 0.00037951004004338837,
+              "2": 0.003643984394434158,
+              "3": 0.18968044990834143
+            },
+            "confidence": 0.423291171446064
+          }
+        },
+        "rank": {
+          "ranked": [
+            {
+              "category": "hype",
+              "score": 68,
+              "confidence": 0.9529524363387178
+            },
+            {
+              "category": "facts",
+              "score": 66,
+              "confidence": 0.7135344213681591
+            },
+            {
+              "category": "signal",
+              "score": 19,
+              "confidence": 0.423291171446064
+            }
+          ],
+          "primary": "hype",
+          "labels": [
+            "hype",
+            "facts"
+          ],
+          "scores": {
+            "hype": 68,
+            "facts": 66,
+            "signal": 19
+          },
+          "suspectCombo": false
+        },
+        "input_tokens": 703,
+        "elapsed_ms": 39
+      },
+      {
+        "expect": "facts",
+        "title": "llama.cpp b11719: /v1/systemone for native decision models",
+        "answers": {
+          "hype": {
+            "type": "score",
+            "score": 2.1686295950310033,
+            "legend": {
+              "0": "No hype",
+              "1": "Some promotional tone",
+              "2": "Mostly hype",
+              "3": "Pure hype"
+            },
+            "probabilities": {
+              "0": 0.0011928348100559236,
+              "1": 0.0027207825355093068,
+              "2": 0.8223503354678104,
+              "3": 0.17373604718662428
+            },
+            "confidence": 0.8211575006577545
+          },
+          "facts": {
+            "type": "score",
+            "score": 1.97121279741996,
+            "legend": {
+              "0": "No source for its claims",
+              "1": "Reported secondhand",
+              "2": "Primary source or specific, checkable details",
+              "3": "Primary source with code, numbers or a release"
+            },
+            "probabilities": {
+              "0": 0.014414280597631631,
+              "1": 6.3853346865001724e-06,
+              "2": 0.9855315901177722,
+              "3": 4.774394990969181e-05
+            },
+            "confidence": 0.9711173095201405
+          },
+          "signal": {
+            "type": "score",
+            "score": 2.670764240025965,
+            "legend": {
+              "0": "Not actionable",
+              "1": "Background only",
+              "2": "Useful soon",
+              "3": "Act on it now"
+            },
+            "probabilities": {
+              "0": 0.10714814234108687,
+              "1": 0.0008672661288422704,
+              "2": 0.0060568006930897264,
+              "3": 0.885927790836981
+            },
+            "confidence": 0.6707642400259651
+          }
+        },
+        "rank": {
+          "ranked": [
+            {
+              "category": "signal",
+              "score": 89,
+              "confidence": 0.6707642400259651
+            },
+            {
+              "category": "hype",
+              "score": 72,
+              "confidence": 0.8211575006577545
+            },
+            {
+              "category": "facts",
+              "score": 66,
+              "confidence": 0.9711173095201405
+            }
+          ],
+          "primary": "signal",
+          "labels": [
+            "signal",
+            "hype",
+            "facts"
+          ],
+          "scores": {
+            "signal": 89,
+            "hype": 72,
+            "facts": 66
+          },
+          "suspectCombo": false
+        },
+        "input_tokens": 814,
+        "elapsed_ms": 48
+      }
+    ]
+  },
+  "ledger": {
+    "calls": 2,
+    "questions": 6,
+    "total_usd": 0
+  },
+  "headline": {
+    "options_3_decisions_per_second_median": 83.97,
+    "options_3_range": [
+      77.06,
+      87.98
+    ],
+    "options_12_decisions_per_second_median": 67.36,
+    "options_12_range": [
+      65.08,
+      72.75
+    ],
+    "runs": 5,
+    "rounds_per_run": 100
+  }
+}
