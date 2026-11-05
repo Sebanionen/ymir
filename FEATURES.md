@@ -190,6 +190,7 @@ page's *planned* banner is removed **by a new entry citing the old** (Rule 06).
 | Telegram | Formatting — long answers shaped so a phone can read them | Rich text stays, drafts off, and a reply is broken into one idea per line with code, lists and buttons untouched; `--check` names any line that still runs long. | [Guide](docs/features/telegram-format.md) |
 2026-11-02 — Mimirsbrunn memory health follows the serving bridge across platform and borrowed boundaries; health reports database episodes and policy health separately from transport. See docs/features/the-well-on-every-role.md.
 
+| Collaboration | The fleet wire — pane, queue and room between Ymir seats | Three roads between machines of this fleet: a live pane prompt, a durable wake queue resolved from the far seat's lease, and a room jsonl per speaker; a collaborator uses the A2A door instead. | [Guide](docs/features/fleet-wire.md) |
 | Category | Feature | Behaviour | How-to |
 |---|---|---|---|
 | Memory | Serving-engine health | Cross-platform and borrowed clients measure the active bridge database; transport, episode count and policy health remain distinct. | [Memory on every role](docs/features/the-well-on-every-role.md) |
