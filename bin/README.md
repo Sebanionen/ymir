@@ -89,7 +89,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "collab-connect.sh","collab-connect.sh — what a collaborator pastes, and the token the house mints.","tool","wired","keep",1,39
   "collab.sh","collab.sh — Vingólf, the assembly hall: who collaborates with the house, on which surface, and at which rung.","tool","wired","keep",6,65
   "collaboration-files.md","Subject: One set of files in every project — can we work this way?","data","wired","keep",2,50
-  "collaborator-door.md","The collaborator door — how a hand that is not on our network talks to the house","data","wired","keep",0,70
+  "collaborator-door.md","The collaborator door — how a hand that is not on our network talks to the house","data","wired","keep",0,74
   "collaborators.sh","collaborators.sh — the people we work with: clients, collaborators, advisers, partners.","tool","wired","keep",1,245
   "commit-msg","A commit says what and why; 'wip' does not.","tool","wired","keep",1,22
   "common.py","'''common.py — the one resolver for Garmr's settings and paths (Rule 07).","tool","wired","keep",1,204
