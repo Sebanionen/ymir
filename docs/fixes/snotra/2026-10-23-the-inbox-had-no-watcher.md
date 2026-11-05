@@ -36,7 +36,7 @@ taking care of my email inbox incoming?"* — and he pasted the paragraph he had
 ### Measured, immediately after the real send
 ```
 sent   Reygan Assareh → <a personal address>   (approved b7eabab7…, 5 attachments)
-sent   Craig Martin   → craig@way-of.com          (approved 798bd333…, 5 attachments)
+sent   Craig Martin   → <operator-mailbox>          (approved 798bd333…, 5 attachments)
 watch  mail_watch{people:3, answered:0, silent:3}
 ```
 

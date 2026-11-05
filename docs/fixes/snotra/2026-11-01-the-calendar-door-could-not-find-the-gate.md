@@ -85,7 +85,7 @@ path never asked it**.
   domain, and refuses with the measurement — *"a letter to a domain with no mail exchanger is lost, not sent"*.
 
 Measured: `<a personal address>` → refused, naming *"thegleemachine.com publishes no MX record"*;
-`craig@way-of.com` → drafts normally.
+`<operator-mailbox>` → drafts normally.
 
 ## The memory index — appended the same evening
 
