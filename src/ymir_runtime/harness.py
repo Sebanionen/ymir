@@ -182,8 +182,29 @@ def resolve(
     )
 
 
-def build_launch_command(selection: HarnessSelection, brief_ref: str) -> str:
-    """The exact worker line — byte-compatible with the shell road's builder."""
+def launcher_door() -> Path:
+    """The ONE launcher generator — bin/seat/pi-launcher.sh, beside the tree's bin/."""
+    return Path(__file__).resolve().parents[2] / "bin" / "seat" / "pi-launcher.sh"
+
+
+def build_launch_command(
+    selection: HarnessSelection,
+    brief_ref: str,
+    launch_cwd: str | Path | None = None,
+    *,
+    runner: proc.Runner = proc.run,
+) -> str:
+    """The exact worker line — composed by the ONE generator, never here.
+
+    Measured 2026-11-05 (plan 190 §4.1): this builder and the shell road each
+    assembled a pi command, and NEITHER of them carried `-ne` — so a worker
+    seated by the engine inherited the seat's absolute extension tree through
+    ~/.pi/agent/settings.json AND discovered the worktree's own, pi registered
+    every tool twice, refused to load a single extension, and the errand was
+    born dead while the dispatcher printed `spawned` (RULES/13). Two launchers for
+    one shape is the fault; `bin/seat/pi-launcher.sh` is now the only place the
+    shape exists, and both roads ask it.
+    """
     if selection.is_raw:
         quoted = proc.shell_quote(brief_ref)
         if "__BRIEF__" in selection.raw_launch:
@@ -196,12 +217,25 @@ def build_launch_command(selection: HarnessSelection, brief_ref: str) -> str:
         else ""
     )
     if selection.name in ("pi", "pi-signed"):
-        effort_flag = (
-            f"--thinking {proc.shell_quote(selection.effort)} "
-            if selection.effort and selection.effort != "default"
-            else ""
-        )
-        return f'{selection.name} {model_flag}{effort_flag}"$(cat {proc.shell_quote(brief_ref)})"'
+        door = launcher_door()
+        if not door.is_file():
+            raise ValueError(
+                f"the launcher generator is missing at {door} — a pi seat without it would "
+                "load two extension trees and refuse to start (RULES/13)"
+            )
+        argv = [str(door), "print", str(launch_cwd or Path.cwd())]
+        if selection.model and selection.model != "default":
+            argv += ["--model", selection.model]
+        if selection.effort and selection.effort != "default":
+            argv += ["--thinking", selection.effort]
+        argv += ["--brief", brief_ref]
+        completed = runner(argv)
+        if not proc.ok(completed):
+            raise ValueError(
+                "the launcher generator refused this seat: "
+                + ((completed.stderr or completed.stdout or "").strip() or "no reason given")
+            )
+        return completed.stdout.strip()
     if selection.name == "opencode":
         # `env` is load-bearing, not decoration. The seat writer prefixes `exec ` to
         # any shape that does not already carry it (seat.py), and `exec VAR=x cmd`

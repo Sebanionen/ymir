@@ -25,7 +25,7 @@ from typing import Any, Mapping
 
 from . import backend as backend_mod
 from . import container, harness, heartbeat, paths, proc, worktree as worktree_mod
-from .errors import EngineRefusal
+from .errors import EngineError, EngineRefusal
 
 SAFE_ID = re.compile(r"^[A-Za-z0-9._-]+$")
 KINDS = ("ship", "scout")
@@ -180,6 +180,47 @@ def _launch_script(
     return script
 
 
+def _prove_seat(
+    roots,
+    placed,
+    launch_cwd: Path,
+    *,
+    runner: proc.Runner = proc.run,
+    env: Mapping[str, str] | None = None,
+) -> tuple[str, str, str]:
+    """Ask the proof door where the agent stands: `(pane, state, note)`.
+
+    An unproven seat returns empty values — the caller records `seat=no` and keeps
+    the pane it chose, so the record says exactly what was and was not seen.
+    """
+    environ = dict(env) if env is not None else dict(os.environ)
+    # The door ships beside the engine, so the engine finds it from its OWN tree —
+    # never from whichever repo the errand happens to work in.
+    door = Path(__file__).resolve().parents[2] / "bin" / "seat" / "seat-prove.sh"
+    if not door.is_file():
+        return placed.target, "unchecked", "bin/seat/seat-prove.sh is missing — the seat was not proved"
+    settle = environ.get("YMIR_SEAT_SETTLE", "25")
+    completed = runner(
+        [str(door), placed.target, str(launch_cwd), "--backend", placed.backend, "--settle", settle]
+    )
+    if not proc.ok(completed):
+        lines = (completed.stderr or "").strip().splitlines()
+        return "", (lines[-1] if lines else "unproven"), ""
+    line = (completed.stdout or "").strip().splitlines()
+    fields = (line[0] if line else "").split("\t")
+    pane = fields[0] if fields else ""
+    state = fields[1] if len(fields) > 1 else "unknown"
+    if not pane:
+        # A door that exits 0 and names no pane has proved NOTHING; a green that
+        # carries no evidence is the false green this house has paid for twice.
+        return "", "unproven", ""
+    note = ""
+    for extra in (completed.stderr or "").strip().splitlines():
+        if "not in the pane" in extra:
+            note = extra.split("seat-prove: ", 1)[-1]
+    return pane or placed.target, state or "unknown", note
+
+
 def seat(
     errand: "Errand | Mapping[str, Any]",
     *,
@@ -287,7 +328,9 @@ def seat(
             )
 
     prompt_path, prompt_body = _prompt_for(roots, errand, seat_id, brief_text or errand.request, runner=runner)
-    launch_cmd = harness.build_launch_command(selection, str(prompt_path))
+    # The generator is told WHERE the seat stands: the extension set is the worktree's,
+    # never the primary checkout's (plan 190 §4.1).
+    launch_cmd = harness.build_launch_command(selection, str(prompt_path), launch_cwd=tree.path, runner=runner)
     script = _launch_script(roots, seat_id, tree.path, launch_cmd, lock=errand.lock)
     pane_cmd = f"bash {proc.shell_quote(str(script))}"
 
@@ -309,6 +352,16 @@ def seat(
         )
     except (RuntimeError, ValueError) as exc:
         raise EngineRefusal(str(exc), "check the backend and the worktree, then retry") from exc
+
+    # --- PROVE THE SEAT: a spawn is not a seat until the agent list shows it ----
+    # Measured 2026-11-05: this road printed `spawned … target=wQ:p1` for an errand
+    # whose pane held a bare shell while the agent stood in another pane entirely,
+    # and three errands died that way while their records claimed a worker. The
+    # proof is ONE door (bin/seat/seat-prove.sh), shared with the shell road, so
+    # neither road can claim a seat it never saw.
+    seat_pane, seat_state, seat_note = _prove_seat(
+        roots, placed, tree.path, runner=runner, env=environ
+    )
 
     moment = heartbeat.iso(now)
     heartbeat.baseline(state, seat_id, moment)
@@ -334,8 +387,10 @@ def seat(
             "effort": selection.effort,
             "backend": placed.backend,
             "backend_reason": chosen.reason,
-            "window": placed.target,
+            "window": seat_pane or placed.target,
             "seat_workspace": placed.workspace,
+            "seat": "yes" if seat_pane else "no",
+            "seat_state": seat_state,
             "worktree": str(tree.path),
             "worktree_created": "yes" if tree.created else "no",
             "worktree_base": tree.base,
@@ -357,6 +412,8 @@ def seat(
             "role": errand.role,
         }
     )
+    if seat_note:
+        record["seat_note"] = seat_note
     for key, value in (errand.extra or {}).items():
         record.setdefault(key, str(value))
     heartbeat.write_meta(state, seat_id, record)
@@ -365,6 +422,21 @@ def seat(
     data_dir.mkdir(parents=True, exist_ok=True)
     if prompt_body and not brief_path.exists():
         (data_dir / "brief.md").write_text(prompt_body, encoding="utf-8")
+
+    # An UNPROVEN seat is a failure, recorded and reported — the record already says
+    # `seat=no` with the evidence, and the status line says `failed:` so the
+    # heartbeat, the sweep and the operator all read the same fact.
+    if not seat_pane:
+        heartbeat.append(
+            state,
+            seat_id,
+            f"failed: the launch produced NO agent — pane {placed.target} holds no agent and none "
+            f"stands in {tree.path} ({seat_state})",
+        )
+        raise EngineError(
+            f"seat '{seat_id}' was launched into {placed.target} but NO agent stands there or in "
+            f"{tree.path} — the errand is not running ({seat_state})"
+        )
 
     watcher = roots.root / "bin" / "eindri-watch.sh"
     if watcher.is_file():

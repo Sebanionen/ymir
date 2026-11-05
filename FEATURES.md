@@ -70,6 +70,7 @@ its row here and write its page (see `AGENTS.md` → *Feature how-tos*).
 | Meetings | **A voice in the room** (`systems/snotra/snotra-stream.sh` `say` / `talk`) | Kokoro speaks into the `snotra_mic` PipeWire source so a meeting client on this seat can transmit it; `talk` is the streaming loop — hear in 2 s chunks, answer only when NAMED, speak sentence by sentence; the first word names the speaker, a 20 s cap, `mute` is one command, every utterance a Rune | [docs/features/snotra-meetings.md](docs/features/snotra-meetings.md) |
 | Meetings | Snotra (the meeting ear) | Captures a call (PipeWire), transcribes (whisper.cpp), mines minutes into the hoard | [docs/features/snotra-the-meeting-ear.md](docs/features/snotra-the-meeting-ear.md) |
 | Collaboration | Skills for collaborators (`tools/skills-mcp`) | A four-tool, read-only door onto a built, redacted copy of the skills we choose to share — a collaborator searches, pulls one skill, and fetches its templates without loading the library or seeing our machines, people or runs | [docs/features/skills-mcp-for-collaborators.md](docs/features/skills-mcp-for-collaborators.md) |
+| Delivery | The seat seals its own PR (`pr-seal.sh`) | Green, conflict-free, and the seat's only open PR: merged now, with one Runes entry, and the word carried through Gná | [docs/features/pr-seal.md](docs/features/pr-seal.md) |
 
 ## Surfaces — what you look at
 

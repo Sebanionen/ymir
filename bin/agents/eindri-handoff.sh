@@ -95,6 +95,30 @@ case "$ACTION" in
 
   sweep|"")
     delivered=0
+    dead_seats=0
+    seal_ready=0
+    # The SECOND question comes first: before delivering what the shelves hold,
+    # cross-check every live claim against its pane. A seat whose pane holds a
+    # shell has no report to deliver and never will, and its status says
+    # `working` — the fault plan 189 §18 measured for a whole day. This door
+    # corrects the record and hands the word to Gná (bin/agents/eindri-liveness.sh),
+    # so the sweep wakes the seat about the silence as well as about the news.
+    if [ -x "$SCRIPT_DIR/eindri-liveness.sh" ]; then
+      liveness_out="$("$SCRIPT_DIR/eindri-liveness.sh" sweep 2>&1)"
+      liveness_rc=$?
+      [ -n "$liveness_out" ] && printf '%s\n' "$liveness_out"
+      [ "$liveness_rc" = 3 ] && dead_seats=$((dead_seats + 1))
+    fi
+    # The THIRD question: is a PR of this seat ready to be sealed? The seal itself
+    # is the seat's act (bin/agents/pr-seal.sh seal <n>), never the sweep's — but
+    # the arm's road must be walked every sweep, or the word that a PR is green
+    # waits for a human to run a command he does not know about.
+    if [ -x "$SCRIPT_DIR/pr-seal.sh" ]; then
+      seal_out="$("$SCRIPT_DIR/pr-seal.sh" watch --quiet 2>&1)"
+      seal_rc=$?
+      [ -n "$seal_out" ] && printf '%s\n' "$seal_out"
+      [ "$seal_rc" = 3 ] && seal_ready=1
+    fi
     # Collect first, then deliver — a marker written mid-iteration would shift
     # the glob under us.
     while IFS=$'\t' read -r kind name path; do
@@ -103,9 +127,12 @@ case "$ACTION" in
       delivered=$((delivered + 1))
     done < <(waiting_items)
 
-    printf 'eindri-handoff[1]{action,delivered,state}:\n  "sweep",%s,"%s"\n' \
-      "$delivered" "$([ "$delivered" -gt 0 ] && echo 'undelivered work was waiting — now in the wake queue' || echo 'nothing was waiting')"
+    printf 'eindri-handoff[2]{action,delivered,dead,state}:\n  "sweep",%s,%s,"%s"\n' \
+      "$delivered" "$dead_seats" \
+      "$([ "$delivered" -gt 0 ] && echo 'undelivered work was waiting — now in the wake queue' || echo 'nothing was waiting')"
     [ "$delivered" -gt 0 ] && exit 3
+    [ "$dead_seats" -gt 0 ] && exit 3
+    [ "$seal_ready" = 1 ] && exit 3
     exit 0 ;;
 
   *)
