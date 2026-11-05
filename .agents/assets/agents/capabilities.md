@@ -14,7 +14,7 @@ capabilities[5]{surface,count}:
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
-  "generated","2026-11-04"
+  "generated","2026-11-05"
 
 | door | the job | verdict | tech decision |
 |---|---|---|---|
