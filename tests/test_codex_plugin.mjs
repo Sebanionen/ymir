@@ -458,3 +458,88 @@ test("home symlink aliases cannot cross realms or expose credential targets", as
     /credential/,
   );
 });
+
+test("well tools use the actual CLI contract and enforce result limits", async (t) => {
+  const { home } = setup(t);
+  const well = path.join(home, "hodd", "memory", "well", "episodes.jsonl");
+  fs.mkdirSync(path.dirname(well), { recursive: true });
+  fs.writeFileSync(well, [
+    { content: "contract sentinel alpha", source: "test" },
+    { content: "contract sentinel beta", source: "test" },
+    { content: "contract sentinel gamma", source: "test" },
+  ].map((e) => JSON.stringify(e)).join("\n") + "\n");
+  const tools = createTools({
+    root, home,
+    env: { ...process.env, YMIR_BASH: "bash", MIMIRSBRUNN_URL: "http://127.0.0.1:1" },
+  });
+  for (const [name, args] of [
+    ["ymir_recall", { query: "contract sentinel", limit: 2 }],
+    ["ymir_well", { action: "recall", query: "contract sentinel", limit: 2 }],
+    ["ymir_well", { action: "search", query: "contract sentinel", limit: 2 }],
+  ]) {
+    assert.match(await tools.call(name, args), /^recall\[2\]/);
+  }
+  assert.match(await tools.call("ymir_well", { action: "stats" }), /COLD.*3.*offline/);
+  await assert.rejects(tools.call("ymir_well", { action: "recall" }), /query required/);
+});
+
+test("recall handles a large bridge payload without argv overflow", async (t) => {
+  const { home } = setup(t);
+  const tempBin = path.join(home, "bin");
+  fs.mkdirSync(tempBin);
+  const payload = path.join(home, "payload.json");
+  fs.writeFileSync(payload, JSON.stringify({results: [1, 2, 3].map(i => ({
+    score: 1, episode: {id: String(i), content: "contract sentinel " + "x".repeat(100000)}
+  }))}));
+  fs.writeFileSync(path.join(tempBin, "curl"),
+    '#!/bin/sh\ncase "$*" in */health*) printf "%s" "{}";; *) cat "$FAKE_PAYLOAD";; esac\n',
+    { mode: 0o755 });
+  const tools = createTools({ root, home, env: {
+    ...process.env, YMIR_BASH: "bash", FAKE_PAYLOAD: payload,
+    PATH: tempBin + path.delimiter + process.env.PATH,
+  }});
+  assert.match(await tools.call("ymir_recall", {query: "contract sentinel", limit: 2}), /^recall\[2\]/);
+});
+
+test("recall propagates formatter errors", async (t) => {
+  const { home } = setup(t);
+  const tempBin = path.join(home, "bin");
+  fs.mkdirSync(tempBin);
+  fs.writeFileSync(path.join(tempBin, "python3"), "#!/bin/sh\nexit 42\n", {mode: 0o755});
+  const tools = createTools({ root, home, env: {
+    ...process.env, YMIR_BASH: "bash", MIMIRSBRUNN_URL: "http://127.0.0.1:1",
+    PATH: tempBin + path.delimiter + process.env.PATH,
+  }});
+  await assert.rejects(tools.call("ymir_recall", {query: "sentinel", limit: 2}), /failed \(42\)/);
+});
+
+test("recall reports a failed bridge when the local log has no match", async (t) => {
+  const { home } = setup(t);
+  const tools = createTools({ root, home, env: {
+    ...process.env, YMIR_BASH: "bash", MIMIRSBRUNN_URL: "http://127.0.0.1:1",
+  }});
+  await assert.rejects(tools.call("ymir_recall", {query: "unmatched sentinel"}),
+    /well bridge unavailable and no matching local log entries/);
+});
+
+test("recall identifies local fallback after an empty bridge or failed request", async (t) => {
+  const { home } = setup(t);
+  const tempBin = path.join(home, "bin");
+  fs.mkdirSync(tempBin);
+  const curl = path.join(tempBin, "curl");
+  const well = path.join(home, "hodd", "memory", "well", "episodes.jsonl");
+  fs.mkdirSync(path.dirname(well), {recursive: true});
+  fs.writeFileSync(well, JSON.stringify({content: "fallback sentinel", source: "test"}) + "\n");
+  const tools = createTools({ root, home, env: {
+    ...process.env, YMIR_BASH: "bash", PATH: tempBin + path.delimiter + process.env.PATH,
+  }});
+  fs.writeFileSync(path.join(home, "empty.json"), JSON.stringify({results: []}));
+  fs.writeFileSync(curl, '#!/bin/sh\ncase "$*" in */health*) printf "{}";; *) cat "$YMIR_HOME/empty.json";; esac\n', {mode: 0o755});
+  let out = await tools.call("ymir_recall", {query: "fallback sentinel"});
+  assert.match(out, /recall\[1\]/);
+  assert.match(out, /retrieval: local log \(bridge returned no matches\)/);
+  fs.writeFileSync(curl, '#!/bin/sh\ncase "$*" in */health*) printf "{}";; *) exit 28;; esac\n', {mode: 0o755});
+  out = await tools.call("ymir_recall", {query: "fallback sentinel"});
+  assert.match(out, /recall\[1\]/);
+  assert.match(out, /retrieval: local log \(bridge unavailable\)/);
+});

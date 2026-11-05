@@ -342,11 +342,11 @@ EOF
 
   # The write goes through base64, never through quoting: the line is arbitrary text.
   if [ -n "$dest" ]; then
-    remote "$dest" "d=\$(printf '%s' '$b64dir' | base64 -d) && mkdir -p \"\$d\" && printf '%s' '$b64' | base64 -d >> \"\$d/.wake-queue\"" >/dev/null 2>&1 \
+    remote "$dest" "d=\$(printf '%s' '$b64dir' | base64 -d) && mkdir -p \"\$d\" && printf '%s' '$b64' | base64 -d >> \"\$d/.wake-queue\" && printf '\\n' >> \"\$d/.wake-queue\"" >/dev/null 2>&1 \
       || die "the peer refused the queue write — nothing was spoken, and nothing claims it was"
   else
     mkdir -p "$dir" 2>/dev/null || die "cannot create the queue shelf $dir"
-    printf '%s' "$b64" | base64 -d >> "$dir/.wake-queue" \
+    { printf '%s' "$b64" | base64 -d; printf '\n'; } >> "$dir/.wake-queue" \
       || die "the queue write to $dir failed — nothing was spoken, and nothing claims it was"
   fi
 
