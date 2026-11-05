@@ -121,3 +121,23 @@ bin/bridge/mimir-bridge.sh --start     # raise the bridge
 | `observe` exits 3 and says "dropped" | The gate refused it. Say which question it answers (`--shape`) or make it a real lesson; a write that commits to nothing is not memory. |
 | `memory` says "grading has never run" | `bin/records/mimir.sh grade --apply` (it may also be Eir's `memory` surface, mended with `bin/agents/eir-doctor.sh fix`). |
 | An agent cannot recall | The `engram` MCP is not wired for its harness — re‑run the memory surface: `bin/agents/eir-doctor.sh fix` (the `well`/`mcp` surfaces). |
+
+
+## Codex using a selected WSL well
+
+When Codex runs on Windows and the chosen well runs in WSL, the private Codex
+home can contain `hodd/data/codex-well.json`. Set `route` to `wsl`, `distro` to
+the installed WSL distribution, and `root`, `home`, and `store` to the Linux
+Ymir checkout, private home, and exact database. These values are private and
+should not be added to the public Ymir repository. The Codex adapter starts
+the selected distribution's user service and verifies the returned store before
+each memory call. If the service is unavailable, it reports an error instead of
+writing an offline record to the other home. Create an empty sibling file
+`codex-well.required` before writing the JSON file: it makes a missing or invalid
+configuration fail closed and refuses a non-WSL route. If neither file exists,
+the existing local behavior applies. Existing Windows and Linux records are not merged.
+
+Optional string fields `service` and `url` choose a systemd user service and a
+loopback HTTP origin. Environment variables override the corresponding fields;
+their names and the full contract are in the Codex harness asset. After updating
+the plugin, open a new Codex session to load its changed tool code.

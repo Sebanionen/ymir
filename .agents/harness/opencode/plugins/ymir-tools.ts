@@ -94,7 +94,7 @@ export default Plugin.define({
         output: Schema.Struct({ text: Schema.String }),
         execute: async ({ query, limit = 5 }) => {
           try {
-            const out = await runShell(`${root}/bin/records/mimir.sh`, ["recall", query, String(limit)], home)
+            const out = await runShell(`${root}/bin/records/mimir.sh`, ["recall", query, "--k", String(limit)], home)
             return toolResult(out || "the well has nothing on that (an empty well is a real answer, not a failure)")
           } catch (e: any) {
             return toolResult("the well did not answer: " + e.message.split("\n")[0])
@@ -717,7 +717,7 @@ export default Plugin.define({
       // --- ymir_well: Direct well access ---
       tools.add({
         name: "ymir_well",
-        description: "Direct access to Mimirsbrunn (the well). recall | observe | search | stats.",
+        description: "Direct access to Mimirsbrunn: recall or search (hybrid recall), observe, or stats (health).",
         input: Schema.Struct({
           action: Schema.Literal("recall", "observe", "search", "stats"),
           query: Schema.optional(Schema.String),
@@ -726,9 +726,10 @@ export default Plugin.define({
         output: Schema.Struct({ text: Schema.String }),
         execute: async ({ action, query, limit = 5 }) => {
           try {
-            const args = [action]
+            if (action !== "stats" && !query) throw new Error("query required")
+            const args = [action === "stats" ? "health" : action === "search" ? "recall" : action]
             if (query) args.push(query)
-            if (action === "recall" || action === "search") args.push(String(limit))
+            if (action === "recall" || action === "search") args.push("--k", String(limit))
             const out = await runShell(`${root}/bin/records/mimir.sh`, args, home)
             return toolResult(out || "(no result)")
           } catch (e: any) {

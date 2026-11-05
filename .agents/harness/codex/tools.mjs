@@ -69,6 +69,86 @@ export function createTools({ root, home, state, env = process.env }) {
   };
   const shell = (door, args = [], cwd = root) =>
     run(env.YMIR_BASH || "bash", [path.join(root, door), ...args], cwd, vars);
+  // A chosen WSL well is a separate home. Never guess it from a Windows path.
+  // Start its supervised service, verify its identity, and execute all memory
+  // operations within that Linux home; never fall back to the Windows log.
+  const wellShell = async (args) => {
+    const configFile = path.join(home, "hodd", "data", "codex-well.json");
+    const requiredFile = path.join(home, "hodd", "data", "codex-well.required");
+    const present = p => {
+      try { fs.lstatSync(p); return true; }
+      catch (e) { if (e.code === "ENOENT") return false; throw e; }
+    };
+    const required = present(requiredFile);
+    if (required && !inside(home, fs.realpathSync(requiredFile))) throw Error("well route marker escapes the home");
+    if (required && !present(configFile)) throw Error("selected well configuration is missing");
+    let config = {};
+    if (present(configFile)) {
+      if (!inside(home, fs.realpathSync(configFile))) throw Error("well configuration escapes the home");
+      try { config = JSON.parse(fs.readFileSync(configFile, "utf8")); }
+      catch { throw Error("invalid codex-well.json"); }
+      const keys = ["route", "distro", "root", "home", "store", "service", "url"];
+      if (!config || Array.isArray(config) || typeof config !== "object" ||
+          Object.entries(config).some(([k,v]) => !keys.includes(k) || typeof v !== "string"))
+        throw Error("invalid codex-well.json fields");
+    }
+    const pick = (key, field) => env[key] !== undefined ? env[key] : config[field];
+    const configuredRoute = pick("YMIR_CODEX_WELL_ROUTE", "route");
+    const route = configuredRoute === undefined ? "local" : configuredRoute;
+    if (required && route !== "wsl") throw Error("selected well requires the WSL route");
+    if (route === "local") return shell("bin/records/mimir.sh", args, home);
+    if (route !== "wsl") throw Error("unsupported YMIR_CODEX_WELL_ROUTE");
+    const linuxRoot = pick("YMIR_WSL_WELL_ROOT", "root");
+    const linuxHome = pick("YMIR_WSL_WELL_HOME", "home");
+    const expectedStore = pick("YMIR_WSL_WELL_STORE", "store");
+    for (const [key, value] of Object.entries({YMIR_WSL_WELL_ROOT: linuxRoot, YMIR_WSL_WELL_HOME: linuxHome, YMIR_WSL_WELL_STORE: expectedStore})) {
+      if (!value || !path.posix.isAbsolute(value) || value.includes("\0"))
+        throw Error(`${key} must name an absolute Linux path`);
+    }
+    const relativeStore = path.posix.relative(linuxHome, expectedStore);
+    if (!relativeStore || relativeStore === ".." || relativeStore.startsWith("../") || path.posix.isAbsolute(relativeStore))
+      throw Error("selected store must belong to the selected Linux home");
+    const wsl = env.YMIR_WSL || "wsl.exe";
+    const distroName = pick("YMIR_WSL_DISTRO", "distro");
+    if (!distroName || distroName.includes("\0"))
+      throw Error("YMIR_WSL_DISTRO must name the selected Linux distribution");
+    const distro = ["-d", distroName];
+    const bounded = async (argv) => {
+      try { return (await exec(wsl, argv, {env, cwd: home, timeout: 30000, windowsHide: true, maxBuffer: 4194304})).stdout.trim(); }
+      catch (e) { throw Error(`WSL well command failed (${e.code ?? "unavailable"}): ${String(e.stderr || e.message).slice(0, 1000)}`); }
+    };
+    const service = pick("YMIR_WSL_WELL_SERVICE", "service") || "mimir.service";
+    if (!/^[A-Za-z0-9_][A-Za-z0-9_.@-]*\.service$/.test(service))
+      throw Error("invalid WSL well service name");
+    const url = pick("MIMIRSBRUNN_URL", "url") || "http://127.0.0.1:4602";
+    const endpoint = new URL(url);
+    if (endpoint.protocol !== "http:" || !["127.0.0.1", "localhost", "[::1]"].includes(endpoint.hostname) || endpoint.username || endpoint.password || endpoint.pathname !== "/" || endpoint.search || endpoint.hash)
+      throw Error("WSL well URL must be a loopback HTTP origin");
+    await bounded([...distro, "--exec", "test", "-d", linuxHome]);
+    await bounded([...distro, "--exec", "test", "-f", `${linuxRoot}/bin/records/mimir.sh`]);
+    await bounded([...distro, "--exec", "test", "-f", expectedStore]);
+    const realHome = await bounded([...distro, "--exec", "realpath", "-e", "--", linuxHome]);
+    const realStore = await bounded([...distro, "--exec", "realpath", "-e", "--", expectedStore]);
+    const physical = path.posix.relative(realHome, realStore);
+    if (!path.posix.isAbsolute(realHome) || !path.posix.isAbsolute(realStore) || !physical || physical === ".." || physical.startsWith("../") || path.posix.isAbsolute(physical))
+      throw Error("selected store resolves outside the selected Linux home");
+    await bounded([...distro, "--exec", "systemctl", "--user", "start", service]);
+    const deadline = Date.now() + 20000;
+    let health, error;
+    while (Date.now() < deadline) {
+      try {
+        const response = await bounded([...distro, "--exec", "curl", "-fsS", "--max-time", "2", new URL("/health", endpoint).toString()]);
+        health = JSON.parse(response);
+        break;
+      } catch (e) { error = e; await new Promise(resolve => setTimeout(resolve, 250)); }
+    }
+    if (!health) throw Error(`WSL well health unavailable: ${error?.message || "timeout"}`);
+    if (health.status !== "up" || health.store !== expectedStore)
+      throw Error("WSL well store does not match the selected store");
+    return bounded([...distro, "--exec", "env", `YMIR_HOME=${linuxHome}`, `ENGRAM_DB=${expectedStore}`,
+      `MIMIRSBRUNN_URL=${url}`, "MIMIR_REQUIRE_BRIDGE=1", `MIMIR_EXPECTED_STORE=${expectedStore}`,
+      "bash", `${linuxRoot}/bin/records/mimir.sh`, ...args]);
+  };
   const git = (args, cwd = home) => run("git", args, cwd, vars);
   const inside = (base, p) => {
     const r = path.relative(base, p);
@@ -226,11 +306,7 @@ export function createTools({ root, home, state, env = process.env }) {
     { query: S, limit: N },
     ["query"],
     (a) =>
-      shell(
-        "bin/records/mimir.sh",
-        ["recall", a.query, String(a.limit ?? 5)],
-        home,
-      ),
+      wellShell(["recall", a.query, "--k", String(a.limit ?? 5)]),
   );
   add(
     "ymir_remember",
@@ -238,8 +314,7 @@ export function createTools({ root, home, state, env = process.env }) {
     { lesson: S, tags: A, actors: A },
     ["lesson"],
     (a) =>
-      shell(
-        "bin/records/mimir.sh",
+      wellShell(
         [
           "observe",
           [
@@ -250,7 +325,6 @@ export function createTools({ root, home, state, env = process.env }) {
             .filter(Boolean)
             .join(" "),
         ],
-        home,
       ),
   );
   add(
@@ -624,21 +698,19 @@ export function createTools({ root, home, state, env = process.env }) {
   );
   add(
     "ymir_well",
-    "Call canonical memory recall, observe, search or stats.",
+    "Call the well: recall or search (hybrid recall), observe, or stats (health).",
     { action: E("recall", "observe", "search", "stats"), query: S, limit: N },
     ["action"],
     (a) => {
       if (a.action !== "stats" && !a.query) throw Error("query required");
-      return shell(
-        "bin/records/mimir.sh",
+      return wellShell(
         [
-          a.action,
+          a.action === "stats" ? "health" : a.action === "search" ? "recall" : a.action,
           ...(a.query ? [a.query] : []),
           ...(["recall", "search"].includes(a.action)
-            ? [String(a.limit ?? 5)]
+            ? ["--k", String(a.limit ?? 5)]
             : []),
         ],
-        home,
       );
     },
   );
