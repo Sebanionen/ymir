@@ -120,6 +120,18 @@ contract:
     door: bin/engine/home-seed.sh
     required: false
     why: "the mesh's skill grants; absent, a peer call is refused by name (the right refusal)"
+  - path: hodd/identity/skills-grants.yaml
+    kind: seeded
+    template: .agents/config/skills-grants.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "who may call which skill through the skills door, per person and per tenant; absent, the door grants nothing (plan 184 §10, plan 192)"
+  - path: hodd/identity/doors.yaml
+    kind: seeded
+    template: .agents/config/doors.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "the register of doors a collaborator is offered; absent, no door is offered (RULES/47)"
   - path: hodd/identity/collaborators.yaml
     kind: seeded
     template: .agents/config/collaborators.yaml.example
@@ -128,6 +140,12 @@ contract:
     why: "who may appear on a record; absent, no collaborator is resolvable"
 
   # ── configuration: read from the home, else the shipped default, and it says which ──
+  - path: config/a2a-front.env
+    kind: seeded
+    template: .agents/config/a2a-front.env.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "the token ward's upstream, listen address and audience; absent, the ward is not raised (plan 192)"
   - path: config/agents.yaml
     kind: seeded
     template: .agents/config/agents.yaml.example
