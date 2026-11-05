@@ -264,7 +264,9 @@ part.
 
 **Delivery contract.** A ship brief carries a fixed machine-readable line `Delivery contract: mode=<mode>`; `bin/agents/einherjar-spawn.sh` refuses to launch a ship task whose explicit `--mode` disagrees, so an adjusted brief and the recorded task cannot drift. A scout brief carries `Delivery contract: mode=scout` and delivers `data/<id>/report.md` (no branch, no push, no PR).
 
-**Modes** (ship): `direct-PR` (push `eindri/<id>`, open PR; never merge), `local-only` (work on `eindri/<id>`; Brokk merges local `main` after approval), `no-mistakes` (run the `no-mistakes` pipeline, open the PR it produces). Merge authority stays with the **Glitnir human gate** — Brokk never force-merges.
+**Modes** (ship): `direct-PR` (push `eindri/<id>`, open PR; never merge), `local-only` (work on `eindri/<id>`; Brokk merges local `main` after approval), `no-mistakes` (run the `no-mistakes` pipeline, open the PR it produces). Merge authority stays with the **Glitnir human gate** — Brokk never force-merges, and **a worker never merges its own PR**.
+
+**The seat's own PR is sealed by the seat (2026-11-05, RULES/08 appended; plan 190).** A PR left open is a branch drifting from a moving `main`, so the seat's own green, conflict-free PR — its ONLY open one, `state/.seal-hold` absent — is merged by the seat's agent (Sindri on nidavellir, Hœnir on heimdall) through `bin/agents/pr-seal.sh seal <n>`, with one Runes entry naming PR, head and merge commit. `bin/agents/pr-seal.sh watch` raises ONE wake line through the arm (`state/.wake-queue`) naming PR, head, checks and the exact merge command; the sweep walks that road every time. Another hand's PR is never sealed, and no merge happens on red or on a conflict, under any flag.
 
 **Isolation.** Every worker runs in a Yggdrasil worktree at `<BROKK_HOME>/.yggdrasil/<id>`, created read-only-referencing the project. herdr is the ORDINARY road — no container. Utgard is the EXCEPTION, chosen for untrusted code or an outsized task, never because an image is present. The brief DECLARES it (`Isolation: herdr|utgard — <why>`); `--isolation auto` honours the declaration, and a declared utgard with no image is a LOUD refusal, never a silent downgrade (2026-09-24). A sealed worker mounts the worktree at `/sandbox/workspace`, plus `state/` and `data/` at their host paths. The brief's first instruction to the worker is to verify isolation with `pwd -P` and `git rev-parse --show-toplevel` before touching anything.
 
@@ -835,3 +837,45 @@ pi|pi-signed launch   # pi --model … -ne$(pi_ext_args "$LAUNCH_CWD") "…brief
 - **A `spawned` line is not a running agent.** The same rule as the 2026-10-24 opencode seats: a dispatcher
   proves a pane exists; only a status line proves an Eindri is working. The launch of a Pi worker therefore
   must be read back from `state/<id>.status`, never trusted from the success line alone.
+
+## 2026-11-05 — ONE launcher generator, and a spawn is not a seat until the agent list says so
+
+The 2026-11-04 mend above fixed the **shell** road and left the **engine** road building its own pi line —
+`src/ymir_runtime/harness.py::build_launch_command` composed `pi --model … "$(cat …)"` with no `-ne` and no
+`-e` at all. Since the engine is the ordinary road (`state/<id>.meta` carries `engine=ymir_runtime/phase1`),
+every engine-seated worker still inherited the primary checkout's extension tree through
+`~/.pi/agent/settings.json` **and** discovered the worktree's own — the same duplicate-tool crash, the same
+dead errand, one layer deeper. Two launchers for one shape is the fault; the shape now lives in exactly one
+place:
+
+```
+bin/seat/pi-launcher.sh extensions <cwd>   # -e … lines, one per line
+bin/seat/pi-launcher.sh print  <cwd> [--model M] [--thinking E] [--brief F]
+bin/seat/pi-launcher.sh write  <cwd> <out-script> […]
+```
+
+- **Both roads call it**: `bin/agents/einherjar-spawn.sh` (shell) and
+  `src/ymir_runtime/harness.py::build_launch_command(selection, brief_ref, launch_cwd)` (engine). The door
+  refuses a cwd that holds no `.pi/extensions` tree — a pi seat with no doors open is not a seat.
+- **`YMIR_PI_SETTINGS`** names the settings file whose `packages[]` are re-stated (default:
+  `~/.pi/agent/settings.json`), so a seat whose packages live elsewhere — and a deterministic test — can say
+  where they are instead of inheriting one machine's list.
+
+**And the second half: the proof.** A `spawned … target=<pane>` line used to be printed for an errand whose
+pane held a bare shell while the agent had come up in a different pane entirely (measured 2026-11-05: the
+record said `wQ:p1`, the agent stood in `w3:pS`). The record is a claim; the agent list is the evidence, so
+both roads now ask one door after the launch:
+
+```
+bin/seat/seat-prove.sh <pane> <cwd> [--backend herdr|tmux] [--settle N]   # "<pane>\t<state>"
+```
+
+It reads `herdr agent list` through `bin/seat/herdr-agents.py --find` (the one reader — a pane is not an
+agent) and, on tmux, the pane's own foreground command. Three outcomes, and no fourth:
+
+- **proven in the chosen pane** → `seat=yes`, `seat_state=<working|idle|…>`;
+- **proven in another pane** → `seat=yes` and `window=<the pane the agent actually stands in>`, with
+  `seat_note` saying the record followed the agent rather than the pane the spawn chose;
+- **unproven** → the engine raises and the shell road exits 3: `state/<id>.status` gets
+  `failed: the launch produced NO agent — pane <id> …`, the meta records `seat=no`, Gná carries the word
+  (`bin/notify/send.sh`), and the dispatcher never prints `spawned`. A half-seat is worse than none.

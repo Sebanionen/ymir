@@ -223,7 +223,7 @@ belongs to spawn (`bin/agents/erindi-brief.sh:70`).
 | Mode | Branch/push | Pipeline | Terminal status | Merge owner |
 |---|---|---|---|---|
 | `no-mistakes` | push `eindri/<id>`, open the pipeline PR | `no-mistakes` | `done: <PR url> (pipeline <status>)` | Glitnir human gate |
-| `direct-PR` | push `eindri/<id>`, open PR via `gh` | none | `done: opened PR <url>` | Glitnir human gate |
+| `direct-PR` | push `eindri/<id>`, open PR via `gh` | none | `done: opened PR <url>` | the seat's own agent seals it (`bin/agents/pr-seal.sh`) when green and conflict-free — RULES/08, 2026-11-05 |
 | `local-only` | `eindri/<id>` only, no push/PR | none | `done: ready in branch eindri/<id>` | Brokk merges local `main` after Allfather approval |
 | `scout` | none | none | `done: {conclusion}` with report at `data/<id>/report.md` | n/a (report only) |
 

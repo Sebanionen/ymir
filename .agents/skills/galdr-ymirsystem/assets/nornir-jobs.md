@@ -52,6 +52,12 @@ nornir-cron-start.sh --stop     # stop the loop, remove state/cron.pid
   worker's own terminal act (`bin/agents/eindri-acclaim.sh <id> --terminal done --line …`)
   writes the durable wake itself, with no sweep and no arm running; the sweep is
   the backstop.
+- **The sweep asks three questions now (2026-11-05, plan 190).** Before it delivers anything it
+  cross-checks every live claim against its pane (`bin/agents/eindri-liveness.sh sweep`): a seat whose
+  pane holds a shell, an exit or a crash is DEAD, its status is corrected to
+  `failed: … pane <id> …`, and **Gná** carries one wake for it. Then it walks the arm's road
+  (`bin/agents/pr-seal.sh watch --quiet`), so a PR of this seat that has turned green raises its seal
+  wake without anyone remembering to ask. Delivery of the report shelf is unchanged and last.
 - No jobs configured → `cron: no jobs configured (...)` and exit 0.
 
 ### 1.2 State files

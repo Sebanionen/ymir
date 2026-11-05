@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from ymir_runtime import harness
 from ymir_runtime.tests.support import Recorder
@@ -63,19 +65,53 @@ class ResolveTest(unittest.TestCase):
 
 
 class BuildLaunchCommandTest(unittest.TestCase):
-    def test_pi_shape_matches_the_shell_road(self) -> None:
+    """The pi shape is COMPOSED BY THE GENERATOR — asserted through it, not guessed."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.cwd = Path(self._tmp.name)
+        demo = self.cwd / ".pi" / "extensions" / "demo"
+        demo.mkdir(parents=True)
+        (demo / "index.ts").write_text("// a door\n", encoding="utf-8")
+        flat = self.cwd / ".pi" / "extensions" / "flat.ts"
+        flat.write_text("// another door\n", encoding="utf-8")
+        # A deterministic settings file: the machine's real npm packages would make
+        # this assertion depend on one operator's harness settings.
+        settings = self.cwd / "settings.json"
+        settings.write_text('{"packages":["npm:@example/one"]}', encoding="utf-8")
+        self.env = mock.patch.dict(
+            os.environ, {"YMIR_PI_SETTINGS": str(settings)}, clear=False
+        )
+        self.env.start()
+
+    def tearDown(self) -> None:
+        self.env.stop()
+        self._tmp.cleanup()
+
+    def test_pi_shape_is_discovery_off_and_names_every_extension_once(self) -> None:
         selection = harness.HarnessSelection("pi", "llama-swap/q@iq3", "high", "", "")
+        shape = harness.build_launch_command(selection, "/d/prompt.md", self.cwd)
         self.assertEqual(
-            harness.build_launch_command(selection, "/d/prompt.md"),
-            "pi --model 'llama-swap/q@iq3' --thinking 'high' \"$(cat '/d/prompt.md')\"",
+            shape,
+            "pi --model 'llama-swap/q@iq3' --thinking 'high' -ne"
+            f" -e '{self.cwd}/.pi/extensions/demo/index.ts'"
+            f" -e '{self.cwd}/.pi/extensions/flat.ts'"
+            " -e 'npm:@example/one'"
+            ' "$(cat \'/d/prompt.md\')"',
         )
 
     def test_pi_without_model_or_effort(self) -> None:
         selection = harness.HarnessSelection("pi", "", "", "", "")
-        self.assertEqual(
-            harness.build_launch_command(selection, "/d/prompt.md"),
-            "pi \"$(cat '/d/prompt.md')\"",
-        )
+        shape = harness.build_launch_command(selection, "/d/prompt.md", self.cwd)
+        self.assertTrue(shape.startswith("pi -ne -e "), shape)
+        self.assertIn('"$(cat \'/d/prompt.md\')"', shape)
+
+    def test_a_cwd_without_an_extension_tree_is_refused(self) -> None:
+        selection = harness.HarnessSelection("pi", "", "", "", "")
+        empty = self.cwd / "empty"
+        empty.mkdir()
+        with self.assertRaises(ValueError):
+            harness.build_launch_command(selection, "/d/prompt.md", empty)
 
     def test_opencode_shape_matches_the_shell_road(self) -> None:
         selection = harness.HarnessSelection("opencode", "openai/gpt-5", "", "", "")
@@ -96,7 +132,7 @@ class BuildLaunchCommandTest(unittest.TestCase):
         """
         for name, model in (("opencode", "openai/gpt-5"), ("pi", None), ("pi-signed", None)):
             shape = harness.build_launch_command(
-                harness.HarnessSelection(name, model or "", "", "", ""), "/d/prompt.md"
+                harness.HarnessSelection(name, model or "", "", "", ""), "/d/prompt.md", self.cwd
             )
             with self.subTest(harness=name):
                 proc_ok = subprocess.run(
@@ -117,7 +153,10 @@ class BuildLaunchCommandTest(unittest.TestCase):
 
     def test_shell_quote_survives_an_apostrophe(self) -> None:
         selection = harness.HarnessSelection("pi", "prov/it's", "", "", "")
-        self.assertIn("'prov/it'\\''s'", harness.build_launch_command(selection, "/d/p.md"))
+        self.assertIn(
+            "'prov/it'\\''s'",
+            harness.build_launch_command(selection, "/d/p.md", self.cwd),
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover
