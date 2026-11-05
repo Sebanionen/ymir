@@ -104,19 +104,6 @@ ycont() { # <file> <key> — how many EXTRA lines the key's value spans (0 = one
   ' "$1"
 }
 
-ylist() { # <file> <key> — the items of a list key, one per line
-  awk -v k="$2" '
-    $0 ~ "^" k ":" {
-      rest = $0; sub("^" k ":[[:space:]]*", "", rest)
-      if (rest ~ /^\[.*\]$/) { gsub(/[][]/, "", rest); n = split(rest, a, ","); for (i=1;i<=n;i++) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", a[i]); if (a[i] != "") print a[i] }; exit }
-      on = 1; next
-    }
-    on && /^[[:space:]]*-[[:space:]]*/ { sub(/^[[:space:]]*-[[:space:]]*/, ""); gsub(/^[[:space:]]+|[[:space:]]+$/, ""); gsub(/^["\x27]|["\x27]$/, ""); if ($0 != "") print; next }
-    on && /^[[:space:]]*$/ { next }
-    on { exit }
-  ' "$1"
-}
-
 front_matter() { # <SKILL.md> <key> — a front-matter value, for --migrate only
   awk -v k="$2" '
     NR == 1 && $0 != "---" { exit }
