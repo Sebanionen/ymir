@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",727
+  "shell doors (bin/*.sh)",728
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -397,7 +397,7 @@ capabilities[5]{surface,count}:
 | public-data-guard.sh | public-data-guard.sh — the TREE scan for RULES/04: templates and logic | tested | keep (a human or a cron row must run it) |
 | public-guard.sh | public-guard.sh — every PUBLIC, user-facing file must be free of opera | tested+named | keep (a human or a cron row must run it) |
 | registers-guard.sh | registers-guard.sh — every generated register is current. | tested | keep (a human or a cron row must run it) |
-| rules-compliance-guard.sh | rules-compliance-guard.sh — a push proves the house's own rules were f | uncalled | **decide** — unnamed and untested: move it to src/ or hodd/reference/ (Rule 11), never delete |
+| rules-compliance-guard.sh | rules-compliance-guard.sh — a push proves the house's own rules were f | tested | keep (a human or a cron row must run it) |
 | rules-number-guard.sh | rules-number-guard.sh — the house law is NUMBERED, so no two rules may | tested | keep (a human or a cron row must run it) |
 | runtime-guard.sh | runtime-guard.sh — THE TREE IS NOT A RUNTIME. | tested | keep (a human or a cron row must run it) |
 | runtime-pinned-guard.sh | runtime-pinned-guard.sh — a unit that executes from a WORKING tree is  | tested | keep (a human or a cron row must run it) |

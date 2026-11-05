@@ -75,6 +75,8 @@ while IFS= read -r f; do
   [ -n "$f" ] || continue
   case "$f" in *.md|*.yml|*.yaml|*.json|*.example|*.sh|*.py) ;; *) continue ;; esac
   is_meta "$f" && continue
+  # a ward that SEARCHES for a pattern is not a document that carries one
+  case "$f" in bin/gates/guards/*) continue ;; esac
   tmp=$(mktemp)
   git diff -U0 "$BASE..$HEAD" -- "$f" 2>/dev/null | grep '^+' | grep -v '^+++' >"$tmp" || { rm -f "$tmp"; continue; }
   while IFS= read -r hit; do

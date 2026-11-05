@@ -32,3 +32,7 @@ a plain-HTTP URL, is a new door executable. Those were left to a human rememberi
 The install step must set `core.hooksPath .githooks` on every fresh clone (Rule 05: every platform layer), and the Windows
 layer needs the same step in git-bash or WSL — otherwise a Windows seat has CI only, and that is the half we can rely on
 anyway.
+
+## CHANGE LOG
+
+- **2026-11-05** — the fix note itself (first refusal of the new ward: a new document with no CHANGE LOG section; the ward was right, and this line is the repair).
