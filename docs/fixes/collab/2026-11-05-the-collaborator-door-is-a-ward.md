@@ -42,3 +42,19 @@ names a shell, never an open endpoint "for now".
 - The tunnel hostname (`a2adell.zerwiz.org`) and the token file live at `hodd/state/` (gitignored) — the operator's seal.
 - The grant table still holds the placeholder uuid; a token without a grant grants nothing.
 - The front is tested against a stub upstream here; the first call against the real node is the acceptance line.
+
+
+## Appended — production readiness, same day
+
+```
+production[6]{item,state,proved}:
+  "replay guard","one token, one use (`jti` recorded until its expiry)","first call 200 · same token again 409 · a fresh token 200"
+  "rate limit","30 calls a minute per caller","`429` past the limit, refusal carved"
+  "a shell face","`bin/bridge/a2a-front.sh` — one executor, a thin door (Rule 23)","`serve|mint|verify` pass through unchanged"
+  "a unit","`tools/systemd/a2a-front.service` — user unit, `Restart=always`, `NoNewPrivileges`, `ProtectSystem=strict`, `ProtectHome=read-only`, `ReadWritePaths` only the token shelf and the Rune state","installable with `cp` + `systemctl --user enable --now`"
+  "a feature page","`docs/features/collaborator-door.md` + a catalogue row + the woven FEATURES index (166 entries)","the how-to names every refusal code the front can return"
+  "the key shelf","`$YMIR_HOME/hodd/state/a2a/ed25519.{key,pub}.pem` — the home, never the tree; 0600 on the private half","the unit reads only the public half; minting happens by hand"
+```
+
+**Still owed before a partner is invited:** the tunnel hostname and the DNS record (the operator's seal), the real grant row
+replacing the placeholder, and the first call against the live node rather than the stub.

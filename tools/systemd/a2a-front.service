@@ -1,0 +1,33 @@
+# a2a-front — the ward in front of the collaborator A2A door (plan 192).
+#
+# Installed by hand on the seat that fronts the door:
+#   cp tools/systemd/a2a-front.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload && systemctl --user enable --now a2a-front
+#
+# Keys and the token shelf live in the home, never the tree (Rule 04):
+#   <YMIR_HOME>/hodd/state/a2a/ed25519.key.pem   (0600, mint only)
+#   <YMIR_HOME>/hodd/state/a2a/ed25519.pub.pem
+# The card is public; every other request needs a bearer token.
+[Unit]
+Description=Ymir A2A front — the token ward in front of the collaborator door
+After=network-online.target
+
+[Service]
+Type=simple
+Environment=YMIR_HOME=%h/Documents/ymirhome
+EnvironmentFile=-%h/.config/ymir/a2a-front.env
+# The upstream is the A2A node this seat publishes; loopback only.
+Environment=A2A_UPSTREAM=http://127.0.0.1:8301
+Environment=A2A_LISTEN=127.0.0.1:8400
+Environment=A2A_AUD=heimdall
+ExecStart=/usr/bin/env bash -lc '%h/ymir/bin/bridge/a2a-front.sh serve --upstream "$A2A_UPSTREAM" --pub "$YMIR_HOME/hodd/state/a2a/ed25519.pub.pem" --aud "$A2A_AUD" --listen "$A2A_LISTEN" --rune %h/ymir/bin/records/runes-append.sh'
+Restart=always
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/Documents/ymirhome/hodd/state/a2a %h/.local/state/ymir
+
+[Install]
+WantedBy=default.target

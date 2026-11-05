@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import uuid
 import sys
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -59,7 +60,7 @@ def mint(args: argparse.Namespace) -> int:
         "skills": [args.skill],
         "iat": now,
         "exp": now + int(args.minutes) * 60,
-        "jti": f"{args.peer}-{args.skill}-{now}",
+        "jti": f"{args.peer}-{args.skill}-{uuid.uuid4().hex}",
     }
     token = jwt.encode(claims, key, algorithm=ALG)
     if isinstance(token, bytes):
@@ -106,6 +107,34 @@ def carve(rune: str | None, actor: str, event: str, message: str) -> None:
         )
     except Exception:
         pass
+
+
+_SEEN: dict[str, float] = {}   # jti -> expiry, replay guard
+_CALLS: dict[str, list[float]] = {}  # sub -> call timestamps, rate limit
+RATE_PER_MIN = 30
+
+
+def _replay(jti: str, exp: int) -> bool:
+    """True when this token has been used before. A JWT is a ticket, not a season pass."""
+    now = time.time()
+    for k, e in list(_SEEN.items()):
+        if e < now:
+            _SEEN.pop(k, None)
+    if jti and jti in _SEEN:
+        return True
+    if jti:
+        _SEEN[jti] = float(exp)
+    return False
+
+
+def _over_rate(sub: str) -> bool:
+    now = time.time()
+    window = _CALLS.setdefault(sub or "anonymous", [])
+    window[:] = [t for t in window if now - t < 60]
+    if len(window) >= RATE_PER_MIN:
+        return True
+    window.append(now)
+    return False
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -170,6 +199,13 @@ class Handler(BaseHTTPRequestHandler):
             # the caller is authenticated and the answer is "not granted".
             code = 403 if reason.startswith("this token names no such skill") else 401
             self._refuse(code, reason, who)
+            return
+
+        if _replay(str(claims.get("jti") or ""), int(claims.get("exp") or 0)):
+            self._refuse(409, "this token has already been used (jti replay)", who)
+            return
+        if _over_rate(who):
+            self._refuse(429, f"rate limit: more than {RATE_PER_MIN} calls in a minute", who)
             return
 
         try:

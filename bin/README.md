@@ -23,7 +23,7 @@ bin[757]{file,does,kind,verdict,disposition,callers,lines}:
   "SKILL.md","---","data","tested","keep",23,19
   "SKILL.md","---","data","tested","keep",23,19
   "SKILL.md","---","data","tested","keep",23,18
-  "a2a-front.py","'''a2a-front — the ward in front of the A2A door, for hands that are not on our tailnet.","tool","wired","keep",1,253
+  "a2a-front.py","'''a2a-front — the ward in front of the A2A door, for hands that are not on our tailnet.","tool","wired","keep",1,289
   "a2a-mcp.sh","a2a-mcp.sh — install/verify the Ymir MCP servers into the harnesses so every","tool","wired","keep",5,168
   "a2a-serve.py","a2a-serve.py — a real A2A 1.0 server (a2a-sdk) whose agent is a seated Eindri:","tool","wired","keep",2,104
   "a2a-serve.sh","a2a-serve.sh — run the a2a-sdk A2A 1.0 server for a seated Eindri.","tool","wired","keep",1,9
