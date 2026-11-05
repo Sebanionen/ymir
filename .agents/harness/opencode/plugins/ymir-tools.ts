@@ -15,31 +15,55 @@ import { Schema } from "effect"
  * No logic duplication — same doors pi extensions call.
  */
 
+// Ask the filesystem the honest question. `Bun.file(path)` describes a FILE:
+// on bun 1.4.2 `Bun.file(dir).exists()` is false for a directory, so a root
+// check built on it never matches the very `bin/` it looks for — every pointer
+// candidate was rejected and the plugin died with "YMIR_ROOT not resolved".
+async function isDirectory(path: string): Promise<boolean> {
+  try {
+    const { stat } = await import("node:fs/promises")
+    return (await stat(path)).isDirectory()
+  } catch {
+    return false
+  }
+}
+
+// A Ymir root carries both the doors (`bin/`) and the law (`RULES/`).
+async function isYmirRoot(candidate: string): Promise<boolean> {
+  return (await isDirectory(`${candidate}/bin`)) && (await isDirectory(`${candidate}/RULES`))
+}
+
 // Helper to resolve Ymir root and home (mirrors pi extension logic)
-async function resolveYmirPaths(): Promise<{ root: string; home: string; state: string }> {
+async function resolveYmirPaths(locationDirectory?: string): Promise<{ root: string; home: string; state: string }> {
   const { $ } = await import("bun")
-  
-  // Resolve root: YMIR_ROOT env -> .ymir-root pointer -> git root
-  let root = process.env.YMIR_ROOT?.trim()
-  if (!root) {
-    try {
-      const pointer = `${process.env.HOME}/.pi/agent/extensions/.ymir-root`
-      const content = await Bun.file(pointer).text()
-      for (const line of content.split("\n")) {
-        const candidate = line.trim()
-        if (candidate && await Bun.file(`${candidate}/bin`).exists()) {
-          root = candidate
-          break
-        }
-      }
-    } catch {}
+
+  // Resolve root: YMIR_ROOT env -> .ymir-root pointer -> the directory OpenCode
+  // was opened in -> git root. Every candidate must prove it is a Ymir root.
+  const candidates: string[] = []
+  const consider = (value?: string) => {
+    const candidate = value?.trim()
+    if (candidate && !candidates.includes(candidate)) candidates.push(candidate)
   }
-  if (!root) {
-    try {
-      root = (await $`git rev-parse --show-toplevel`.quiet()).text().trim()
-    } catch {}
+
+  consider(process.env.YMIR_ROOT)
+  try {
+    const pointer = `${process.env.HOME}/.pi/agent/extensions/.ymir-root`
+    const content = await Bun.file(pointer).text()
+    content.split("\n").forEach(consider)
+  } catch {}
+  consider(locationDirectory)
+  try {
+    consider((await $`git rev-parse --show-toplevel`.cwd(locationDirectory || process.cwd()).quiet()).text().trim())
+  } catch {}
+
+  let root: string | undefined
+  for (const candidate of candidates) {
+    if (await isYmirRoot(candidate)) {
+      root = candidate
+      break
+    }
   }
-  if (!root) throw new Error("YMIR_ROOT not resolved")
+  if (!root) throw new Error("YMIR_ROOT not resolved — set YMIR_ROOT, fix ~/.pi/agent/extensions/.ymir-root, or open a Ymir checkout")
   
   // Resolve home: YMIR_HOME env -> hodd.sh path -> default
   let home = process.env.YMIR_HOME?.trim()
@@ -76,7 +100,7 @@ function toolResult(text: string) {
 export default Plugin.define({
   id: "ymir-tools",
   setup: async (ctx) => {
-    const { root, home, state } = await resolveYmirPaths()
+    const { root, home, state } = await resolveYmirPaths(ctx.location?.directory)
     
     // ========================================================================
     // TOOLS — callable by the model
