@@ -14,3 +14,7 @@ tried: restart once, refused
 - **Severity first**, one emoji, one word: 🔴 CRITICAL · 🟠 HIGH · 🟡 MEDIUM.
 - **What, then since, then where.** Four lines, no paragraph.
 - **Never two alerts for one fault** — the door dedupes by key; a duplicate is a muted channel.
+
+## CHANGE LOG
+
+- **2026-11-05** — changelog section added at the merge so RULES/46 can read it.

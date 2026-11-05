@@ -16,3 +16,7 @@ I recommend the first.
 - **The question in one line**, then the options as bullets, then the recommendation named.
 - **A default is always named** — a decision with no recommendation is homework.
 - **Three buttons at most**: approve · show me · decline.
+
+## CHANGE LOG
+
+- **2026-11-05** — changelog section added at the merge so RULES/46 can read it.

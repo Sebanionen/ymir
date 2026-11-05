@@ -17,3 +17,7 @@ Owed from you: send the letter.
 - **What was forged**, then **what still stands unmade**, then **what is owed**.
 - Past tense, four to six lines.
 - The last line names the next hand — his, or mine.
+
+## CHANGE LOG
+
+- **2026-11-05** — changelog section added at the merge so RULES/46 can read it.

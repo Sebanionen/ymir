@@ -17,3 +17,7 @@ Fix note written.
 - **Five lines in the chat.** If it needs more, it is a file.
 - **Attach, then summarise** — never paste 4000 characters.
 - The caption of an attachment is under 1024 characters and says what the file is.
+
+## CHANGE LOG
+
+- **2026-11-05** — changelog section added at the merge so RULES/46 can read it.

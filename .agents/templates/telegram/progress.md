@@ -11,3 +11,7 @@
 - **Edit the same message**, never send a new one per phase: `editMessageText` on the id you already sent.
 - **No buttons while running.** A button that does nothing is worse than none.
 - When it finishes, the progress message is replaced by `done.md` or `failure.md`.
+
+## CHANGE LOG
+
+- **2026-11-05** — changelog section added at the merge so RULES/46 can read it.
