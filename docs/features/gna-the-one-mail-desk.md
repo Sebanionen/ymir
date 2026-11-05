@@ -116,7 +116,7 @@ the vault lacks, and refuses plaintext off loopback.
 
 **What is still missing, exactly.** `zerwiz.org` has no MX: the Cloudflare Email Routing
 records are in plan 116 §15.2. `way-of.com` already receives (Google Workspace MX, plan 116
-§16), but `gimle@way-of.com` and `snotra@way-of.com` are not yet aliases on the account — one
+§16), but `<operator-mailbox>` and `<operator-mailbox>` are not yet aliases on the account — one
 console step each (`Directory → Users → <the account the grant reads> → Aliases`). The
 register prints the exact path for your account when it runs. Until then `--check` fails and
 `inbound-test.sh` skips with those two reasons, which is the honest state.
