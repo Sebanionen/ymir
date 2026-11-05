@@ -19,6 +19,7 @@ contents[10]{piece,path,what_it_does}:
   "the pull-request gate","`scripts/gates/pr-guard.sh`","a branch that exists on the remote with no pull request is refused at the push"
   "the hooks","`.githooks/{pre-commit,commit-msg,pre-push}`","the three moments a mistake is cheapest to stop"
   "the worktree tool","`scripts/worktree.sh`","one agent, one `.yggdrasil/<id>/` checkout — two hands never share a directory"
+  "the collaborator door","`docs/collaborator-door.md` · `scripts/collab-connect.sh`","how a hand that is not on our network connects: a public card, a short-lived JWT scoped to one skill, a grant, a Rune per call — and the five refusals a door must still make"
 ```
 
 Plus the rules that govern them (`RULES/15`, `16`, `17`) and `docs/gates.md`, which explains what each refuses **and what it deliberately

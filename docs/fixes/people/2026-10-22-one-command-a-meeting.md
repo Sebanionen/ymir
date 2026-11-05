@@ -24,7 +24,7 @@ with a **Meet link**, and — only if `--note` is given — prepares a **draft**
 
 **And the missing half, made visible:** `bin/people/who.sh missing` lists exactly who cannot be reached —
 *"reygan, isabella, craig"* — and `who.sh set-email <id> <address>` fills one. Craig's address was
-recovered from his own record of this morning's meeting (craig@way-of.com) and written once.
+recovered from his own record of this morning's meeting (<operator-mailbox>) and written once.
 
 **Still missing, and it is not code:** Reygan's and Isabella's addresses. Until they are in the registry,
 no invitation and no mail can reach them, and the door says so in one line rather than failing obscurely.
