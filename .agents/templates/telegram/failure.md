@@ -13,7 +13,3 @@ next: keep the published line first, re-chain mine
 - **Quote the error exactly.** A paraphrase loses the one word that matters.
 - **One next step**, not three options.
 - A failure that retries itself silently is not reported — and that is the fault this house keeps paying for.
-
-## CHANGE LOG
-
-- **2026-11-05** — changelog section added at the merge so RULES/46 can read it.

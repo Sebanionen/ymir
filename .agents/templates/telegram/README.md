@@ -28,7 +28,3 @@ uses[6]{template,when,what_it_must_do}:
 
 `bash bin/notify/tests/test_telegram_templates.sh` — every `*.md` here runs through `telegram-buttons.sh check` and
 `telegram-format.py --check`; a template with a bad row, a long line or a missing prompt fails the test.
-
-## CHANGE LOG
-
-- **2026-11-05** — changelog section added at the merge so RULES/46 can read it.
