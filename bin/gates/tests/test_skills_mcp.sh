@@ -108,7 +108,7 @@ description: How we measured the models on our own machines.
 ---
 # Bench-ledger
 
-We ran the sweep on /home/canary/bench with 203.0.113.10:8443 as the judge.
+We ran the sweep on a bench directory with 203.0.113.10:8443 as the judge.
 Ask Bertil Kanariefagel at bertil.kanariefagel@corvid-bench.test or +46 70 123 45 67.
 
 | run | model | tok/s | latency |
