@@ -5,7 +5,7 @@ UI, and agents obey it, and a change that contradicts a rule must first change
 the rule (append-only; never silently rewritten).
 
 ```
-rules_index[42]{file,subject}:
+rules_index[43]{file,subject}:
   "01-domains.md","domains (Greinar) · houses · Eindri"
   "02-agents.md","agents: home, kinds, profile contract, no mock"
   "03-houses.md","houses = companies; ownership, records, boundaries"
@@ -114,3 +114,5 @@ Keep each rule short and unambiguous; reference it from code where it bites.
 | 44 | [No agent is Brokk](44-no-agent-is-brokk.md) | **Brokk is a ROLE, never a name.** No machine, seat, fleet or user's install may name an agent `Brokk` — several Brokks from different fleets cannot be told apart. Every machine names its own agents (the seat primary inside Ymir; the machine agent that keeps the computer — `norse-naming.md` §3.1b), and every agent declares **house · fleet · machine · Allfather** when it introduces itself. An unsealed name renders as *unnamed*, never invented. `bin/seat/seat-surface.sh` refuses a roster that names an agent `brokk` and fails a surface that omits the four lines; the names come from the operator's own config, and the identity is written by the **install** and by **every update** (Rule 05, one core every platform). |
 
 - **46 — a push proves the rules** · `RULES/46-a-push-proves-the-rules.md`
+
+- **47 — a collaborator sees what a grant names** · `RULES/47-a-collaborator-sees-what-a-grant-names.md`

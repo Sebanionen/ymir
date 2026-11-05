@@ -58,3 +58,7 @@ production[6]{item,state,proved}:
 
 **Still owed before a partner is invited:** the tunnel hostname and the DNS record (the operator's seal), the real grant row
 replacing the placeholder, and the first call against the live node rather than the stub.
+
+## CHANGE LOG
+
+- **2026-11-05** — first written (Hœnir) with the ward, the kit and the feature page.
