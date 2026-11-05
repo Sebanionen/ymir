@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# pre-push — the local half of "a push proves the rules" (RULES/46).
+# The BINDING half is CI (ymir-gates.yml → bin/gates/ci-verify.sh): it runs for every
+# pusher, including a fork that never installed a hook. This hook is the convenience.
+# Seated by: git config core.hooksPath .githooks   (install step `gates`)
+set -u
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$root" || exit 0
+[ -x bin/gates/guards.sh ] || { echo "pre-push: no guards door; skipping (CI still checks)"; exit 0; }
+bash bin/gates/guards.sh || {
+  echo
+  echo "pre-push: a ward refused this push — see the FAIL row above."
+  echo "help: run the failing ward directly; it names the file and the line."
+  exit 1
+}
