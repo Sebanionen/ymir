@@ -339,7 +339,7 @@ bin[768]{file,does,kind,verdict,disposition,callers,lines}:
   "gna_desk.py","'''Gná's desk — read-only, loopback, one account per request.","tool","wired","keep",1,254
   "gna_import.py","'''Gná's importer: one account, read-only, every message once.","tool","wired","keep",1,643
   "gna_judge.py","'''Gná's judge: rules first, and every verdict carries the rule that gave it.","tool","wired","keep",0,169
-  "gna_notify.py","'''gna_notify.py — tell the arm about mail that arrived, once, as it arrives.","data","wired","keep",1,208
+  "gna_notify.py","'''gna_notify.py — tell the arm about mail that arrived, once, as it arrives.","tool","wired","keep",1,208
   "gna_store.py","'''Gná's store: one message once, and the account is the boundary.","tool","wired","keep",0,257
   "gong_ingest.py","bin/time/snotra/gong_ingest.py -> systems/snotra/services/cron/gong_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "google-auth.sh","bin/time/snotra/google-auth.sh -> systems/snotra/services/calendar/google-auth.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new door…","tool","wired","keep",0,16
