@@ -72,9 +72,20 @@ case "$CMD" in
   -v|-V|--version) printf '%s\n' "$VERSION"; exit 0 ;;
   -h|--help|"") usage; exit 0 ;;
 esac
-[ -e "$WELL" ] || { mkdir -p "$(dirname "$WELL")" 2>/dev/null; : >"$WELL" 2>/dev/null; }
+if [ "${MIMIR_REQUIRE_BRIDGE:-0}" != 1 ]; then
+  [ -e "$WELL" ] || { mkdir -p "$(dirname "$WELL")" 2>/dev/null; : >"$WELL" 2>/dev/null; }
+fi
 
-bridge_up() { command -v curl >/dev/null 2>&1 && curl -fsS --max-time 2 "$BRIDGE/health" >/dev/null 2>&1; }
+bridge_up() {
+  command -v curl >/dev/null 2>&1 || return 1
+  if [ -n "${MIMIR_EXPECTED_STORE:-}" ]; then
+    local health
+    health=$(curl -fsS --max-time 2 "$BRIDGE/health" 2>/dev/null) || return 1
+    EXPECTED_STORE="$MIMIR_EXPECTED_STORE" "$PY" -c 'import json,os,sys; d=json.load(sys.stdin); sys.exit(0 if d.get("status")=="up" and d.get("store")==os.environ["EXPECTED_STORE"] else 1)' <<<"$health" 2>/dev/null
+  else
+    curl -fsS --max-time 2 "$BRIDGE/health" >/dev/null 2>&1
+  fi
+}
 well_count() { wc -l <"$WELL" | tr -d ' '; }
 urlenc() { "$PY" -c 'import sys,urllib.parse;print(urllib.parse.quote(sys.stdin.read()))'; }
 
@@ -152,7 +163,7 @@ if payload.strip():
         e = r.get("episode", r)
         if keep(e): rows.append((r.get("score", 0), e))
 used_local = not rows
-if not rows:
+if not rows and os.environ.get("MIMIR_REQUIRE_BRIDGE") != "1":
     # THE BRIDGE'S ANSWER IS NOT THE STORE. An episode written seconds earlier is in
     # the file (grep proves it) and absent from the semantic index, so an empty bridge
     # answer must fall through to the store — otherwise "nothing recorded" and "not
@@ -183,7 +194,7 @@ if not rows and os.environ.get("WHERE") == "local":
     print("error: well bridge unavailable and no matching local log entries", file=sys.stderr)
     sys.exit(1)
 print(f"recall[{len(rows)}]{{score,source,store,title}}:")
-if used_local:
+if used_local and os.environ.get("MIMIR_REQUIRE_BRIDGE") != "1":
     reason = "bridge returned no matches" if os.environ.get("WHERE") == "bridge" else "bridge unavailable"
     print(f"retrieval: local log ({reason})")
 else:
@@ -213,6 +224,9 @@ except (ValueError, KeyError):
     sys.exit(1)
 '
     else
+      if [ "${MIMIR_REQUIRE_BRIDGE:-0}" = 1 ]; then
+        printf 'error: the selected well bridge is unavailable\n' >&2; exit 1
+      fi
       printf 'well[1]{state,entries,bridge}:\n  "COLD",%s,"offline"\n' "$(well_count)"
     fi
     ;;
@@ -289,6 +303,9 @@ except (ValueError, KeyError):
       [ "$ARCHIVED" = "1" ] && qs="$qs&include_archived=1"
       out=$(curl -fsS --max-time 8 "$BRIDGE/recall?$qs" 2>/dev/null) || out=""
     fi
+    if [ "${MIMIR_REQUIRE_BRIDGE:-0}" = 1 ] && [ -z "$out" ]; then
+      printf 'error: the selected well bridge did not answer recall\n' >&2; exit 1
+    fi
     _recall_print "$out" "$([ -n "$out" ] && echo bridge || echo local)" || exit $?
     # The well records a RECALL as well as a write: a memory that is never drunk
     # from is a shelf, and the health row must be able to see the difference.
@@ -358,6 +375,9 @@ sys.exit(0 if d.get("stored") else 3)'
       fi
     fi
 
+    if [ "${MIMIR_REQUIRE_BRIDGE:-0}" = 1 ]; then
+      printf 'error: the selected well bridge did not accept observe\n' >&2; exit 1
+    fi
     # OFFLINE: the gate still decides, and a kept lesson still reaches the record —
     # the append log, which is the well's truth. It is re-seeded into the index when
     # the bridge returns, so a bridge outage costs indexing time, never a lesson.

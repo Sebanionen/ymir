@@ -461,3 +461,12 @@ an exit-1 check. This changes no memory content or storage format.
 
 Validation: `bin/records/test_mimir_bridge_health.py`, policy self-test, and shell
 syntax. Operator instructions: `docs/features/the-well-on-every-role.md`.
+
+
+### Required bridge
+
+`MIMIR_REQUIRE_BRIDGE=1` makes the CLI refuse unavailable `health`, `recall`,
+and `observe` operations instead of reading or writing the local fallback log.
+Even a valid empty bridge response remains an empty bridge response under this
+mode. This is used when a client explicitly selects a WSL well owned by a
+different home; it does not move or reconcile either home's existing records.

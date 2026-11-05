@@ -55,6 +55,7 @@ its row here and write its page (see `AGENTS.md` → *Feature how-tos*).
 | Vault | FIDO2 unlock | Open the vault with a hardware security key (a physical touch) | [docs/features/fido2-unlock-the-vault.md](docs/features/fido2-unlock-the-vault.md) |
 | Vault | **Confidential session** | Work on vault content with **no route off the vault** — confined workdir, doors off, model tier (local/none/remote), `--airlock` for no network | [docs/features/confidential-session.md](docs/features/confidential-session.md) |
 | Vault | **The home push door** (`bin/vault/push.sh`) | Commit and push the private home **by named path**, never `git add -A`: it stages only the paths you give it, so a scratch file written seconds earlier cannot be swept in — the fault that once cost a history rewrite. `--dry-run` prints the exact `git status` for those paths and changes nothing; a no-op answers `nothing to push` and exits 0; and a tracked file deleted among the named paths is **refused**, because a document is retired by MOVING it to `hodd/reference/`, never by deleting it (Rule 11). One commit per push, then `origin main` | [The home push door](docs/features/the-home-push-door.md) |
+| Memory | Codex selected WSL well | A private route selects a WSL well, verifies its store and refuses fallback writes when it is unavailable. | [docs/features/the-well-recall-and-remember.md](docs/features/the-well-recall-and-remember.md) |
 
 ## Agents, work & collaboration
 
