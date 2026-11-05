@@ -272,3 +272,38 @@ skills[9]{skill,what it settles}:
 **What this seat is missing against those books** (measured 2026-10-23): no `roster.yaml` (so no
 `stacks:` → no teams), `just` not installed (so no `just rosters/sdlc/sessions`), `START_SMIDJA.md`
 absent. Each is a ticket; none is a reason to improvise a team.
+
+## Appended 2026-11-05 — the trace reads in one row, and a pressed phase is not green
+
+Two doors the smithy now owns, because the audit found both missing.
+
+**`trace` — one row per phase.** `uv run apps/smidja/smidja_trace.py <smidja_id>` (or `just trace
+<smidja_id>`) prints `trace[n]{phase,owner,model,thinking,tools,tokens,window,percent,verdict}` from
+what the run already wrote — the database, `raw_output.jsonl`, `envelope.json`, `prompts/`. No new
+store. `--json` carries `input`, `cache_read`, `output`, `window_source`, `last_finish` and the
+run-level `context_pressed`; `--db` / `--data-dir` name a non-default trace.
+
+**The verdicts are `bin/seat/context.sh`'s four words**, never a second vocabulary:
+`room to work` · `past the auto threshold` · `near the window — compact now` · `TRUNCATED`. Two honest
+empties cover what the door never faces — `window unknown` (no door could name the ceiling) and
+`no usage recorded` (a phase with no usage at all). The window itself is probed, in order: pi's model
+catalog (what the dispatcher already resolved), then `bin/model/catalog.sh`, then
+`bin/seat/core-four.sh --json` — and only when it names the same model. **No table of windows exists
+here** (Rule 07).
+
+**A phase that ends at or above the force threshold (75% of its window), or on a truncated turn, is
+`context-pressed`** — in the session row, the banner (`◐ context-pressed`), `just phases` and the
+trace. It is **never `success`**, and the run exits non-zero, so the database, the banner and `$?`
+tell one story. The receipt is written per agent phase onto its `agent_end` event
+(`payload.context`), not per agent, because one agent may run several phases against the same
+ceiling.
+
+Code: `apps/smidja/smidja_modules/context.py` (the one resolver + vocabulary), `runner.py::finish`,
+`agents.py::_execute`, `smidja_trace.py`. Law: the smithy's hard rule 11 in
+`apps/smidja-factory/AGENTS.md`; the cookbook section `cookbooks/run_smidja.md` → Trace. Note:
+`docs/fixes/smidja/unversioned-2026-11-05-the-phase-records-its-context.md`.
+
+**Not done, said plainly:** `scripts/smidja` lives in the `~/command` provenance repo, so the verb is
+documented in the `smidja-launcher` skill and shipped here as the Python door + `just trace`; the
+launcher picks it up on its next regen. The visualizer renders `context-pressed` as a status word but
+has no colour entry for it yet.

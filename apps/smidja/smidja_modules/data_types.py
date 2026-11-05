@@ -14,7 +14,11 @@ from typing import Any, Callable, Literal, Optional, Type
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 PhaseKind = Literal["engineer", "agent", "code"]
-PhaseStatus = Literal["queued", "running", "success", "fail"]
+# `context-pressed` is a terminal status that is deliberately NOT green: the
+# phase did its work, but it finished at or above the force threshold (75% of
+# the model's window). Reporting it as `success` would hide the one fact that
+# explains the next failure (RULES/37, and the smithy's rule 11).
+PhaseStatus = Literal["queued", "running", "success", "fail", "context-pressed"]
 
 
 # ── Phases ────────────────────────────────────────────────────────────────────
@@ -445,3 +449,8 @@ class PiResult(BaseModel):
     # visualizer's context bar measures against `context_window`.
     context_tokens: int = 0
     context_window: int = 0         # 0 when the registry declares no ceiling
+    # The LAST assistant turn's raw usage object and its stop reason. The
+    # accumulated `usage` above answers "what did this cost"; these answer "how
+    # full is the window, and did it stop the work" — and only the last turn can.
+    last_usage: dict = Field(default_factory=dict)
+    last_finish: str = ""

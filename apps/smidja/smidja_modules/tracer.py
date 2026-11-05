@@ -157,10 +157,16 @@ class Tracer:
         self.conn.execute("UPDATE sessions SET request=? WHERE smidja_id=?",
                           (request[:500], smidja_id))
 
-    def session_finish(self, smidja_id: str, ok: bool) -> None:
+    def session_finish(self, smidja_id: str, ok: bool, status: str | None = None) -> None:
+        """Settle the session row.
+
+        `status` lets the caller name a third terminal word — `context-pressed` —
+        instead of forcing every non-green run into `fail`. The word is the same
+        one the banner and the trace print, so the three cannot disagree.
+        """
         self.conn.execute(
             "UPDATE sessions SET status=?, ended_at=? WHERE smidja_id=?",
-            ("success" if ok else "fail", now_iso(), smidja_id),
+            (status or ("success" if ok else "fail"), now_iso(), smidja_id),
         )
         self.processes_end_all(smidja_id)   # nothing of this run is alive any more
 

@@ -49,6 +49,10 @@ class Run:
         self.console = Console(tracer, smidja_id)
         self.engineer = engineer
         self.phases: list[Phase] = []
+        # Per-phase context receipts, keyed by phase_id (agents._execute writes
+        # them; the phase primitive and finish() read them). Kept on the run so
+        # the banner, the session status and the exit code settle from ONE fact.
+        self.context_by_phase: dict[str, dict] = {}
         self._subagent_counter = 0   # unique ids for orchestrator task-dispatch lanes
         # Lanes opened at tool_execution_start (G2) keyed by (phase_id, call_id)
         # so the terminal materialization closes the SAME lane instead of
@@ -115,11 +119,16 @@ class Run:
                                           self.cfg.observability.db)
             raise
         else:
-            phase.status = "success"
+            # A phase that ended at or above the force threshold is NOT green.
+            # It did its work, but the window is what will kill the next one, so
+            # it earns its own terminal word instead of `success`.
+            receipt = self.context_by_phase.get(phase.phase_id) or {}
+            phase.status = "context-pressed" if receipt.get("pressed") else "success"
             phase.ended_at = now_iso()
             self.tracer.event(EventRecord(smidja_id=self.smidja_id, phase_id=phase.phase_id,
                                           type="phase_end", name=params.name,
-                                          payload={"status": "success"}))
+                                          payload={"status": phase.status,
+                                                   **({"context": receipt} if receipt else {})}))
             self.tracer.phase_upsert(phase)
             self.console.phase_ended(phase, time.monotonic() - clock)
 
@@ -141,15 +150,39 @@ class Run:
         now settles the db, the banner, and the exit code together, so the three
         cannot disagree.
         """
-        phases_ok = bool(self.phases) and all(p.status == "success" for p in self.phases)
-        ok = phases_ok and accepted
-        if phases_ok and not accepted:
-            note = reason or "the run's acceptance criterion was not met"
+        phases_ok = bool(self.phases) and all(
+            p.status in ("success", "context-pressed") for p in self.phases)
+        pressed = [p for p in self.phases if p.status == "context-pressed"]
+        # A pressed phase is not green: the run settles `context-pressed` in the
+        # db, the banner AND the exit code together. Exiting 0 while the trace
+        # says pressed is exactly the disagreement finish() exists to prevent.
+        ok = phases_ok and accepted and not pressed
+        status = ("fail" if (not phases_ok or not accepted)
+                  else "context-pressed" if pressed else "success")
+        reason = reason or ""
+        if phases_ok and not accepted and not reason:
+            reason = "the run's acceptance criterion was not met"
+        if pressed and phases_ok and accepted:
+            worst = max(pressed, key=lambda p: (self.context_by_phase
+                                                .get(p.phase_id, {}).get("percent") or 0))
+            receipt = self.context_by_phase.get(worst.phase_id, {})
+            reason = (f"{len(pressed)} phase(s) ended at/over the force threshold — "
+                      f"worst: {worst.params.name} {receipt.get('percent', 0)}% of "
+                      f"{receipt.get('window', 0):,} ({receipt.get('verdict', '')})")
+        if status != "success" and reason:
+            # Attach the line to the phase that earned the word: the worst pressed
+            # phase when the run is only pressed, else the last phase that ran.
+            marker = (pressed[0] if (pressed and phases_ok and accepted)
+                      else self.phases[-1] if self.phases else None)
             self.tracer.event(EventRecord(
                 smidja_id=self.smidja_id,
-                phase_id=self.phases[-1].phase_id if self.phases else "",
-                type="error", name="not_accepted", payload={"reason": note}))
-            self.console.note(f"not accepted: {note}")
-        self.tracer.session_finish(self.smidja_id, ok=ok)
-        self.console.session_finished(ok, self.tokens, self.cost, self.cfg.observability.db)
+                phase_id=marker.phase_id if marker else "",
+                type="error" if status == "fail" else "log",
+                name="context-pressed" if status == "context-pressed" else "not_accepted",
+                payload={"reason": reason, "status": status}))
+            self.console.note(f"not green: {reason}")
+        self.tracer.session_finish(self.smidja_id, ok=ok, status=status)
+        self.console.session_finished(ok, self.tokens, self.cost,
+                                      self.cfg.observability.db,
+                                      status=status, note=reason)
         return 0 if ok else 1

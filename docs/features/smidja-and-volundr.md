@@ -30,6 +30,23 @@ bin/desktop/smidja-bootstrap.sh       # create the DB from the tracer schema
 bin/desktop/smidja-observe.sh         # watch a run
 ```
 
+**Read a finished run, one row per phase:**
+
+```bash
+uv run apps/smidja/smidja_trace.py <smidja_id>     # or: just trace <smidja_id>
+```
+
+That prints the phase, the agent, the model it actually ran on, its thinking
+level and tools, how many tokens stood in the window when it stopped, that
+model's window, the percentage, and a verdict: `room to work`, `past the auto
+threshold`, `near the window — compact now`, or `TRUNCATED`. Add `--json` for the
+full receipt (`input`, `cache_read`, `output`, `window_source`).
+
+**A full window is reported, not hidden.** A phase that ends at or above 75% of
+its model's window is `context-pressed`: the banner, the session status and
+`just phases` all say so, and the run exits non-zero. It is never counted as a
+plain success.
+
 The deep reference is the skill: `.agents/skills/smidja-factory/SKILL.md` — rosters,
 phases, envelopes, the trace store, the visualizer.
 
