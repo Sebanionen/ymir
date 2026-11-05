@@ -1,6 +1,7 @@
 import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawn } from "node:child_process";
+import { Plugin } from "@opencode/plugin";
 
 // Sýn — PreToolUse seatbelt for OpenCode: block a stray persistent top-level
 // `cd` in the primary Brokk checkout before the agent's bash tool relocates the
@@ -36,19 +37,15 @@ async function resolveRoot(anchor) {
   }
 }
 
-export const SynCdCheck = async ({ directory, worktree }) => {
-  const root = worktree ? (() => {
-    try {
-      return realpathSync(worktree);
-    } catch {
-      return resolve(worktree);
-    }
-  })() : await resolveRoot(directory);
+export default Plugin.define({
+  id: "ymir.syn.cd-check",
+  async setup(ctx) {
+    const root = await resolveRoot(ctx.location?.directory);
+    if (!root) return;
 
-  return {
-    "tool.execute.before": async (input, output) => {
-      if (!root || input?.tool !== "bash") return;
-      const command = output?.args?.command;
+    await ctx.tool.hook("execute.before", async (event) => {
+      if (event?.tool !== "bash") return;
+      const command = event?.input?.command;
       if (!command || typeof command !== "string") return;
 
       const result = await runProcess(`${root}/bin/gates/checks/syn-cd-pretool-check.sh`, ["--command", command]);
@@ -56,6 +53,6 @@ export const SynCdCheck = async ({ directory, worktree }) => {
 
       const reason = result.stderr.trim() || "denied by the cd-guard PreToolUse seatbelt";
       throw new Error(reason);
-    },
-  };
-};
+    });
+  },
+});

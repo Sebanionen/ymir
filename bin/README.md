@@ -156,7 +156,7 @@ bin[761]{file,does,kind,verdict,disposition,callers,lines}:
   "fixes.sh","fixes.sh — the fix notes.","tool","wired","keep",3,162
   "fleet-apply.sh","fleet-apply.sh — apply fleet-wide preferences to every registered Eindri-home.","tool","wired","keep",1,83
   "fleet-deploy.sh","fleet-deploy.sh — refresh the machine's fleet services from THIS package.","tool","wired","keep",0,98
-  "fleet-ensure.sh","fleet-ensure.sh — the role-gated RAISE (plan 42's fleet services, plan 51's","tool","wired","keep",7,534
+  "fleet-ensure.sh","fleet-ensure.sh — the role-gated RAISE (plan 42's fleet services, plan 51's","tool","wired","keep",7,542
   "fleet-version-guard.sh","fleet-version-guard.sh — the three labels and the two trees must agree, or say so.","tool","wired","keep",1,62
   "fleet-version.sh","fleet-version.sh — is the fleet on ONE version?","tool","tested","keep",1,99
   "fm-afk-launch.sh","fm-afk-launch.sh - the single owner of the away-mode daemon TERMINAL lifecycle:","provenance","tested","keep",4,655
@@ -354,7 +354,7 @@ bin[761]{file,does,kind,verdict,disposition,callers,lines}:
   "handoff-check.py","'''handoff/check.sh — the baton: is it there, complete, fresh, and honest about the paths it names?","tool","wired","keep",1,147
   "harden.sh","harden.sh — Vörðr's hands: the MENDS, written out, and the safe ones applied.","tool","tested","keep",5,151
   "harness-contract-install.sh","harness-contract-install.sh — every harness reads ONE contract, and an update keeps it true.","tool","wired","keep",1,81
-  "harness-extensions-install.sh","harness-extensions-install.sh — every harness gets the house's extensions and packages, on install AND on update.","tool","wired","keep",1,175
+  "harness-extensions-install.sh","harness-extensions-install.sh — every harness gets the house's extensions and packages, on install AND on update.","tool","wired","keep",1,191
   "header.sh","header.sh — the declared-truth header of a home document: check, or apply a minimal one.","tool","wired","keep",1,28
   "heimdall-ensure.sh","heimdall-ensure.sh — ensure the Heimdall SSH-key ward is present and armed.","tool","wired","keep",4,134
   "heimdall-ssh-keys.sh","heimdall-ssh-keys.sh — Heimdall's SSH-keys surface.","tool","wired","keep",1,382
@@ -512,7 +512,7 @@ bin[761]{file,does,kind,verdict,disposition,callers,lines}:
   "pr-seal.sh","pr-seal.sh — the seat's own PR is sealed by the seat, and the word arrives through Gná.","tool","wired","keep",1,324
   "pre-commit","The cheap checks, so a commit never carries a broken tree.","tool","tested","keep",15,19
   "pre-push","Three gates: never push a protected branch, never push a red tree, and never push a behaviour change without its note.","tool","tested","keep",15,38
-  "prereq-ensure.sh","prereq-ensure.sh — self-healing prerequisite engine for Ymir.","tool","wired","keep",12,340
+  "prereq-ensure.sh","prereq-ensure.sh — self-healing prerequisite engine for Ymir.","tool","wired","keep",12,354
   "private-data.sh","private-data — the repository is public; the operator's machine is not.","tool","wired","keep",1,39
   "private-guard.py","'''private-guard — private structure and protected material never cross a surface.'''","tool","wired","keep",2,122
   "private-guard.sh","private-guard.sh — private structure and NDA material never cross a surface.","tool","tested","keep",2,10

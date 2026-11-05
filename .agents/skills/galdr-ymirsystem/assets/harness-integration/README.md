@@ -429,13 +429,24 @@ turn end · before a tool) is a five-file native seam; a spawner is ours.** Plan
 
 ### Adapter files at a glance
 
+**OpenCode 2 uses the V2 plugin API.** A plugin default-exports `Plugin.define({ id, setup(ctx) })` and
+registers hooks on the domain that owns the operation (`ctx.tool.hook("execute.before", …)`,
+`ctx.event.subscribe({ types, signal })`, `ctx.session.prompt({ sessionID, text })`). The V1 shape
+(`export const Name = async ({ client, directory }) => ({ …hooks })`) **does not load at all** in V2 — the
+server answers `Plugin must export a default definition with an id and an effect or setup function`. The
+five plugins below were ported on 2026-11-04 (`docs/fixes/runtime/2026-11-04-twelve-plugins-loaded-none-ran.md`).
+They import `@opencode/plugin`, so `~/.config/opencode` must hold that dependency (`bin/seat/harness-extensions-install.sh`
+ensures it). There is exactly **one load path**: the deployed `~/.config/opencode/plugins` — never also a
+project `.opencode/plugins`.
+
 | Path | Exports / shape | Contract parts |
 |---|---|---|
-| `.agents/harness/opencode/plugins/saga-sessionstart.js` | `export const SagaSessionstart` | 1 |
-| `.agents/harness/opencode/plugins/syn-watch-arm.js` | `export const SynWatchArm` | 2 |
-| `.agents/harness/opencode/plugins/syn-turnend-guard.js` | `export const SynTurnendGuard` | 2 (consult coordinator), 3 |
-| `.agents/harness/opencode/plugins/syn-pretool-check.js` | `export const SynPretoolCheck` | 4 (arm) |
-| `.agents/harness/opencode/plugins/syn-cd-check.js` | `export const SynCdCheck` | 4 (cd) |
+| `.agents/harness/opencode/plugins/saga-sessionstart.js` | `default Plugin.define({ id: "ymir.saga.sessionstart" })` | 1 |
+| `.agents/harness/opencode/plugins/syn-watch-arm.js` | `default Plugin.define({ id: "ymir.syn.watch-arm" })` | 2 |
+| `.agents/harness/opencode/plugins/syn-turnend-guard.js` | `default Plugin.define({ id: "ymir.syn.turnend-guard" })` | 2 (consult coordinator), 3 |
+| `.agents/harness/opencode/plugins/syn-pretool-check.js` | `default Plugin.define({ id: "ymir.syn.pretool-check" })` | 4 (arm · guard · spawn · asset) |
+| `.agents/harness/opencode/plugins/syn-cd-check.js` | `default Plugin.define({ id: "ymir.syn.cd-check" })` | 4 (cd) |
+| `.agents/harness/opencode/plugins/ymir-tools.ts` | `default Plugin.define({ id: "ymir-tools" })` — the twenty tools | tools |
 | `.agents/harness/opencode/plugins/lib/rodd-operational-input.js` | `encodeRoddOperationalInput(root, kind, content)` | shared wire |
 | `.pi/extensions/syn-turnend-guard.ts` | `export default function (pi: ExtensionAPI)` | 1, 3, 4 |
 | `.pi/extensions/gna-pi-watch.ts` | `export default function (pi: ExtensionAPI)` | 2 |

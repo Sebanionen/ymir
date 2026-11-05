@@ -1,6 +1,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, writeFileSync } from "node:fs";
 import { isAbsolute, resolve, sep } from "node:path";
+import { Plugin } from "@opencode/plugin";
 import { encodeRoddOperationalInput } from "./lib/rodd-operational-input.js";
 
 // Sýn — Brokk primary watcher-arm continuity for OpenCode.
@@ -275,12 +276,7 @@ function observeArmOutput(stdout, stderr, settleReadiness) {
 
 async function sendPrompt(paths, client, sessionID, text) {
   const encoded = await encodeRoddOperationalInput(paths.root, "watcher", text);
-  await client.session.promptAsync({
-    path: { id: sessionID },
-    body: {
-      parts: [{ type: "text", text: encoded }],
-    },
-  });
+  await client.session.prompt({ sessionID, text: encoded });
 }
 
 function confirmHandlingDelivery(paths, recovery) {
@@ -567,19 +563,30 @@ async function ensureArm(paths, sessionID, client, predecessorArmPid = "", inclu
   return armAttempt(await waitForArmReady(armChild), armChild, includeArmChild);
 }
 
-export const SynWatchArm = async ({ client, directory, worktree }) => {
-  const root = worktree ? resolvePath(worktree) : await resolveRoot(directory);
-  const paths = effectivePaths(root);
-  globalThis[COORDINATOR_KEY] = {
-    ensureArmed: (sessionID, activeClient) => ensureArm(paths, sessionID, activeClient ?? client),
-  };
+export default Plugin.define({
+  id: "ymir.syn.watch-arm",
+  async setup(ctx) {
+    const root = await resolveRoot(ctx.location?.directory);
+    const paths = effectivePaths(root);
+    globalThis[COORDINATOR_KEY] = {
+      ensureArmed: (sessionID, activeClient) => ensureArm(paths, sessionID, activeClient ?? ctx),
+    };
 
-  return {
-    event: async ({ event }) => {
-      if (event.type !== "session.idle") return;
-      const sessionID = event.properties?.sessionID;
-      if (!sessionID) return;
-      void ensureArm(paths, sessionID, client);
-    },
-  };
-};
+    const controller = new AbortController();
+    void (async () => {
+      for await (const event of ctx.event.subscribe({
+        types: ["session.idle"],
+        signal: controller.signal,
+      })) {
+        const sessionID = event.data?.sessionID;
+        if (!sessionID) continue;
+        void ensureArm(paths, sessionID, ctx);
+      }
+    })().catch(() => {});
+
+    return () => {
+      controller.abort();
+      if (globalThis[COORDINATOR_KEY]?.ensureArmed) delete globalThis[COORDINATOR_KEY];
+    };
+  },
+});
