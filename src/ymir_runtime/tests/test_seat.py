@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ymir_runtime import heartbeat, paths
 from ymir_runtime.seat import _worth_a_smith, seat as seat_verb, task_section
-from ymir_runtime.errors import EngineRefusal
+from ymir_runtime.errors import EngineError, EngineRefusal
 from ymir_runtime.seat import Errand
 from ymir_runtime.tests.support import Recorder, completed, engine_env, make_repo, tmux_responses, write_brief
 
@@ -78,8 +78,36 @@ class SeatTest(unittest.TestCase):
         self.assertTrue(script.is_file())
         body = script.read_text(encoding="utf-8")
         self.assertIn(f"cd '{tree}'", body)
-        self.assertIn("exec pi --model 'llama-swap/qwen3.6-35b-a3b@iq3_s'", body)
+        # The line is the GENERATOR's: discovery off, every extension named, the
+        # worktree passed through (plan 190 §4.1).
+        self.assertIn("exec pi --model 'llama-swap/qwen3.6-35b-a3b@iq3_s' -ne -e", body)
         self.assertIn("prompt.md", body)
+
+    def test_an_unproven_seat_is_a_failure_not_a_claim(self) -> None:
+        """A seat the agent list does not show is refused, and the record says so."""
+        responses = tmux_responses()
+        responses["seat-prove.sh"] = completed(1, "", "seat-prove: no agent in pane @7 after 1s\n")
+        runner = Recorder(responses=responses)
+        with self.assertRaises(EngineError):
+            seat_verb(self._errand(), runner=runner, env=self.env, probe=available)
+        meta = heartbeat.read_meta(self.state, "errand-one")
+        self.assertEqual(meta["seat"], "no")
+        self.assertIn("NO agent", heartbeat.last_line(self.state, "errand-one"))
+
+    def test_a_seat_proved_in_another_pane_records_that_pane(self) -> None:
+        """The record follows the AGENT, not the pane the spawner chose."""
+        responses = tmux_responses()
+        responses["seat-prove.sh"] = completed(
+            0,
+            "wQ:p9\tworking\n",
+            "seat-prove: the agent stands in wQ:p9, not in the pane @7 this spawn chose — record the printed pane\n",
+        )
+        runner = Recorder(responses=responses)
+        seat_verb(self._errand(), runner=runner, env=self.env, probe=available)
+        meta = heartbeat.read_meta(self.state, "errand-one")
+        self.assertEqual(meta["seat"], "yes")
+        self.assertEqual(meta["window"], "wQ:p9")
+        self.assertIn("wQ:p9", meta.get("seat_note", ""))
 
     def test_seat_writes_the_prompt_from_the_brief(self) -> None:
         runner = Recorder(responses=tmux_responses())

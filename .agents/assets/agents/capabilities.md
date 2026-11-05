@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",720
+  "shell doors (bin/*.sh)",727
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -34,6 +34,7 @@ capabilities[5]{surface,count}:
 | eindri-dispatch.sh | eindri-dispatch.sh — the errand loop: ONE command per errand (plan 42 | tested | keep (a human or a cron row must run it) |
 | eindri-handoff.sh | eindri-handoff.sh — the handoff failsafe. An Eindri's work ALWAYS reac | tested+named | keep (a human or a cron row must run it) |
 | eindri-heartbeat.sh | eindri-heartbeat.sh — condition half of the Eindri silence bridge. | tested+named | keep (a human or a cron row must run it) |
+| eindri-liveness.sh | eindri-liveness.sh — the sweep's second question: is the pane still a  | tested+named | keep (a human or a cron row must run it) |
 | eindri-review-spawn.sh | eindri-review-spawn.sh — the review spine. FORSETI the Judge is sent a | tested+named | keep (a human or a cron row must run it) |
 | eindri-role.sh | eindri-role.sh — the right smith for the right metal. | tested+named | keep (a human or a cron row must run it) |
 | eindri-route.sh | eindri-route.sh — which machine should host an errand, by its nature? | tested+named | keep (a human or a cron row must run it) |
@@ -51,6 +52,7 @@ capabilities[5]{surface,count}:
 | groa-update.sh | groa-update.sh — Gróa, the völva who renews. | tested+named | keep (a human or a cron row must run it) |
 | hall.sh | hall.sh — the whole house in ONE read: the seat, the doors, the queue, | tested+named | keep (a human or a cron row must run it) |
 | name-registry.sh | name-registry.sh — the collision system for Ymir's names. | tested | keep (a human or a cron row must run it) |
+| pr-seal.sh | pr-seal.sh — the seat's own PR is sealed by the seat, and the word arr | tested+named | keep (a human or a cron row must run it) |
 | profile.sh | profile.sh — what THIS user's machine actually is, probed not assumed. | tested+named | keep (a human or a cron row must run it) |
 | project-git.sh | project-git.sh — resolve a project's GitHub block from the master regi | tested+named | keep (a human or a cron row must run it) |
 | report.sh | report.sh — THE handoff door. A worker that stops writes one of these, | tested | keep (a human or a cron row must run it) |
@@ -459,6 +461,7 @@ capabilities[5]{surface,count}:
 | telegram-members.sh | telegram-members.sh — who is actually in a Telegram chat, as far as th | tested | keep (a human or a cron row must run it) |
 | telegram-roster.sh | telegram-roster.sh — who speaks in a chat, remembered (thin door over  | tested | keep (a human or a cron row must run it) |
 | test_telegram_buttons.sh | test_telegram_buttons.sh — the button grammar, proved both ways. | tested | keep (a human or a cron row must run it) |
+| test_telegram_format.sh | The ward for telegram-format: reads well, protects structure, refuses ja | tested | keep (a human or a cron row must run it) |
 | test_telegram_roster.sh | test_telegram_roster.sh — the roster records who speaks, once, per cha | tested | keep (a human or a cron row must run it) |
 | collaborators.sh | collaborators.sh — the people we work with: clients, collaborators, ad | tested | keep (a human or a cron row must run it) |
 | inbox-watch.sh | inbox-watch.sh — notice when someone answers, without a human opening  | tested | keep (a human or a cron row must run it) |
@@ -520,7 +523,10 @@ capabilities[5]{surface,count}:
 | hermes-seat.sh | hermes-seat.sh — seat Ymir's tools into Hermes, the same packets the o | tested+named | keep (a human or a cron row must run it) |
 | hermes-session-hook.sh | hermes-session-hook.sh — Hermes' session side of the Gná arm: the Sá | tested+named | keep (a human or a cron row must run it) |
 | hermes-telegram.sh | hermes-telegram.sh — seat THIS machine's Telegram bot into the Hermes  | tested+named | keep (a human or a cron row must run it) |
+| pi-launcher.sh | pi-launcher.sh — the ONE launcher generator for a pi seat. | tested+named | keep (a human or a cron row must run it) |
+| seat-prove.sh | seat-prove.sh — a spawn is not a seat until the agent list shows it. | tested+named | keep (a human or a cron row must run it) |
 | seat-surface.sh | seat-surface.sh — render THIS seat's own name into the AGENTS.md every | tested+named | keep (a human or a cron row must run it) |
+| seat-wire.sh | seat-wire.sh — one seat speaks into another seat's live pane, and says | tested | keep (a human or a cron row must run it) |
 | seats.sh | seats.sh — where the work actually is: panes in either backend, and th | tested+named | keep (a human or a cron row must run it) |
 | valknut-load.sh | valknut-load.sh — Valknut, the knot that binds the repo distro into ea | tested+named | keep (a human or a cron row must run it) |
 | manifest.sh | manifest.sh — a skill declares itself; the index is DERIVED from the d | tested | keep (a human or a cron row must run it) |
