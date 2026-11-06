@@ -88,7 +88,7 @@ while IFS= read -r f; do
   done < <(grep -nE '(\b192\.168\.[0-9]+\.|\b10\.[0-9]+\.[0-9]+\.[0-9]+|\.local\b|http://)' "$tmp" 2>/dev/null \
              | grep -vE '127\.0\.0\.1|localhost|<[a-z-]+>' \
              | grep -vE 'http://\$\{?[A-Za-z_]+' \
-             | grep -vE "'http://%s" | head -20)   # format-host exemption: the host is a %s, not an address
+             | grep -vE "http://%s|http://\{host\}|http://\{h\}|f\"http://" | head -20)   # a format/f-string host is not an address
   rm -f "$tmp"
 done <<EOF
 $added
