@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "data": {
+    "markdown": "# Fixture scrape\n\nThis release is available now with a migration guide. The changelog and documentation explain each change for agentic engineers running durable agents. Reproducible benchmarks are included. Upgrade by bumping the version and running the test suite.",
+    "metadata": {
+      "title": "Fixture scrape",
+      "description": "A scraped fixture page",
+      "ogImage": "https://cdn.fixture.dev/images/scrape.png",
+      "creditsUsed": 1
+    }
+  }
+}

@@ -2509,6 +2509,59 @@ const server = Bun.serve({
           }
         }));
       }
+      if (p === '/api/core-four') {
+        // THE FOUR DIALS, one read (plan 199). The door does the reading; this only carries it.
+        return json(await memoAsync('core-four', 30_000, async () => {
+          try {
+            const { execFileSync } = await import('node:child_process');
+            const script = new URL('../../../bin/seat/core-four.sh', import.meta.url).pathname;
+            return JSON.parse(execFileSync('bash', [script, '--json'], { timeout: 30_000 }).toString().trim());
+          } catch (e) {
+            return { error: String(e).slice(0, 160) };
+          }
+        }));
+      }
+      if (p === '/api/pending') {
+        // WHAT WAITS ON THE OPERATOR, one list (plan 199). Never cached long: it is a live question.
+        return json(await memoAsync('pending', 15_000, async () => {
+          try {
+            const { execFileSync } = await import('node:child_process');
+            const script = new URL('../../../bin/seat/pending.sh', import.meta.url).pathname;
+            return JSON.parse(execFileSync('bash', [script, '--json'], { timeout: 30_000 }).toString().trim());
+          } catch (e) {
+            return { error: String(e).slice(0, 160), items: [] };
+          }
+        }));
+      }
+      if (p === '/api/plans') {
+        // THE PLAN LEDGER, read from the record itself. Skuld's plans table has been empty
+        // while the ledger carries every plan as a file (2026-11-05) — so the hall reads the
+        // ledger, and Skuld stays the write door for tickets.
+        return json(await memoAsync('plans', 30_000, async () => {
+          const { readdirSync, readFileSync } = await import('node:fs');
+          const { join } = await import('node:path');
+          const home = (await import('node:os')).homedir();
+          const dir = process.env.YMIR_PLANS_DIR ??
+            join(home, 'Documents/ymirhome/svartalfaheim/whynotproductions/projects/ymir/plans');
+          const rows: Array<{ n: number; slug: string; state: string; title: string }> = [];
+          try {
+            for (const f of readdirSync(dir)) {
+              const m = /^(\d+)-(.+)\.md$/.exec(f);
+              if (!m) continue;
+              const body = readFileSync(join(dir, f), 'utf8').slice(0, 4000);
+              const title = (body.split('\n').find((l) => l.startsWith('# ')) ?? '').replace(/^#\s*/, '') ||
+                m[2].replace(/-/g, ' ');
+              const state = /status:\s*`?([a-z -]+)/i.exec(body)?.[1]?.trim() ??
+                (/#?\bopen(ed)?\b/i.test(body.slice(0, 600)) ? 'opened' : 'in progress');
+              rows.push({ n: Number(m[1]), slug: m[2], state, title });
+            }
+          } catch {
+            /* an absent ledger is an empty list, and the panel says so */
+          }
+          rows.sort((a, b) => b.n - a.n);
+          return { count: rows.length, plans: rows.slice(0, 200) };
+        }));
+      }
       if (p === '/api/worktrees') return json(await worktrees());
       if (p === '/api/me') return json({ login: loginOf(req) ?? 'operator', realm: 'work' });
       if (p === '/api/workspace') {

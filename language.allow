@@ -50,3 +50,4 @@ apps/hlidskjalf/scripts/swedish-contract.integration.ts | fixture | the Swedish-
 apps/hlidskjalf/tests/swedish-selection.e2e.mjs | fixture | the Swedish selection test: the accented text is the thing being selected
 apps/hlidskjalf/tests/voice.e2e.mjs | fixture | the voice test speaks Swedish samples; the Swedish text is the input under test
 systems/skirnir/services/test_voice_language.py | fixture | the language-selection test: Swedish speech and its function words are the assertion
+apps/hvergelmir/apps/dna-client-tui/tests/render.test.ts | fixture | vendored upstream test proving CJK width handling — the foreign text IS the assertion

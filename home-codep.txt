@@ -1,0 +1,117 @@
+## ~/CodeP projects
+aiassetvault             2.3G    dirty:2    https://github.com/zerwiz/aiassetvault.git
+   058da2c fix: the mobile header had no menu at all,
+aigeeksandfreaks         3.8G    dirty:0    https://github.com/Way-Of/aigeeksandfreaks
+   cc86719 test(forge.sh): restored, and three of its
+ai-observer              19M     dirty:0    https://github.com/xenfrozer1337-crypto/ai-observer
+   6e0bbaf docs(prd): issue PRD v1.0 as the product d
+bastion                  1.8M    dirty:0    -
+   
+bench                    32K     dirty:0    -
+   
+cloudsync                369M    dirty:0    https://github.com/Way-Of/cloudsync
+   d3d02da feat(deploy): the server half, so CloudSyn
+coe                      536K    dirty:0    https://github.com/Way-Of/wayof-coe
+   68a5b0d interactive-deck-demo: in the catalog, wit
+DecisionTwin             6.3M    dirty:0    https://github.com/Way-Of/Inmost-DecisionTwin
+   11246a5 docs: hand off the DecisionTwin session
+dojodirector             409M    dirty:2    https://github.com/zerwiz/dojodirector
+   a76ea4a Isolate dojo agents: per-side HOME/XDG, de
+emmacare                 3.4M    dirty:0    https://github.com/zerwiz/emmacare.git
+   d6d45b8 footer: confidentiality is a statement, re
+film-reference           108M    dirty:0    -
+   
+film-trials              582M    dirty:0    -
+   
+ForemanAI                1.3G    dirty:0    https://github.com/Way-Of/ForemanAI.git
+   1ef2d64 research: the market-research note takes t
+Foremanelexir            1.7M    dirty:0    https://github.com/Way-Of/ForemanAI-Elixir
+   b3acee8 the handoff, the sixteen tickets, and the 
+forge-control            288K    dirty:0    -
+   844ee9d test: the control surface finally has a sm
+f-rr-d                   56M     dirty:0    https://github.com/Way-Of/f-rr-d.git
+   d0e1046 docs(ip): rebuild merged WAY-OF-IP-SET.pdf
+gamezone                 19M     dirty:2    https://github.com/xenfrozer1337-crypto/gamezone.git
+   eb63ff4 docs: the audit, the plans, the bench, and
+Inmost-ControlTower      342M    dirty:0    https://github.com/Way-Of/Inmost-ControlTower
+   378c0bd merge: the way of working, and Reygan's le
+investready              81M     dirty:0    https://github.com/zerwiz/investready
+   a0ba7cc feat: all code comes as a pull request — t
+investwayofteams         34M     dirty:0    https://github.com/Way-Of/investwayofteams.git
+   beba3f9 Contact buttons: open mailto + show toast
+learnai                  1.4G    dirty:1    https://github.com/zerwiz/learnai.git
+   419396a fix(deploy): a check a project does not ha
+llama.cpp.jev            323M    dirty:0    https://github.com/ggml-org/llama.cpp.git
+   5aeac37 ggml-cuda: fattn do not check oob if k_VKQ
+MaestroAiVideo           242G    dirty:16   https://github.com/zerwiz/MaestroAiVideo.git
+   3e49ca5 fix: stop the forge re-downloading H3 chec
+Masterplan homepage      3.5M    dirty:1    https://github.com/zerwiz/masterplanhomepage
+   f8ce454 Fix horizontal page overflow on mobile: al
+mead                     100K    dirty:2    -
+   
+NGS                      209M    dirty:0    -
+   
+notify                   184K    dirty:0    -
+   
+ona                      21M     dirty:1    https://github.com/zerwiz/Ona
+   b88f79f Merge branch 'feature/solin-sqlite-pgvecto
+__pycache__              12K     dirty:0    -
+   
+runa                     5.9M    dirty:0    https://github.com/Way-Of/runa.git
+   d4d8744 close the two quadlet debts
+sensual                  102M    dirty:9    https://github.com/zerwiz/dojodirector.git
+   0ed95dc 1
+sensualdojocouple        150M    dirty:0    https://github.com/zerwiz/sensualdojocouple.git
+   dbe8449 Merge pull request #33 from zerwiz/agent1/
+sphere                   200K    dirty:0    https://github.com/zerwiz/Ona-Sphere
+   44774c6 Initialize Ona Sphere standalone scaffold.
+svein                    28K     dirty:0    -
+   
+team-knowledge           236K    dirty:0    -
+   0bcfd8b knowledge: deliver v2 to the vessels
+vexa                     1.5G    dirty:1    https://github.com/Vexa-ai/vexa.git
+   f1a62fb release: v0.12.28 — bind the rc.3 packet, 
+waveterm                 3.0G    dirty:3    https://github.com/zerwiz/waveterm.git
+   57b6d28 term: kitty/image rendering via @xterm/add
+Way of                   322M    dirty:5    https://github.com/zerwiz/wayofdash.git
+   6c0ced9 feat(ui): bake workspace/agents for Netlif
+wayofa2a                 64M     dirty:0    https://github.com/Way-Of/wayofa2a.git
+   8380431 Add tool-specific telemetry integration gu
+Way Of Homepage          168M    dirty:0    -
+   
+wayofteams               6.3G    dirty:2    https://github.com/Way-Of/wayofteams.git
+   4ea8e73f9 The baton shelf: a stranger can continue
+whitebord                1.2G    dirty:2    https://github.com/zerwiz/whiteboard.git
+   8195511a Bridge forwards delta.tool_calls as ttd t
+WhyNotProductionsHomepage 350M    dirty:4    https://github.com/zerwiz/WhyNotProductionsHomepage.git
+   fd59f9d fix: add forgot password link on login pag
+ymir-film                18G     dirty:67   https://github.com/zerwiz/ymir-film.git
+   b4cf287 ymir-film: rung 04, and a parameterised pi
+ymir-homepage            238M    dirty:0    https://github.com/zerwiz/ymir-homepage.git
+   c2e563b landing: the header on its own rung, and t
+ymirhomepage             252M    dirty:0    https://github.com/zerwiz/ymir-homepage
+   4828f96 docs: this box is dev only; record the rea
+zerwiz                   3.0M    dirty:0    https://github.com/zerwiz/zerwiz-site.git
+   892eed7 meta: no duplicate og tags, a sitemap, and
+
+## ~/ (top-level dirs, sizes)
+283G	/home/heimdall/CodeP
+205G	/home/heimdall/models
+47G	/home/heimdall/Models
+15G	/home/heimdall/Downloads
+15G	/home/heimdall/Documents
+7.8G	/home/heimdall/ymir
+5.9G	/home/heimdall/roms
+5.0G	/home/heimdall/bb
+4.8G	/home/heimdall/Videos
+3.8G	/home/heimdall/rom-sync
+1.2G	/home/heimdall/whisper.cpp
+1.1G	/home/heimdall/save-sync
+909M	/home/heimdall/whisper.cpp.src
+724M	/home/heimdall/Pictures
+720M	/home/heimdall/go
+655M	/home/heimdall/ymir-main
+648M	/home/heimdall/venvs
+544M	/home/heimdall/backups
+485M	/home/heimdall/Applications
+393M	/home/heimdall/switch-games

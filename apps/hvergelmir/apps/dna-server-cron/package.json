@@ -1,0 +1,14 @@
+{
+  "name": "dna-server-cron",
+  "private": true,
+  "description": "The 15 minute tick: calls the news sweep workflow route with the cron token",
+  "type": "module",
+  "scripts": {
+    "tick": "tsx src/main.ts tick",
+    "check": "tsc -p .",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@dna/sdk": "*"
+  }
+}

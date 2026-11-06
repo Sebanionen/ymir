@@ -62,6 +62,8 @@ TMP="$BRIEF_DIR/.$DATE.md.tmp.$$"
 trap 'rm -f "$TMP"' EXIT
 emit() { printf '%s\n' "$*" >>"$TMP"; }
 
+
+
 # ---- 1. Open forge orders -------------------------------------------------
 parse_orders() {
   [ -r "$MASTERPLAN" ] || return 0
@@ -195,6 +197,18 @@ emit ""
 emit "## Next"
 emit ""
 emit "Begin from the Active Queue above. Frontend gate stays ahead of backend (plan 29 §0)."
+
+# ---- Open work, readable ---------------------------------------------------
+# The SAME record the doors read (TOON in hodd/docs/status), rendered as a list a person
+# can read on a phone. Generated here so it cannot drift from the source, and placed at
+# the END so the briefing's own header stays first.
+if [ -x "$SCRIPT_DIR/../records/open-work.sh" ]; then
+  emit ""
+  emit "## Open work — what stands unmade"
+  emit ""
+  "$SCRIPT_DIR/../records/open-work.sh" --md 2>/dev/null \
+    | sed -n '/^- /,$p' | head -60 | while IFS= read -r l; do emit "$l"; done
+fi
 
 mv "$TMP" "$BRIEF_FILE" || { printf 'error: cannot publish %s\n' "$BRIEF_FILE"; exit 1; }
 trap - EXIT
