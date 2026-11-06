@@ -101,3 +101,22 @@ it, or a later checkout repopulates the second tree), and a tree whose `.pi/` he
 extensions would no longer recognise its own worktree once sparse. Ymir's own tree keeps
 `.pi/agents`, `.pi/shared` and `.pi/mcp-adapter.json` there, so this is a note, not a
 limitation you will meet in this repository.
+
+## A third shape — the box (2026-11-06)
+
+Utgard above is the **locker**: thirty seconds, sealed, gone. It is right for one untrusted command and wrong for a run
+that lasts, because it cannot install a tool, keep a clone, or be walked into.
+
+A **box** is the workshop: a whole computer an agent owns for the length of a run, with its own root, its own copy of the
+work, and nothing of yours — no home directory, no vault, no key. It is reached through one door, and that door holds the
+credential so the box never does.
+
+```bash
+bin/forge/utgard.sh box build
+bin/forge/utgard.sh box new myrun --ttl 4h --repo .
+bin/forge/utgard.sh box enter myrun
+bin/forge/utgard.sh box pull myrun /box/work /tmp/harvest
+bin/forge/utgard.sh box rm myrun
+```
+
+Full page: [utgard-boxes.md](utgard-boxes.md).
