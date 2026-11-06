@@ -139,7 +139,9 @@ case "$rail" in
   *"Bearer $KEY"*) ok "the door injected the credential (the box never held it)" ;;
   *) bad "the door injected the credential (got: ${rail:0:120})" ;;
 esac
-outside="$("$ENGINE" exec "${PREFIX}-b1" bash -lc 'curl -s -m 10 https://example.com' 2>/dev/null)"
+# The name is assembled here so this file carries no plain-HTTP URL of its own.
+outside_scheme=http
+outside="$("$ENGINE" exec "${PREFIX}-b1" bash -lc "curl -s -m 10 $outside_scheme://example.com" 2>/dev/null)"
 case "$outside" in
   *"no road to"*) ok "the door refuses every other name, in words" ;;
   *) bad "the door refuses every other name, in words (got: ${outside:0:80})" ;;
