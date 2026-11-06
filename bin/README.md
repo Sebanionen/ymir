@@ -33,7 +33,7 @@ bin[774]{file,does,kind,verdict,disposition,callers,lines}:
   "adapter-test.sh","bin/assistant/adapter-test.sh -> systems/skirnir/services/adapter-test.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and say…","tool","wired","keep",0,16
   "addresses.sh","addresses.sh — THE register of the mail addresses the house uses, and whether mail can reach them.","tool","wired","keep",3,61
   "agent-run.sh","agent-run.sh — run one agent's errand through the harness the Allfather chose.","tool","wired","keep",2,44
-  "agents-config.sh","agents-config.sh — one YAML for the Allfather's agent/harness/model combination.","tool","wired","keep",12,310
+  "agents-config.sh","agents-config.sh — one YAML for the Allfather's agent/harness/model combination.","tool","wired","keep",13,310
   "apodex-smoke-test.sh","apodex-smoke-test — validate an Apodex endpoint (GGUF via llama-router).","tool","wired","keep",0,119
   "app-build.sh","app-build — build the in-tree apps (plan 35).","tool","wired","keep",2,57
   "app-folder-guard.sh","app-folder-guard.sh — Rule 23: no code in an application's folder, and no","tool","tested","keep",1,127
@@ -449,7 +449,7 @@ bin[774]{file,does,kind,verdict,disposition,callers,lines}:
   "model-placement.sh","model-placement.sh — which machine hosts the models, and is the rail up?","tool","tested","keep",0,96
   "model-register.sh","model-register.sh — register the chosen model with Ymir, in the hoard.","tool","wired","keep",1,96
   "model-resolve.sh","model-resolve.sh — resolve a human model request to a concrete harness+model.","tool","tested","keep",3,165
-  "model-rows-guard.sh","model-rows-guard.sh — every agent row names a model THIS machine can actually serve.","tool","wired","keep",1,92
+  "model-rows-guard.sh","model-rows-guard.sh — every agent row names a model THIS machine can actually serve.","tool","wired","keep",1,106
   "model-tune.sh","model-tune.sh — tune the chosen model for THIS host, with measured numbers.","tool","wired","keep",1,150
   "models-detect.sh","models-detect.sh — detect the LOCAL model runtimes present on this machine and","tool","wired","keep",3,168
   "models-report.sh","models-report — the user's OWN models, read from the ROOT pi home.","tool","wired","keep",1,29
