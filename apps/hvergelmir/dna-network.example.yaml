@@ -28,27 +28,27 @@ devices:
   local:
     name: This Mac
     kind: local
-    url: http://127.0.0.1:4850
-    hub_port: 4851                    # this Mac's UI: http://localhost:4851
+    url: https://<your-host>:4850
+    hub_port: 4851                    # this Mac's UI: https://<your-host>:4851
 
   # An always-on Mac mini on your network: launchd services for the API and the UI, plus the crontab line.
   # Turn on Remote Login (System Settings, General, Sharing) and copy your ssh key to it first.
   # mini:
   #   name: Mac mini
   #   kind: ssh
-  #   ssh: you@your-mac-mini.local
+  #   ssh: you@<your-host>
   #   service: launchd
-  #   url: http://your-mac-mini.local:4850
-  #   ui: http://your-mac-mini.local:4851   # the mini serves its own UI, open to your network
+  #   url: http://<your-host>:4850
+  #   ui: http://<your-host>:4851   # the mini serves its own UI, open to your network
   #   hub_port: 4853
 
   # Optional: any Linux box with passwordless ssh and sudo, run with systemd.
   # linux:
   #   name: Linux box
   #   kind: ssh
-  #   ssh: you@your-linux-box
+  #   ssh: you@<your-host>
   #   service: systemd
-  #   url: http://your-linux-box:4850
+  #   url: http://<your-host>:4850
   #   hub_port: 4855
 
   # Optional: an exe.dev VM, created for you by `just net up vm`.
@@ -57,7 +57,7 @@ devices:
   #   kind: exe-dev
   #   vm: my-news-agent
   #   service: systemd
-  #   url: http://127.0.0.1:4852          # private: reached through `just net tunnel vm`
+  #   url: https://<your-host>:4852          # private: reached through `just net tunnel vm`
   #   tunnel: { local: 4852, remote: 4850 }   # the API, for the CLI, TUI and tests
   #   hub_port: 4854                           # its UI is https://<vm>.exe.xyz, private behind the exe.dev login
   #   create: { cpu: 2, memory: 4GB, disk: 20GB }
