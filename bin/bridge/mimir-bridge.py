@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import inspect as _inspect
 import json
 import os
 import sqlite3
@@ -726,15 +727,23 @@ class Handler(BaseHTTPRequestHandler):
             tags += policy.correction_tags(original_id,
                                            "corrects" if kind == "correct" else "retracts")
         content = decision["content"]
-        eid = engine(agent).observe(
-            content,
-            actors=body.get("actors") or None,
-            tags=tags,
-            salience=decision["salience"],
-            timestamp=when,
-            provenance=decision["provenance"],
-            quarantined=decision["quarantined"],
-        )
+        eng = engine(agent)
+        accepted = set()
+        try:
+            accepted = set(_inspect.signature(eng.observe).parameters)
+        except (TypeError, ValueError):
+            accepted = set()
+        kwargs = {
+            "actors": body.get("actors") or None,
+            "tags": tags,
+            "salience": decision["salience"],
+            "timestamp": when,
+            "provenance": decision["provenance"],
+            "quarantined": decision["quarantined"],
+        }
+        if accepted:
+            kwargs = {k: v for k, v in kwargs.items() if k in accepted}
+        eid = eng.observe(content, **kwargs)
         # The chain, in the other direction: the ORIGINAL is annotated void by the
         # replacement's id. Annotation only — the original's words stay.
         chain = None
