@@ -29,6 +29,13 @@ that is neither a Node project nor our own. Three faults, each of the class the 
   rel|scripts|shared|src|test|tests`.
 - **Kit version 1.0.0 → 1.1.0**, so `.collab-kit.json` says which standard a repository carries.
 
+## Appended — the manifest said `files: 0` on a refresh
+
+The installer's manifest counted what the run **added**, so a repository that was already current recorded
+`"files": 0` and a reader would conclude the kit carries nothing. It now records both: `files` is what the kit
+carries (20 at 1.1.0) and `installed_this_run` is what this run added. Seen in a client repository on the first
+refresh, which is the only place it could have been seen.
+
 ## Proved
 
 - `bash scripts/checks.sh doctor` in that repository: `checks[doctor]: mix compile --warnings-as-errors`, and the

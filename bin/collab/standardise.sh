@@ -45,8 +45,11 @@ if [ "$mode" = apply ]; then
     chmod +x "$repo/$rel" 2>/dev/null || true
   done
   # a manifest so the next run knows what it installed and when
-  printf '{\n  "kit": "%s",\n  "applied": "%s",\n  "files": %s\n}\n' \
-    "$VERSION" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  # what the kit CARRIES and what this run ADDED — a manifest that says "files: 0" on a refresh reads as an
+  # empty kit. Appended 2026-11-06, after the first install that had nothing missing said exactly that.
+  carried="$(cd "$KIT" && find . -type f ! -name README.md | grep -c . | tr -d ' ')"
+  printf '{\n  "kit": "%s",\n  "applied": "%s",\n  "files": %s,\n  "installed_this_run": %s\n}\n' \
+    "$VERSION" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$carried" \
     "$(printf '%s\n' "${missing[@]:-}" | grep -c . | tr -d ' ')" > "$repo/.collab-kit.json"
   # the hooks only run if git is told where they are
   git -C "$repo" config core.hooksPath .githooks
