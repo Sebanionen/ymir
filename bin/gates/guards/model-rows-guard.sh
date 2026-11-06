@@ -42,6 +42,14 @@ HOME_DIR=""
 ymir_home_root HOME_DIR 2>/dev/null || true
 [ -n "$HOME_DIR" ] || HOME_DIR="${YMIR_HOME:-}"
 AGENTS="$HOME_DIR/config/agents.yaml"
+# THE ANSWER IS LOCAL (plan 203 §19): a model id belongs to the machine that serves it, so the
+# door that RESOLVES rows (bin/fleet/agents-config.sh) deep-merges a per-host overlay over the
+# shared file. This ward must read the same two files, or a fleet baseline that is correct
+# elsewhere reads as a fault here — measured 2026-11-06: two seats fixed the same row, the shared
+# file kept one seat's id, and this ward went red on the other seat's every row.
+HOST="${YMIR_AGENTS_MACHINE:-$(hostname -s 2>/dev/null || hostname 2>/dev/null)}"
+HOST="${HOST%%.*}"
+OVERLAY="${HOST:+$HOME_DIR/config/agents.$HOST.yaml}"
 
 skip() { printf 'model-rows-guard[1]{gate,result,note}:\n  "model rows","SKIP","%s"\n' "$1"; exit 0; }
 
@@ -57,10 +65,16 @@ servable="$(timeout 180 "$CATALOG" 2>/dev/null | sed -n 's/^  "\([^"]*\)","\([^"
 # Every `model:` value in the file, with the agent row it belongs to. Two shapes are in use:
 #   brokk:   { model: provider/model }
 #   hnoss:   { model: "provider/model", primary: true }
-models="$(grep -nE '(^|[[:space:]])model:[[:space:]]*"?[^"}]*"?' "$AGENTS" 2>/dev/null \
-  | sed -E 's/^[0-9]+:[[:space:]]*([A-Za-z0-9_.-]+):.*model:[[:space:]]*"?([^",}]*)"?.*/\1\t\2/' \
-  | awk -F'\t' 'NF==2 {gsub(/"/,"",$2); gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2);
-                  if ($2!="" && tolower($2)!="default") print $1"\t"$2}' | sort -u)"
+# The shared file is read first and the per-host overlay second, and the overlay WINS per agent —
+# the same precedence the resolver applies, so this ward judges what the seat will actually run.
+rows_of() {
+  grep -nE '(^|[[:space:]])model:[[:space:]]*"?[^"}]*"?' "$1" 2>/dev/null \
+    | sed -E 's/^[0-9]+:[[:space:]]*([A-Za-z0-9_.-]+):.*model:[[:space:]]*"?([^",}]*)"?.*/\1\t\2/' \
+    | awk -F'\t' 'NF==2 {gsub(/"/,"",$2); gsub(/^[[:space:]]+|[[:space:]]+$/,"",$2);
+                    if ($2!="" && tolower($2)!="default") print $1"\t"$2}'
+}
+models="$( { rows_of "$AGENTS"; [ -n "$OVERLAY" ] && [ -r "$OVERLAY" ] && rows_of "$OVERLAY"; } \
+  | awk -F'\t' '{last[$1]=$2} END {for (a in last) printf "%s\t%s\n", a, last[a]}' | sort)"
 
 [ -n "$models" ] || skip "the agent file declares no model rows"
 

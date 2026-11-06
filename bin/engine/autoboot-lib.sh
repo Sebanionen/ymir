@@ -88,7 +88,7 @@ autoboot_program_desc() {  # <program> → one human line
     cards)          printf '%s\n' "the cards root (:8318)" ;;
     skills-mcp)     printf '%s\n' "the skills well door (:8319)" ;;
     skuld)          printf '%s\n' "the ticket hall (:8320)" ;;
-    gna-desk)       printf '%s\n' "the mail desk (:8490) — the inbox the arm is told about, as it arrives" ;;
+    gna-desk)       printf '%s\n' "the mail desk (:8494) — the inbox the arm is told about, as it arrives" ;;
     embed)          printf '%s\n' "the embedding stone (:8500)" ;;
     hlidskjalf-spa) printf '%s\n' "Hlidskjalf SPA (:3888)" ;;
     hlidskjalf-gate) printf '%s\n' "the gate API (:3889)" ;;
