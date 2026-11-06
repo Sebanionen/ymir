@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Gná's desk — read-only, loopback, one account per request.
 
-  gna_desk.py                 # 127.0.0.1:8490, token in hodd/state/gna-desk.token
-  gna_desk.py --port 8490 --print-token
+  gna_desk.py                 # 127.0.0.1:8494, token in hodd/state/gna-desk.token
+  gna_desk.py --port 8494 --print-token
 
   gna_desk.py --honesty          the honesty line on stdout, TOON (no server)
 
@@ -213,7 +213,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Gná's read-only desk")
-    ap.add_argument("--port", type=int, default=int(os.environ.get("GNA_DESK_PORT", "8490")))
+    ap.add_argument("--port", type=int, default=int(os.environ.get("GNA_DESK_PORT", "8494")))
     ap.add_argument("--host", default="127.0.0.1")
     ap.add_argument("--print-token", action="store_true")
     ap.add_argument("--honesty", action="store_true",
