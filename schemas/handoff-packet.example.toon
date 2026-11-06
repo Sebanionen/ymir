@@ -1,0 +1,42 @@
+# handoff-packet.example.toon — a WORKED packet, not a placeholder. Every value below is
+# the shape a real one takes; the numbers are small on purpose so the reader can check the
+# arithmetic of the diff against `changed[]` without a browser.
+#
+# Read it beside schemas/handoff-packet.toon. A schema with no example is a riddle; this is
+# the answer, so the next smith copies the FORM rather than inventing one.
+#
+# The errand: the game's cockpit camera sat at the shell of the car instead of at the
+# driver's eye. One file, one behaviour, one gate — the smallest honest packet.
+packet[1]{task,plan,branch,base,head,author,written_at,ruleset,floor}:
+  "seat the cockpit camera at the driver's eye instead of the body shell","svartalfaheim/whynotproductions/projects/ymir/plans/80-the-car-parts-list.md","eins/sindri-cockpit-eye","origin/main","9c1f4ab7d2e85c0b6a3f17d4e2b8c9a0f5d6e7c8","sindri","2026-11-06T19:42:10Z","7332edd065bd1ff7","complete"
+
+changed[2]{path,added,removed,why}:
+  "game/camera/cockpit.js",7,3,"the camera rig is placed here; the eye offset was a magic number"
+  "docs/bench/2026-11-06-cockpit-eye.md",18,0,"the bench log records what already failed, so it is not tried twice"
+
+gates[3]{gate,cmd,exit,output_tail}:
+  "units","node tools/check-units.mjs",0,"units: 41 checked, 0 drifted",
+  "docs","node tools/check-docs.mjs",0,"docs: 12 links, 0 broken",
+  "assets","node tools/check-assets.mjs",0,"assets: 0 missing, 0 unreferenced"
+
+tests[2]{cmd,exit,tail}:
+  "node --test game/camera/",0,"# pass 6  # fail 0",
+  "node tools/bench.mjs --scene cockpit --frames 120",0,"mean 16.7ms · p95 18.2ms · draw calls 214"
+
+claims[3]{claim,state,evidence}:
+  "the eye is at the driver's head bone, not the car origin","verified","game/camera/cockpit.js:44 — headBone.getWorldPosition()",
+  "no magic offsets remain in the rig","verified","grep -n '0\\.42\\|1\\.15' game/camera/cockpit.js returns nothing",
+  "the bench log names the previous attempt so it is not repeated","verified","docs/bench/2026-11-06-cockpit-eye.md:6"
+
+not_done[2]{item,why}:
+  "the F-key seat toggle keeps its old binding","out of scope for this errand; named in plan 78 step 4",
+  "no test asserts the camera against the visual render","the scene test harness cannot capture pixels yet — see plan 76 row 9"
+
+needs[1]{need,who}:
+  "the item freeze covers vehicle interiors — confirm the head bone is inside it","allfather"
+
+# ─── below this line the SMITH may not write ────────────────────────────────────────
+# The reviewer appends this block only after fetching eins/sindri-cockpit-eye, comparing
+# the fetched sha to `head` above, running the floor and the tests on the machine that
+# will hold the merge, and recording what actually happened.
+review[0]{reviewer,at,ruleset,gates,tests,verdict,pr,merge,commit}:
