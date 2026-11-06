@@ -10,11 +10,11 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",733
+  "shell doors (bin/*.sh)",736
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
-  "generated","2026-11-05"
+  "generated","2026-11-06"
 
 | door | the job | verdict | tech decision |
 |---|---|---|---|
@@ -338,6 +338,7 @@ capabilities[5]{surface,count}:
 | npm-publish.sh | npm-publish.sh — publish through the HOARD's npm token, every single t | tested+named | keep (a human or a cron row must run it) |
 | packaged-gate.sh | packaged-gate.sh — prove the PUBLISHED artifact, not the tree. | tested | keep (a human or a cron row must run it) |
 | pr-pretest.sh | pr-pretest.sh — the PR-time gate: a REAL npm installation, locally, be | tested+named | keep (a human or a cron row must run it) |
+| review-rules.sh | review-rules.sh — the rules floor: load what a reviewer MUST know, or  | tested | keep (a human or a cron row must run it) |
 | skillopt-setup.sh | skillopt-setup.sh — one-time SkillOpt installation for Ymir. | tested | keep (a human or a cron row must run it) |
 | utgard.sh | utgard.sh — the sealed execution barrier (Utgard, the realm outside th | tested+named | keep (a human or a cron row must run it) |
 | yggdrasil.sh | yggdrasil.sh — the worktree manager (Yggdrasil, the world-tree). | tested+named | keep (a human or a cron row must run it) |
@@ -394,6 +395,7 @@ capabilities[5]{surface,count}:
 | people-guard.sh | people-guard.sh — the public tree holds no people. | tested | keep (a human or a cron row must run it) |
 | perm-guard.sh | perm-guard.sh — flag agent profiles whose permissions are self-defeati | tested | keep (a human or a cron row must run it) |
 | pkill-guard.sh | pkill-guard.sh — no blanket kill in the tree, and the audit that finds | tested | keep (a human or a cron row must run it) |
+| pr-ship-guard.sh | pr-ship-guard.sh — Rule 08, the ship door: the BRANCH is a smith's to  | tested | keep (a human or a cron row must run it) |
 | private-guard.sh | private-guard.sh — private structure and NDA material never cross a su | tested | keep (a human or a cron row must run it) |
 | public-data-guard.sh | public-data-guard.sh — the TREE scan for RULES/04: templates and logic | tested | keep (a human or a cron row must run it) |
 | public-guard.sh | public-guard.sh — every PUBLIC, user-facing file must be free of opera | tested+named | keep (a human or a cron row must run it) |
@@ -415,6 +417,7 @@ capabilities[5]{surface,count}:
 | repo-scrub.sh | repo-scrub.sh — purge private paths from ALL git history before going  | tested | keep (a human or a cron row must run it) |
 | test_hermes_seat.sh | test_hermes_seat.sh — the acceptance test for plan 177 H1/H2/H3: Herme | tested+named | keep (a human or a cron row must run it) |
 | test_new_doors.sh | test_new_doors.sh — the production tests for the doors built 2026-11-0 | tested | keep (a human or a cron row must run it) |
+| test_pr_ship_guard.sh | test_pr_ship_guard.sh — proves the ship door judges the PR and not the | tested | keep (a human or a cron row must run it) |
 | test_registers.sh | test_registers.sh — one door for every generated register. | tested | keep (a human or a cron row must run it) |
 | test_skills_mcp.sh | test_skills_mcp.sh — the skills door, proved by command. | tested | keep (a human or a cron row must run it) |
 | toolchain.sh | toolchain.sh — the provider wrappers (W0033). A typed front door to th | tested+named | keep (a human or a cron row must run it) |

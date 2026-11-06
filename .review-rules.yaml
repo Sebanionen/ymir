@@ -1,0 +1,41 @@
+# .review-rules.yaml — what a reviewer MUST know before it judges work in this repository.
+# Read by bin/forge/review-rules.sh. A reviewer that cannot load every source here does not
+# review: it refuses, and names the file it could not read.
+rules:
+  - AGENTS.md                                   # the public contract: dispatch, laws, the manual rows
+  - CONTRIBUTING.md                             # how a change is delivered
+  - RULES/06-append-only.md                     # the ledger, the rules, the fixes — append, never rewrite
+  - RULES/04-hoard.md                           # no private data in the public repo, ever
+  - RULES/07-config.md                          # configuration resolves; it is never hardcoded
+  - RULES/43-two-tongues.md                     # English for the work, Old Norse for the names
+  - RULES/44-no-agent-is-brokk.md               # every machine names its own agents
+  - docs/fixes/                                 # one file per fix; the history of runtime and policy changes
+plan_ledger: svartalfaheim/whynotproductions/projects/ymir/plans
+
+# Nothing is frozen in this tree the way the game's registries are. What IS frozen is shape:
+freeze:
+  - .agents/skills/                             # a shipped skill's craft does not change silently
+  - packages/contracts/                         # the cross-realm contract
+
+forbidden:
+  - a private name, path, address, client or key anywhere in this public tree
+  - a secret read from anything but the vault (bin/vault/hodd.sh emit)
+  - a command that guesses the home instead of resolving it through bin/vault/hoard-lib.sh
+  - a systemd unit executing a working tree (RULES/02 §7; the units name the runtime checkout)
+  - a door that answers on every interface without a written reason (RULES/24)
+  - a gate that exists and runs nowhere; a skip reported as a pass
+  - a test that asserts its own subject; "passes" without the command and its tail
+  - a fix pushed without its note under docs/fixes/<component>/
+  - a plan or rule rewritten in place instead of corrected by an appended dated section
+
+proofs:
+  gates: "bin/gates/guards.sh — every ward PASS, and the failing one named if not"
+  eir: "bin/agents/eir-doctor.sh check — a skip is named, never counted green"
+  prove: "python3 tools/prove.sh in a project tree that has one"
+
+# The delivery law a reviewer applies to every PR it sees, whatever the project.
+delivery:
+  - a smith never opens or merges a PR; the reviewer opens it
+  - the reviewer merges only on a passing record, and never its own authored work
+  - every merge writes a record: reviewer, packet hash, gate output, resulting commit, time
+  - the merge token can merge and cannot force-push, delete a branch, or administer the repo

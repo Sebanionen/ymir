@@ -11,7 +11,7 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 `disposition` says what happens to it: `keep`, `migrate → src/…` where the
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
-bin[768]{file,does,kind,verdict,disposition,callers,lines}:
+bin[771]{file,does,kind,verdict,disposition,callers,lines}:
   "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
   "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
   "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
@@ -376,7 +376,7 @@ bin[768]{file,does,kind,verdict,disposition,callers,lines}:
   "hnitbjorg-ensure.sh","hnitbjorg-ensure.sh — ensure the vault's tooling stands and its path is sound.","tool","wired","keep",2,111
   "hnitbjorg.sh","hnitbjorg.sh — Hnitbjörg: the encrypted document vault.","tool","wired","keep",3,250
   "hoard-guard.sh","hoard-guard.sh — the ward for the PRIVATE HOME repo ($YMIR_HOME).","tool","wired","keep",3,150
-  "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",199,116
+  "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",201,116
   "hodd-set.sh","hodd-set.sh — set ONE key in an age-encrypted secret file, with guards that make a","tool","wired","keep",4,106
   "hodd.sh","hodd.sh — the Allfather's private hoard: path, init, ls, load, tenant.","tool","tested","keep",29,135
   "home-contract-check.sh","home-contract-check.sh — the contract that raises a home is itself checked.","tool","wired","keep",2,160
@@ -515,6 +515,7 @@ bin[768]{file,does,kind,verdict,disposition,callers,lines}:
   "pr-guard.sh","pr-guard — a branch that exists on the remote must have a pull request.","tool","wired","keep",1,35
   "pr-pretest.sh","pr-pretest.sh — the PR-time gate: a REAL npm installation, locally, before","tool","wired","keep",1,59
   "pr-seal.sh","pr-seal.sh — the seat's own PR is sealed by the seat, and the word arrives through Gná.","tool","wired","keep",1,324
+  "pr-ship-guard.sh","pr-ship-guard.sh — Rule 08, the ship door: the BRANCH is a smith's to push; the PR is not.","tool","wired","keep",2,175
   "pre-commit","The cheap checks, so a commit never carries a broken tree.","tool","tested","keep",15,19
   "pre-push","Three gates: never push a protected branch, never push a red tree, and never push a behaviour change without its note.","tool","tested","keep",15,38
   "prereq-ensure.sh","prereq-ensure.sh — self-healing prerequisite engine for Ymir.","tool","wired","keep",12,354
@@ -553,6 +554,7 @@ bin[768]{file,does,kind,verdict,disposition,callers,lines}:
   "report.sh","report.sh — THE handoff door.","tool","tested","keep",11,88
   "research-round.sh","research-round.sh — one reusable research errand: seat a skald or a sage, give","tool","wired","keep",0,144
   "research-smoke.sh","bin/assistant/research-smoke.sh -> systems/skirnir/services/research-smoke.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and…","tool","wired","keep",0,16
+  "review-rules.sh","review-rules.sh — the rules floor: load what a reviewer MUST know, or refuse to review.","tool","wired","keep",0,127
   "reviews-shelf.sh","reviews-shelf — a review nobody can find is a review that did not happen.","tool","wired","keep",0,35
   "reviews.sh","reviews.sh — a review is a file in the repository, so the next hand gets it without asking anyone.","tool","wired","keep",1,70
   "rodd-operational-input.sh","rodd-operational-input.sh - canonical Rödd operational-input protocol.","tool","wired","keep",1,251
@@ -704,6 +706,7 @@ bin[768]{file,does,kind,verdict,disposition,callers,lines}:
   "test_mimir_bridge_health.py","﻿import importlib.util,json,subprocess,sys,tempfile,threading,unittest","data","wired","keep",0,29
   "test_new_doors.sh","test_new_doors.sh — the production tests for the doors built 2026-11-03.","tool","wired","keep",0,65
   "test_outbound_gate.py","'''The outbound gate's proofs — plan 124 §7, his word 2026-10-24:","tool","wired","keep",0,346
+  "test_pr_ship_guard.sh","test_pr_ship_guard.sh — proves the ship door judges the PR and not the branch.","tool","wired","keep",0,49
   "test_registers.sh","test_registers.sh — one door for every generated register.","tool","wired","keep",0,43
   "test_skills_mcp.sh","test_skills_mcp.sh — the skills door, proved by command.","tool","wired","keep",0,270
   "test_telegram_buttons.sh","test_telegram_buttons.sh — the button grammar, proved both ways.","tool","wired","keep",0,77
@@ -781,6 +784,6 @@ bin[768]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=514, tested=254
+**Tally.** verdict: wired=517, tested=254
 
-**Tally.** disposition: keep=753, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=756, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1

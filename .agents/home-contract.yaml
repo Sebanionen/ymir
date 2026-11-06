@@ -120,6 +120,12 @@ contract:
     door: bin/engine/home-seed.sh
     required: false
     why: "the mesh's skill grants; absent, a peer call is refused by name (the right refusal)"
+  - path: hodd/identity/smiths.txt
+    kind: seeded
+    template: hodd/identity/smiths.txt.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "who is a smith: the logins that may push a branch and may never open a PR. Absent, pr-ship-guard skips and names this file rather than passing silently (plan 203 §14)"
   - path: hodd/identity/skills-grants.yaml
     kind: seeded
     template: .agents/config/skills-grants.yaml.example
