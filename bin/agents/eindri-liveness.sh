@@ -160,14 +160,31 @@ judge_rows() {  # the loop `check` and `sweep` share
 }
 
 correct() {  # <id> <evidence> — write the truth, then hand it to Gná, ONCE
-  local id=$1 evidence=$2 claim ts line
+  local id=$1 evidence=$2 claim ts line kind commits
   claim="$(last_status "$id")"
   ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  line="failed: the pane held no agent — $evidence (status claimed: ${claim})"
+  # A seat that FINISHED is not a seat that failed. Measured 2026-11-05: an errand
+  # committed its work and stopped without the terminal `eindri-acclaim`; the sweep
+  # called it DEAD, which is the wrong word for a finished job. If the pane says
+  # done and the worktree carries commits, the verdict is FINISHED.
+  kind=failed
+  commits="$(git -C "$(sed -n 's/^worktree=//p' "$STATE/$id.meta" 2>/dev/null | head -1)" rev-list --count origin/main..HEAD 2>/dev/null || echo 0)"
+  case "$evidence" in
+    *"is done and left no terminal line"*|*"holds no agent"*) [ "${commits:-0}" -gt 0 ] && kind=finished ;;
+  esac
+  if [ "$kind" = finished ]; then
+    line="done: finished with $commits commit(s) and no terminal word — the pane reports done; run eindri-acclaim to close it"
+  else
+    line="failed: the pane held no agent — $evidence (status claimed: ${claim})"
+  fi
   printf '%s\n' "$line" >>"$STATE/$id.status"
   printf 'liveness=dead corrected=%s evidence=%s\n' "$ts" "$evidence" >>"$STATE/$id.meta" 2>/dev/null || true
   eindri_is_delivered "$id" dead && return 0
-  eindri_queue_wake "seat $id is DEAD: $evidence (status said: ${claim}) — corrected at the sweep by bin/agents/eindri-liveness.sh"
+  if [ "$kind" = finished ]; then
+    eindri_queue_wake "seat $id FINISHED: $commits commit(s) in its worktree, pane done, no terminal word — review and close it"
+  else
+    eindri_queue_wake "seat $id is DEAD: $evidence (status said: ${claim}) — corrected at the sweep by bin/agents/eindri-liveness.sh"
+  fi
   eindri_mark_delivered "$id" dead
 }
 
