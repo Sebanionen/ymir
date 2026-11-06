@@ -24,8 +24,11 @@ cmd="${1-}"; shift || true
 case "$cmd" in
   -h|--help|"") sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 esac
-ID="${1-}"; shift || true
-[ -n "$ID" ] || { printf 'eindri-checkpoint: an errand id is required\n' >&2; exit 2; }
+if [ "$cmd" = "list" ]; then
+  ID=""; else
+  ID="${1-}"; shift || true
+  [ -n "$ID" ] || { printf 'eindri-checkpoint: an errand id is required\n' >&2; exit 2; }
+fi
 FILE="$STATE/checkpoints/$ID.jsonl"
 META="$STATE/$ID.meta"
 
@@ -62,14 +65,25 @@ PY
     tail -1 "$FILE"
     ;;
   list)
-    printf 'checkpoints[%s]{id,at,state,step}:\n' "$(ls "$STATE"/checkpoints/*.jsonl 2>/dev/null | wc -l | tr -d ' ')"
-    for f in "$STATE"/checkpoints/*.jsonl; do
-      [ -s "$f" ] || continue
-      id="$(basename "$f" .jsonl)"
-      last="$(tail -1 "$f")"
-      printf '  "%s"' "$id"
-      printf '%s' "$last" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(f",\"{d[chr(34)+chr(97)+chr(116)+chr(34)]}\",\"{d[chr(34)+chr(115)+chr(116)+chr(97)+chr(116)+chr(101)+chr(34)]}\",\"{d[chr(34)+chr(115)+chr(116)+chr(101)+chr(112)+chr(34)][:70]}\"")'
-    done
+    python3 - "$STATE/checkpoints" <<'PYLIST'
+import glob, json, os, sys
+d = sys.argv[1]
+files = sorted(glob.glob(os.path.join(d, "*.jsonl")))
+rows = []
+for f in files:
+    lines = [l for l in open(f, encoding="utf-8", errors="ignore").read().splitlines() if l.strip()]
+    if not lines:
+        continue
+    try:
+        rec = json.loads(lines[-1])
+    except Exception:
+        continue
+    rows.append(rec)
+print(f'checkpoints[{len(rows)}]{{id,at,state,step}}:')
+for r in rows:
+    step = str(r.get("step", ""))[:70].replace('"', "'")
+    print(f'  "{r.get("id","?")}","{r.get("at","-")}","{r.get("state","?")}","{step}"')
+PYLIST
     ;;
   resume)
     [ -s "$FILE" ] || { printf 'eindri-checkpoint: %s has no checkpoint — refuse to resume into a guess\n' "$ID" >&2; exit 1; }

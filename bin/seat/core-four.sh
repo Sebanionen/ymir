@@ -123,7 +123,23 @@ for p in (os.path.expanduser("~/.pi/agent/mcp-adapter.json"),):
         except Exception:
             mcp = 0
 
+# --- working now: live agents and panes holding a run (plan 199's metric) ----
+working = {"agents": 0, "panes": 0, "states": {}}
+try:
+    import subprocess
+    raw = subprocess.run(["herdr", "agent", "list"], capture_output=True, text=True, timeout=20).stdout
+    agents = (json.loads(raw).get("result") or {}).get("agents") or []
+    working["panes"] = len(agents)
+    for a in agents:
+        st = a.get("agent_status") or "unknown"
+        working["states"][st] = working["states"].get(st, 0) + 1
+        if st in ("working", "idle"):
+            working["agents"] += 1
+except Exception:
+    pass
+
 out = {
+    "working_now": working,
     "model": model or "unset",
     "context": {"window": window, "auto_compact_at": autocomp, "force_compact_at": force},
     "prompt": prompts,
@@ -138,4 +154,6 @@ else:
     print(f'  "context","window {c["window"] or "?"} · auto-compact {c["auto_compact_at"] or "?"} · force {c["force_compact_at"] or "?"}"')
     print(f'  "prompt","{len(out["prompt"])} surfaces: ' + ", ".join(p["file"] for p in out["prompt"]) + '"')
     print(f'  "tools","{out["tools"]["extensions"]} extensions · {out["tools"]["mcp_servers"]} MCP servers"')
+    w = out["working_now"]
+    print(f'  "working now","{w["agents"]} agents standing in {w["panes"]} panes"')
 PY

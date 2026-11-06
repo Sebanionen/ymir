@@ -55,8 +55,16 @@ except Exception:
 # 4 · the status shelf — lines the record itself marks as the operator's
 for p in glob.glob(os.path.join(home, "hodd/docs/status/*.md")):
     for line in open(p, errors="ignore"):
-        if "needs the operator" in line.lower() or "needs his word" in line.lower():
-            add("decision", line.strip(' "\n')[:100], os.path.relpath(p, home))
+        s2 = line.strip()
+        # only a TOON row counts: it starts with a quote and carries cells
+        if not s2.startswith('"'):
+            continue
+        cells = [c.strip(' "') for c in s2.rstrip(',').split('","')]
+        if len(cells) < 4:
+            continue
+        state = cells[2].lower() if len(cells) > 2 else ""
+        if "needs the operator" in state or "needs his word" in state:
+            add("decision", f'{cells[1]} — {cells[0]}', os.path.relpath(p, home))
 
 if as_json:
     print(json.dumps({"count": len(items), "items": items}))

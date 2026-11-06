@@ -172,14 +172,28 @@ correct() {  # <id> <evidence> — write the truth, then hand it to Gná, ONCE
   case "$evidence" in
     *"is done and left no terminal line"*|*"holds no agent"*) [ "${commits:-0}" -gt 0 ] && kind=finished ;;
   esac
+  # quote the last checkpoint: "where the work stood" beats "the pane went quiet"
+  local cp=""
+  cp="$(bash "$SCRIPT_DIR/eindri-checkpoint.sh" show "$id" 2>/dev/null | python3 -c '
+import json,sys
+try: d=json.load(sys.stdin)
+except Exception: raise SystemExit(0)
+print(f"last checkpoint: {d.get(chr(34)+chr(115)+chr(116)+chr(101)+chr(112)+chr(34),"?")} (next: {d.get(chr(34)+chr(110)+chr(101)+chr(120)+chr(116)+chr(34),"?")})")' 2>/dev/null)"
   if [ "$kind" = finished ]; then
-    line="done: finished with $commits commit(s) and no terminal word — the pane reports done; run eindri-acclaim to close it"
+    line="done: finished with $commits commit(s) and no terminal word — ${cp:-no checkpoint saved}; run eindri-acclaim to close it"
   else
-    line="failed: the pane held no agent — $evidence (status claimed: ${claim})"
+    line="failed: the pane held no agent — $evidence (status claimed: ${claim})${cp:+ · $cp}"
   fi
   printf '%s\n' "$line" >>"$STATE/$id.status"
   printf 'liveness=dead corrected=%s evidence=%s\n' "$ts" "$evidence" >>"$STATE/$id.meta" 2>/dev/null || true
   eindri_is_delivered "$id" dead && return 0
+  # quote the last checkpoint: "where the work stood" beats "the pane went quiet"
+  local cp=""
+  cp="$(bash "$SCRIPT_DIR/eindri-checkpoint.sh" show "$id" 2>/dev/null | python3 -c '
+import json,sys
+try: d=json.load(sys.stdin)
+except Exception: raise SystemExit(0)
+print(f"last checkpoint: {d.get(chr(34)+chr(115)+chr(116)+chr(101)+chr(112)+chr(34),"?")} (next: {d.get(chr(34)+chr(110)+chr(101)+chr(120)+chr(116)+chr(34),"?")})")' 2>/dev/null)"
   if [ "$kind" = finished ]; then
     eindri_queue_wake "seat $id FINISHED: $commits commit(s) in its worktree, pane done, no terminal word — review and close it"
   else
