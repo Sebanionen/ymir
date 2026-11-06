@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",755
+  "shell doors (bin/*.sh)",758
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -548,6 +548,7 @@ capabilities[5]{surface,count}:
 | seats.sh | seats.sh — where the work actually is: panes in either backend, and th | tested+named | keep (a human or a cron row must run it) |
 | test_core_four_pending_factory.sh | The ward for the three near-loop doors: core four, pending, and the fact | tested | keep (a human or a cron row must run it) |
 | valknut-load.sh | valknut-load.sh — Valknut, the knot that binds the repo distro into ea | tested+named | keep (a human or a cron row must run it) |
+| whose-tree.sh | whose-tree.sh — whose code am I standing in? | tested | keep (a human or a cron row must run it) |
 | manifest.sh | manifest.sh — a skill declares itself; the index is DERIVED from the d | tested | keep (a human or a cron row must run it) |
 | share-build.sh | share-build.sh — the built copy that may leave. Never the shelf itself | tested | keep (a human or a cron row must run it) |
 | realm-lib.sh | realm-lib.sh — resolve the ACTIVE realm (tenant) without assuming the  | tested+named | keep (a human or a cron row must run it) |

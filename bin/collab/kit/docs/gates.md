@@ -15,9 +15,11 @@ hooks[3]{hook,refuses,why}:
 ## The gates themselves
 
 ```
-gates[2]{script,catches,tuned_to_avoid}:
+gates[4]{script,catches,tuned_to_avoid}:
   "`scripts/gates/secret-scan.sh`","private keys, `GOCSPX-`, `sk-`, `ghp_`, `xoxb-`, Google API keys, `postgres://` URLs **with a literal password**, and `"api_key": "<24+ chars>"`","`postgres://user:${VAR}@host` — a reference is not a secret, and a gate that cries wolf teaches people to pass `--no-verify`"
   "`scripts/gates/private-data.sh`","absolute paths into a person's home, `Documents/ymirhome`, and real addresses at gmail/hotmail/live/outlook/yahoo/icloud","documentation, tests and fixtures, where a fake address is deliberate; `$HOME/...` is home-relative, not a machine path"
+  "`scripts/gates/referee-guard.sh`","a change under `scripts/gates/`, `scripts/wards/` or `.githooks/` with no `docs/fixes/` note **and** no word (ward, gate, hook) in the message","a repair to a gate is legitimate and common — the guard demands the explanation, never the innocence"
+  "`scripts/gates/new-module-test.sh`","a new `backend/`, `src/lib/` or `scripts/` module that no test names, and that is not declared in `.module-test.allow`","a module whose only behaviour is a re-export; the allow-file is a sentence, not a switch"
 ```
 
 **Run them by hand whenever in doubt:**
@@ -26,7 +28,6 @@ gates[2]{script,catches,tuned_to_avoid}:
 bash scripts/gates/secret-scan.sh --all
 bash scripts/gates/private-data.sh --all
 ```
-
 ## What these gates found on their first run
 
 Both fired within a minute of being written, and both were right:

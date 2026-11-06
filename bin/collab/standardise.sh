@@ -37,6 +37,20 @@ printf '  missing: %s\n' "${#missing[@]}"
 printf '  different (a local rule wins; it is reported, never replaced): %s\n' "${#differ[@]}"
 [ "${#differ[@]}" -gt 0 ] && printf '    %s\n' "${differ[@]}"
 
+# A gate written after an `exit 0` is a gate that never runs — the fault this kit itself carried until 2026-11-06.
+dead_gates=""
+for hook in "$repo"/.githooks/*; do
+  [ -f "$hook" ] || continue
+  first_exit=$(grep -n '^[[:space:]]*exit 0' "$hook" 2>/dev/null | head -1 | cut -d: -f1)
+  [ -n "$first_exit" ] || continue
+  after=$(tail -n "+$((first_exit + 1))" "$hook" | grep -cE '^[[:space:]]*(bash|npm|sh) ')
+  [ "$after" -gt 0 ] && dead_gates="$dead_gates $(basename "$hook"):$after"
+done
+if [ -n "$dead_gates" ]; then
+  printf '  DEAD GATES (a check written after an exit 0 — it never runs):%s\n' "$dead_gates"
+  printf '    fix: move every refusal above the first exit; the kit version already does\n'
+fi
+
 if [ "$mode" = apply ]; then
   for rel in "${missing[@]:-}"; do
     [ -n "$rel" ] || continue
