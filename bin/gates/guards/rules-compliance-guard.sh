@@ -86,7 +86,9 @@ while IFS= read -r f; do
   while IFS= read -r hit; do
     say "$f" "added" "RULES/39 · network N1/N7" "address or plain-HTTP URL in a new line: ${hit:0:90}"
   done < <(grep -nE '(\b192\.168\.[0-9]+\.|\b10\.[0-9]+\.[0-9]+\.[0-9]+|\.local\b|http://)' "$tmp" 2>/dev/null \
-             | grep -vE '127\.0\.0\.1|localhost|<[a-z-]+>' | head -20)
+             | grep -vE '127\.0\.0\.1|localhost|<[a-z-]+>' \
+             | grep -vE 'http://\$\{?[A-Za-z_]+' \
+             | grep -vE "'http://%s" | head -20)   # format-host exemption: the host is a %s, not an address
   rm -f "$tmp"
 done <<EOF
 $added
