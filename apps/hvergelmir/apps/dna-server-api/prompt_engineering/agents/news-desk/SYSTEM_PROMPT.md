@@ -57,3 +57,7 @@ Everything you write into props is shown in the feed. Never use em dashes, en da
 ## Report
 
 When you answer the reader in chat, answer in one to three short sentences with the same text rules. Chat replies render as markdown: use bold, short lists, links and headings when they help, and never wrap a whole answer in a code block unless the reader asks for raw text.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

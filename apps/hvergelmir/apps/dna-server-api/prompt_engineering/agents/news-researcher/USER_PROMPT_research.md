@@ -22,3 +22,7 @@ FOCUS: {{focus}}
 ## Report
 
 One line per item: "#<item id> <finding>". No dashes, no bullet dots.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

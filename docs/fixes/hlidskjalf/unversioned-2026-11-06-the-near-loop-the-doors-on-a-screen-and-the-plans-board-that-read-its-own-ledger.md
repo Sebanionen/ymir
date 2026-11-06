@@ -103,3 +103,7 @@ human merge — the Allfather's, not an agent's.
 - **Working now shows `no task named`** for every pane: the agents connector returns the pane
   and its state but not the errand's task.
 - The `feat/near-loop-doors` overlap in `index.ts` above, when both land.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

@@ -43,3 +43,7 @@ A llama.cpp build with `/v1/systemone` (upstream `tools/server/server-decision.c
 and a **native decision GGUF** — one whose metadata carries
 `<arch>.decision.type` and `tokenizer.chat_template.systemone`. A language model
 does not qualify, however well it classifies: the server answers `501` for it.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

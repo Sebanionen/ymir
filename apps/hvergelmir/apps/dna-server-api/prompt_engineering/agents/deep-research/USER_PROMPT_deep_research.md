@@ -25,3 +25,7 @@ YOUR_ANGLE: {{angle}}
 ## Report
 
 Markdown with the sections Answer, Findings, Trail and Unknown. No em dashes or en dashes.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

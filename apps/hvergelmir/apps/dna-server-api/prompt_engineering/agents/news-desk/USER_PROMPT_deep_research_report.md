@@ -24,3 +24,7 @@ ANSWER:
 ## Report
 
 Clean markdown: the answer first, then the findings with their links, then what is still unknown. Keep it short.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

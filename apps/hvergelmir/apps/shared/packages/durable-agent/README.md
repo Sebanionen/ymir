@@ -43,3 +43,7 @@ await job.wait(ctx);
 ```
 
 Test it on the faux model with `installScriptedFaux`, and SIGKILL it like `tests/fixtures/host.ts` does.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

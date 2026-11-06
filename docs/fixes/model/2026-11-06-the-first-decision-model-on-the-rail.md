@@ -114,3 +114,7 @@ docs/fixes/model/2026-11-06-the-first-decision-model-on-the-rail.md        (this
 ~/.agents/skills/modeltesting/hosts/heimdall.md            2026-11-06 section
 ~/.agents/skills/modeltesting/ledger.jsonl                 heimdall/julia-1@q8_0, heimdall/kev-4b@q8_0
 ```
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

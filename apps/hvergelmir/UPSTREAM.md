@@ -328,3 +328,7 @@ Follow the [IndyDevDan YouTube channel](https://www.youtube.com/@indydevdan) to 
 Stay Focused and Keep Building
 
 - IndyDevDan
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

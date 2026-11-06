@@ -97,3 +97,7 @@ numbers repeat the living ones.
 | The window is `—` | The model is not in the seat's registry and not in the catalog — `bin/model/catalog.sh --has <provider>/<model>`. |
 | The plans board is empty | The ledger is empty or `YMIR_PLANS_DIR` is wrong; check `$YMIR_HOME/svartalfaheim/*/projects/ymir/plans/`. |
 | `#/near` shows the old three doors | The hall is serving a stale `dist/` — rebuild: `cd apps/odrerir && npm run build`. |
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

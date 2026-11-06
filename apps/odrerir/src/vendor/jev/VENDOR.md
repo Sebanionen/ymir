@@ -29,3 +29,7 @@ The rest of the package is deliberately absent, and each for a reason:
 to be a vendor copy. If the vocabulary must change, change it upstream and re-vendor
 with a new dated line in the table above. If a card needs behaviour these two modules do
 not have, that behaviour belongs in `apps/odrerir/src/components/CardView.tsx`, not here.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

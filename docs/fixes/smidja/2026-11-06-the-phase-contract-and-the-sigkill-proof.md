@@ -95,3 +95,7 @@ stays ignored (`apps/smidja/smidja_data/`, `apps/smidja/smidja.db*`).
 - Books: `apps/smidja-factory/cookbooks/run_smidja.md` (§The phase contract, §The run as a
   record), `apps/smidja-factory/AGENTS.md` (hard rules 11–12), the Galdr asset
   `.agents/skills/galdr-ymirsystem/assets/smidja.md`, and the launcher/start skills.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

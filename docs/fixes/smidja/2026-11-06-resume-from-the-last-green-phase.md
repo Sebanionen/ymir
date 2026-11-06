@@ -67,3 +67,7 @@ and the two refusal roads exited 2 with their reason.
   `justfile` — the same runtime and the `resume` recipe for a stamped repo.
 - `apps/smidja-factory/cookbooks/run_smidja.md` — the **Resume** section: the verb, the
   three refusals, and what is deliberately not resumed (a model switch).
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

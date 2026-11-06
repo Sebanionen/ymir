@@ -87,3 +87,7 @@ receipt, falling back to `agent_start` for runs recorded before this change.
 `agent_start` at all and asserts the row still reads
 `"opencode-go/deepseek-v4.1-flash","xhigh"` — the column set is unchanged:
 phase, owner, model, thinking, tools, tokens, window, percent, verdict.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

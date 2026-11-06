@@ -50,3 +50,7 @@ Every non-infrastructure route in [src/routes.ts](src/routes.ts) belongs to a ca
 - the CLI (`apps/dna-cli/src/coverage.ts`)
 - the TUI (`apps/dna-client-tui/src/coverage.ts`)
 - the Browser (`data-cap="<id>"` attributes across `apps/dna-client-browser/fe/src/**/*.vue`)
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

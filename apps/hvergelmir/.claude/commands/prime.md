@@ -17,3 +17,7 @@ Understand the Pi Durable News Agent: a proactive pi-durable agent that a cron t
 7. Skim the clients: `apps/dna-client-browser/fe/src/App.vue`, `apps/dna-client-browser/hub/src/main.ts`, `apps/dna-client-tui/src/app.ts`, `apps/dna-cli/src/main.ts`.
 8. Read `dna-network.example.yaml`, `just/net/mod.just`, `just/combos/mod.just`, `apps/dna-cli/src/net/local.ts`, `apps/dna-cli/src/net/remote.ts` and `apps/shared/tests/live/e2e.mjs` for the device modes (local Mac, ssh Mac mini or Linux box, exe.dev VM) and the live checks.
 9. Summarize your understanding of the project: purpose, stack, structure, key files, and entry points.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

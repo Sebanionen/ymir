@@ -70,3 +70,7 @@ door rather than launching the healthy half; `06:00 UTC` is written as `07:00` o
 The count above was taken before the last three were written: the lease refuses a second run of
 one smithy (naming the pid that holds it), whose dry run still answers while it is busy, and
 whose stale lease self-heals because the pid is the truth and the file is not.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

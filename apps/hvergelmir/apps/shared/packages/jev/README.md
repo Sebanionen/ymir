@@ -53,3 +53,7 @@ const ranked = rankHfs(result.answers, hfs.policy); // { ranked, primary, labels
 4. Bump `version` whenever a question changes, because callers memoize by command and version.
 
 Tests run offline: node:test forces the mock unless `JEV_LIVE=1`.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

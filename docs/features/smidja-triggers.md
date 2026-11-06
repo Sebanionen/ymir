@@ -90,3 +90,7 @@ are never touched.
 - `no schedule at …` — your home has no `config/cron.yaml`; the shipped example is
   running instead. Copy it, then install again.
 - The row does not fire — restart the scheduler; it reads `cron.yaml` at start.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

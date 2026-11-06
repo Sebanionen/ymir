@@ -35,3 +35,7 @@ Your final answer is relayed to the reader by the desk. Write it in clean markdo
 - **Unknown**: what you could not confirm, and why.
 
 Never use em dashes or en dashes. Keep each bullet to one or two sentences.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

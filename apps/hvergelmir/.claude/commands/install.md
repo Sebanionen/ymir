@@ -102,3 +102,7 @@ just combos local          # always on, this Mac: API, UI and the every minute t
 just net up mini           # bring a Mac mini (or any device in dna-network.yaml) online
 just cli run doctor        # keys, API, scopes, cron and each search engine's health
 ```
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

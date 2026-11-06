@@ -22,3 +22,7 @@ JEV_LABELS: {{jev_labels}}
 ## Report
 
 One or two short sentences. No dashes, no bullet dots.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.

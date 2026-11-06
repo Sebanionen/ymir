@@ -19,3 +19,7 @@ read_item, scrape_url, search_web, jev_classify, report_findings.
 ## Report
 
 One line per item: the item id and the finding in a short sentence.
+
+## CHANGE LOG
+
+- **2026-11-06** — changelog section added at the merge so RULES/46 can read it.
