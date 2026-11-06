@@ -10,11 +10,11 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",731
+  "shell doors (bin/*.sh)",734
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
-  "generated","2026-11-05"
+  "generated","2026-11-06"
 
 | door | the job | verdict | tech decision |
 |---|---|---|---|
@@ -545,7 +545,7 @@ capabilities[5]{surface,count}:
 | brokk-wake-lib.sh | Shared durable wake queue and portable lock helpers. | tested+named | keep (a human or a cron row must run it) |
 | calendar-watch.sh | calendar-watch.sh — do not walk into a meeting by accident. | tested | keep (a human or a cron row must run it) |
 | daily-line.sh | daily-line.sh — THE daily line: what moved, what is blocked, what is o | tested | keep (a human or a cron row must run it) |
-| event-trigger.sh | event-trigger.sh — the one door that starts a smithy without a person  | uncalled+named | keep (a human or a cron row must run it) |
+| event-trigger.sh | event-trigger.sh — the one door that starts a smithy without a person  | tested+named | keep (a human or a cron row must run it) |
 | housewatch.sh | housewatch.sh — the quiet parts of the house, checked on a timer so th | tested | keep (a human or a cron row must run it) |
 | nornir-cron-start.sh | nornir-cron-start.sh - ensure Brokk's scheduled jobs are running (idempo | tested+named | keep (a human or a cron row must run it) |
 | nornir-job-asken-handoff.sh | nornir-job-asken-handoff.sh — the rollover, on the schedule. | tested+named | keep (a human or a cron row must run it) |
@@ -623,7 +623,7 @@ capabilities[5]{surface,count}:
 | tts-lease.sh | bin/time/snotra/tts-lease.sh -> systems/snotra/services/tts-lease/tts-le | tested | keep (a human or a cron row must run it) |
 | ymir-say.sh | bin/time/snotra/ymir-say.sh -> systems/snotra/services/tts-lease/ymir-sa | tested+named | keep (a human or a cron row must run it) |
 | sol.sh | sol.sh — Sól, the sun's wheel: THE clock and date door. | tested+named | keep (a human or a cron row must run it) |
-| test_event_trigger.sh | test_event_trigger.sh — a smithy may be started by a person, the clock | uncalled+named | keep (a human or a cron row must run it) |
+| test_event_trigger.sh | test_event_trigger.sh — a smithy may be started by a person, the clock | tested+named | keep (a human or a cron row must run it) |
 | well-vault-sync.sh | well-vault-sync.sh — Kaia's memory across the Allfather's machines. | tested+named | keep (a human or a cron row must run it) |
 | confidential.sh | confidential.sh — a session where vault work has no route off the vaul | tested+named | keep (a human or a cron row must run it) |
 | gleipnir-lock-lib.sh | gleipnir-lock-lib.sh — the session lock (Gleipnir), a THIN SHIM. | tested+named | keep (a human or a cron row must run it) |

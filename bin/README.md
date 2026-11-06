@@ -11,7 +11,7 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 `disposition` says what happens to it: `keep`, `migrate → src/…` where the
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
-bin[766]{file,does,kind,verdict,disposition,callers,lines}:
+bin[769]{file,does,kind,verdict,disposition,callers,lines}:
   "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
   "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
   "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
@@ -148,6 +148,8 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "escalate.sh","bin/assistant/escalate.sh -> systems/skirnir/services/escalate.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "escalation-timer.sh","bin/assistant/escalation-timer.sh -> systems/skirnir/services/escalation-timer.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door…","tool","wired","keep",0,16
   "essence-fetch.sh","essence-fetch.sh — the npm world's self-heal: npm's packer refuses dotfolders","tool","wired","keep",2,18
+  "event-trigger-resolve.py","'''event-trigger-resolve — who may start a smithy, and when.","tool","wired","keep",2,171
+  "event-trigger.sh","event-trigger.sh — the one door that starts a smithy without a person typing.","tool","wired","keep",2,476
   "extension-api-check.sh","extension-api-check.sh — a Ymir extension must speak Pi's ACTUAL tool API.","tool","wired","keep",1,113
   "fathom_ingest.py","bin/time/snotra/fathom_ingest.py -> systems/snotra/services/cron/fathom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "feature-inventory.sh","feature-inventory.sh — every feature the system CLAIMS, in one checklist.","tool","wired","keep",0,88
@@ -375,7 +377,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "hnitbjorg-ensure.sh","hnitbjorg-ensure.sh — ensure the vault's tooling stands and its path is sound.","tool","wired","keep",2,111
   "hnitbjorg.sh","hnitbjorg.sh — Hnitbjörg: the encrypted document vault.","tool","wired","keep",3,250
   "hoard-guard.sh","hoard-guard.sh — the ward for the PRIVATE HOME repo ($YMIR_HOME).","tool","wired","keep",3,150
-  "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",199,116
+  "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",200,116
   "hodd-set.sh","hodd-set.sh — set ONE key in an age-encrypted secret file, with guards that make a","tool","wired","keep",3,106
   "hodd.sh","hodd.sh — the Allfather's private hoard: path, init, ls, load, tenant.","tool","tested","keep",28,120
   "home-contract-check.sh","home-contract-check.sh — the contract that raises a home is itself checked.","tool","wired","keep",2,160
@@ -455,10 +457,10 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "name-registry.sh","name-registry.sh — the collision system for Ymir's names.","tool","wired","keep",3,167
   "nidhogg.sh","nidhogg.sh — Níðhöggr, the gnawer at the root.","tool","wired","keep",0,229
   "no-delete-guard.sh","no-delete-guard.sh — Rule 11, ENFORCED.","tool","wired","keep",4,90
-  "nornir-cron-start.sh","nornir-cron-start.sh - ensure Brokk's scheduled jobs are running (idempotent).","tool","tested","keep",6,372
+  "nornir-cron-start.sh","nornir-cron-start.sh - ensure Brokk's scheduled jobs are running (idempotent).","tool","tested","keep",7,372
   "nornir-job-asken-handoff.sh","nornir-job-asken-handoff.sh — the rollover, on the schedule.","tool","wired","keep",0,63
   "nornir-job-bragi-scrape.sh","nornir-job-bragi-scrape.sh — Bragi, on the loom: the scheduled scrape round.","tool","wired","keep",0,154
-  "nornir-job-daily-briefing.sh","nornir-job-daily-briefing.sh - the 07:00 Sága daily seeing.","tool","wired","keep",0,205
+  "nornir-job-daily-briefing.sh","nornir-job-daily-briefing.sh - the 07:00 Sága daily seeing.","tool","wired","keep",1,205
   "nornir-job-doctor.sh","nornir-job-doctor.sh — Eir, the healer, on the schedule.","tool","wired","keep",0,35
   "nornir-job-forgejo-git.sh","nornir-job-forgejo-git.sh — the local git round: issues and PRs on the forge.","tool","wired","keep",0,87
   "nornir-job-git-sync.sh","nornir-job-git-sync.sh - Yggdrasil, the world-tree kept in order.","tool","wired","keep",1,153
@@ -698,6 +700,7 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "telegram.sh","bin/assistant/telegram.sh -> systems/skirnir/services/telegram.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",3,16
   "test_collab.sh","test_collab.sh — the proofs for bin/collab (Vingólf).","data","wired","keep",0,93
   "test_constellation.sh","test_constellation.sh — the road's proof: a card, a grant, a token, and the refusals.","tool","wired","keep",0,102
+  "test_event_trigger.sh","test_event_trigger.sh — a smithy may be started by a person, the clock, or an","tool","wired","keep",1,237
   "test_gna.py","'''The proofs plan 116 asks for before the desk is shown to a human.'''","data","wired","keep",3,603
   "test_hermes_seat.sh","test_hermes_seat.sh — the acceptance test for plan 177 H1/H2/H3: Hermes carries the seat, the","tool","wired","keep",0,193
   "test_mimir_bridge_health.py","﻿import importlib.util,json,subprocess,sys,tempfile,threading,unittest","data","wired","keep",0,29
@@ -779,6 +782,6 @@ bin[766]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=512, tested=254
+**Tally.** verdict: wired=515, tested=254
 
-**Tally.** disposition: keep=751, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=754, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
