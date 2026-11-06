@@ -43,7 +43,9 @@ fi
 export RR_YMIR_TREE="$ROOT_YMIR" RR_YMIR_HOME
 
 python3 - "$REPO" "$DECL" "$Q" <<'PY'
-import hashlib, os, re, sys
+import datetime
+import hashlib
+import socket, os, re, sys
 
 repo, decl, quiet = sys.argv[1], sys.argv[2], sys.argv[3] == "1"
 text = open(decl, encoding="utf-8").read()
@@ -116,11 +118,20 @@ if missing:
     sys.exit(1)
 
 if not quiet:
-    print(f"review-rules[5]{{facts,value}}:")
+    # The hash is NOT a portable identifier, and printing it as one cost a whole night's
+    # comparing (2026-11-06): two seats read the same law and printed f7c802a0… and
+    # f224f614… because source #4 is the PLAN LEDGER and one of them had appended a plan.
+    # So the facts carry WHERE and WHEN, and the record must quote all three: a ruleset
+    # number with no seat and no time names nothing.
+    print(f"review-rules[7]{{facts,value}}:")
     print(f'  "repo","{repo}"')
     print(f'  "sources",{len(sources)}')
     print(f'  "frozen",{len(freeze)}')
     print(f'  "forbidden",{len(forbidden)}')
     print(f'  "ruleset","{digest.hexdigest()[:16]}"')
+    print(f'  "seat","{socket.gethostname()}"')
+    print(f'  "at","{datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"')
     print("review-rules: the floor is complete — the law is read before the diff")
+    print("note: the ruleset hash is PER SEAT and PER MOMENT (source 4 is the plan ledger, which "
+          "grows) — a review record carries ruleset + seat + at, never the number alone")
 PY
