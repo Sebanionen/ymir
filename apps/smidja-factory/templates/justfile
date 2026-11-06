@@ -60,6 +60,12 @@ sdlc *ARGS:
 simple-sdlc *ARGS:
     uv run smidja/smidja_simple_sdlc.py --config {{config}} "$@"
 
+# continue a run at its last green phase: just resume <smidja_id> [--from-phase <name>]
+# Refuses rather than guesses: no such run · nothing green to resume from ·
+# the roster changed since this run. Add --dry-run to see the plan and launch nothing.
+resume *ARGS:
+    uv run smidja/smidja_resume.py --config {{config}} "$@"
+
 # ── watch it ────────────────────────────────────────────────────────────────
 # Reads never block a running workflow, the db is WAL. Poll as hard as you like.
 

@@ -20,11 +20,22 @@ from .utils import ensure_dir, now_iso
 
 
 class PhaseHandle:
-    def __init__(self, run: "Run", phase: Phase):
+    """One open phase. `replay` is set when the phase already committed elsewhere.
+
+    A replayed handle runs no agent and writes nothing new: its `call()` returns
+    the envelope the earlier run recorded, and its `log()` is a console line
+    only. That is what makes a resume free — the work is read, not bought twice.
+    """
+
+    def __init__(self, run: "Run", phase: Phase | None, replay: str | None = None):
         self.run = run
         self.phase = phase
+        self.replay = replay
 
     def log(self, **payload) -> None:
+        if self.replay:
+            self.run.console.note(", ".join(f"{k}: {v}" for k, v in payload.items()))
+            return
         self.run.tracer.event(EventRecord(smidja_id=self.run.smidja_id,
                                           phase_id=self.phase.phase_id,
                                           type="log", name=self.phase.params.name,
@@ -34,6 +45,8 @@ class PhaseHandle:
             self.run.tracer.session_request(self.run.smidja_id, str(payload["input"]))
 
     def call(self, call: AgentCall) -> EnvelopeBase:
+        if self.replay:
+            return self.run.resume_plan.envelope_for(self.replay, call.output_type)
         if self.phase.params.kind != "agent":
             raise RuntimeError("ph.call() is only valid inside an agent phase")
         return agents.execute(self.run, self.phase, call)
@@ -73,6 +86,14 @@ class Run:
         self._agent_map_path = self.session_dir / "agent_map.json"
         self.agent_map: dict = (json.loads(self._agent_map_path.read_text())
                                 if self._agent_map_path.exists() else {})
+        # Resume: armed by session.ensure() when this process is re-entering a
+        # run at a phase that already committed. None on a normal run.
+        self.resume_plan = None
+        self._replaying: list[str] = []      # stack: which replayed phase are we inside
+        # A commit phase is code, not an agent, and it calls git_helper directly.
+        # Binding the run lets git_helper see that its phase is being replayed
+        # instead of committing the same tree a second time.
+        git_helper.bind(self)
 
     # ── agent map (smidja_id -> per-agent coding-agent session ids) ────────────
     def save_agent_map(self, agent: str, entry: dict) -> None:
@@ -85,9 +106,46 @@ class Run:
         self.cost += cost
         self.tracer.session_add_usage(self.smidja_id, tokens, cost)
 
+    # ── resume ─────────────────────────────────────────────────────────────
+    @property
+    def replaying(self) -> bool:
+        """True inside a phase that already committed — its effects are read, not run."""
+        return bool(self._replaying)
+
+    @property
+    def replaying_phase(self) -> str:
+        return self._replaying[-1] if self._replaying else ""
+
+    def arm_resume(self, plan) -> None:
+        """Enter this process as a continuation: these phases are already paid for."""
+        self.resume_plan = plan
+        self.console.note(f"resume: checkpoint {plan.boundary} — re-entering at "
+                          f"{plan.from_phase or 'the next phase the chain opens'}")
+        for name in plan.replay:
+            self.console.note(f"resume: {name} already committed — handed forward, not re-run")
+
     # ── the phase primitive ─────────────────────────────────────────────────
-    @contextmanager
     def phase(self, params: PhaseParams):
+        """The one phase door — a live phase, or a replayed one.
+
+        Both are context managers, so every chain keeps its `with run.phase(...)`
+        shape and no chain has to know whether it is being resumed.
+        """
+        if self.resume_plan is not None and self.resume_plan.is_replay(params.name):
+            return self._replayed(params)
+        return self._live(params)
+
+    @contextmanager
+    def _replayed(self, params: PhaseParams):
+        """A phase that committed in an earlier process: no row, no agent, no cost."""
+        self._replaying.append(params.name)
+        try:
+            yield PhaseHandle(self, None, replay=params.name)
+        finally:
+            self._replaying.pop()
+
+    @contextmanager
+    def _live(self, params: PhaseParams):
         self._seq += 1
         phase = Phase(phase_id=f"{self.smidja_id}_{self._seq:02d}_{params.name}",
                       smidja_id=self.smidja_id, seq=self._seq, params=params,

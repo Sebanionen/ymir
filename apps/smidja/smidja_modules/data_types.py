@@ -217,10 +217,15 @@ class ChangeSet(BaseModel):
     stat: str = ""                  # `git diff --stat` output, verbatim
     diff_path: str = ""             # the full diff, written into context_handoff/
     truncated: bool = False
+    # A replayed capture (resume.py) knows HOW MANY files changed because the
+    # trace logged the count, not their names. Without this, a resumed run's
+    # rebuilt ChangeSet would look empty and the chain would refuse to document
+    # work that is plainly on disk.
+    recorded_file_count: int = 0
 
     @property
     def empty(self) -> bool:
-        return not (self.files or self.untracked)
+        return not (self.files or self.untracked or self.recorded_file_count)
 
 
 class ChangesOutput(EnvelopeBase):

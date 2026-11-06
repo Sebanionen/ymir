@@ -46,8 +46,14 @@ or starting agents, load the sibling instead:
     override surface.
 - **`justfile` (repo root):** the starter recipes — `just scout/sdlc/
   simple-sdlc/orchestrate` run chains, `just sessions/phases/tail/procs/obs`
-  watch and open the UI. It calls `smidja-resolve-config`, honoring
+  watch and open the UI, `just resume <smidja_id> [--from-phase <name>]` continues a run at
+  its last green phase. It calls `smidja-resolve-config`, honoring
   `SMIDJA_CONFIG` → `SMIDJA_ROSTER` → `SMIDJA_MODEL_TIER` → default `smidja.config.yaml`.
+- **Resume:** `smidja resume <run-id> [--from-phase <name>]` re-enters a run at the phase
+  after its last green-and-gate-passed phase, handing the committed envelopes, code
+  verdicts and agent session ids forward instead of buying them again
+  (`smidja_modules/resume.py`; the three refusals and the model-switch rule are in
+  `cookbooks/run_smidja.md` §Resume).
 - **Visualizer ships with this skill:** `apps/visualizer/` (Vue + vite server).
   Start with `just ui` / `scripts/smidja ui` → UI `http://localhost:4601`, API
   `:4600`, Kaia memory `#/memory`. Sqlite probing still works — the db is WAL.

@@ -40,7 +40,7 @@ scripts/smidja tail <smidja_id>
 scripts/smidja procs <smidja_id>
 scripts/smidja stop <smidja_id>              # kill children-first (misbehaving agents)
 scripts/smidja pause <smidja_id>             # hold a run (SIGSTOP agents) so you can steer
-scripts/smidja resume <smidja_id>            # continue a paused run
+scripts/smidja resume <smidja_id>            # continue at the last green phase (not a paused run)
 scripts/smidja steer <smidja_id> "msg"       # inject engineer guidance into a running session
 scripts/smidja admit <smidja_id>            # refresh handoff + re-ask Kaia for admission notes
 scripts/smidja recover <smidja_id>          # watchdog ticket → Kaia's ONE recovery decision (prints apply cmd)
