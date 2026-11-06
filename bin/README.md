@@ -388,7 +388,7 @@ bin[774]{file,does,kind,verdict,disposition,callers,lines}:
   "host-watch.sh","host-watch.sh — the watcher a hand can actually have.","tool","wired","keep",1,154
   "hound.py","'''hound.py — Garmr's senses: what executes, who touches the sensitive shelves,","tool","tested","keep",1,460
   "housekeeping.sh","housekeeping.sh — what the worktrees cost, what is already safe to forget, and what has","tool","tested","keep",2,365
-  "housewatch.sh","housewatch.sh — the quiet parts of the house, checked on a timer so they cannot go quiet.","tool","wired","keep",0,128
+  "housewatch.sh","housewatch.sh — the quiet parts of the house, checked on a timer so they cannot go quiet.","tool","wired","keep",0,137
   "huginn-research-worker.sh","huginn-research-worker — Apodex-powered research worker (Eindri).","tool","wired","keep",0,136
   "identity-guard.sh","identity-guard.sh — a commit that leaves by push must not publish a private mailbox.","tool","wired","keep",4,145
   "inbound-test.sh","inbound-test.sh — THE acceptance test for 'people can mail us' (plan 116 §15.3.4).","tool","wired","keep",3,141
