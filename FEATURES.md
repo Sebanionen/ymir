@@ -193,6 +193,7 @@ page's *planned* banner is removed **by a new entry citing the old** (Rule 06).
 
 | Collaboration | The fleet wire — pane, queue and room between Ymir seats | Three roads between machines of this fleet: a live pane prompt, a durable wake queue resolved from the far seat's lease, and a room jsonl per speaker; a collaborator uses the A2A door instead. | [Guide](docs/features/fleet-wire.md) |
 | Category | Feature | Behaviour | How-to |
+| Models | Decision models — asking for a verdict, not a paragraph | A choice/score/yes-no model answers in one forward pass behind `/v1/systemone`; four doors on the tailnet with one bearer key, and an intake gate that labels a message signal, facts or hype — advisory below 0.70. | [Guide](docs/features/decision-models.md) |
 |---|---|---|---|
 | Memory | Serving-engine health | Cross-platform and borrowed clients measure the active bridge database; transport, episode count and policy health remain distinct. | [Memory on every role](docs/features/the-well-on-every-role.md) |
 
