@@ -1,5 +1,32 @@
 # smidja.config.yaml — the smidja's agent roster. One agent, one prompt, one purpose.
 # v1 runs the Pi coding agent only; coding_agent: claude_code arrives in v2.
+#
+# THIS FILE IS THE ONE SHAPE. `scripts/make_config.py` copies it and
+# `scripts/install.py` stamps it; there is no second factory template, and a
+# roster/factory file that restates these keys is drift, not a convenience.
+# The trigger block below is part of that shape for the same reason: one config,
+# one place a smithy can be started from.
+
+# ── trigger: WHO MAY START THIS SMITHY ────────────────────────────────────────
+# manual | cron | event. ABSENT means manual, and manual is the only safe
+# default: nothing here arms itself, and nothing runs because a key was missed.
+# The door is bin/time/event-trigger.sh; the door is the only thing that reads
+# this block, and `--install-cron` writes the schedule row from it.
+#
+#   trigger:
+#     mode: event                  # or cron, or manual
+#     event: nightly-audit         # mode: event — the name other things fire
+#     role: dev                    # mode: cron — REQUIRED; an ungated row runs on every seat
+#     cron: "0 6 * * *"            # mode: cron — daily or hourly only (the scheduler's shapes)
+#     timezone: Europe/Stockholm   # optional; moved to the running seat's own clock
+#     chain: smidja/smidja_plan_build.py       # what the trigger launches
+#     prompt: requests/nightly.md              # or inline text
+#
+# A trigger naming no chain, or a cron with no role, is REFUSED by name rather
+# than installed as a row that launches nothing or fires everywhere.
+trigger:
+  mode: manual
+
 defaults:
   coding_agent: pi
   model: ${SMIDJA_LOCAL_MODEL:-}   # provider/id from pi models.json; override with SMIDJA_LOCAL_MODEL (empty = resolve from hoard)

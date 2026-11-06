@@ -1,5 +1,12 @@
 # smidja.config.yaml — the smidja's agent roster. One agent, one prompt, one purpose.
 # v1 runs the Pi coding agent only; coding_agent: claude_code arrives in v2.
+
+# WHO MAY START THIS SMITHY — manual | cron | event. `manual` is stated here, not
+# assumed: this seat's smithy is started by a person. The door is
+# bin/time/event-trigger.sh; `--install-cron` writes the schedule row from here.
+trigger:
+  mode: manual
+
 defaults:
   coding_agent: pi
   model: ${SMIDJA_LOCAL_MODEL:-}   # provider/id from pi models.json; override with SMIDJA_LOCAL_MODEL (empty = resolve from hoard)

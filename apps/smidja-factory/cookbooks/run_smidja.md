@@ -23,6 +23,8 @@ uv run smidja/<recon-chain>.py "where is auth handled" --config path/to/other.co
 
 The prompt is inline text or a file path. Launch in the background so you can poll while it works; the `smidja_id` is printed on startup — capture it, everything else keys off it.
 
+**A manual run needs nothing declared.** With no `trigger:` block (or `trigger.mode: manual`) the only way this smithy starts is a person typing the command above — which is the default, on purpose. The clock and events reach the same chain through one door, `bin/time/event-trigger.sh`, which reads the config's `trigger:` block; see the Triggers section of [create_config.md](create_config.md). A run started that way is detached and logs to `state/event-trigger/<stamp>-<config>.log`, and its `smidja_id` appears in that log and in the trace like any other run.
+
 ### Listen for the roster
 
 The chain says *what runs*; the config says *who runs it*. **If the engineer references a roster, a config, or a model tier, pass it — do not fall through to the default.**

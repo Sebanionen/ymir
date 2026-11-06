@@ -95,6 +95,8 @@ gate plan-ledger  "every plan carries the contract (his words, a measure, proven
                bash "$ROOT/bin/gates/plan-audit.sh" --check
 gate capability "the capability register is current"           bash "$ROOT/bin/gates/capabilities.sh" --check
 gate home-index "the home's shelves are navigable"             bash "$ROOT/bin/gates/checks/home-index-check.sh"
+gate triggers    "a smithy starts by a person, the clock or an event — and nothing arms itself" \
+               bash "$ROOT/bin/time/tests/test_event_trigger.sh"
 gate usage      "no door became unused since the baseline"    bash "$ROOT/bin/gates/checks/usage-ratchet.sh"
 gate portability "GNU-only callers may fall, never rise (RULES/05)"    bash "$ROOT/bin/gates/checks/portability-ratchet.sh" check
 gate inventory  "the bin/backend index is current"            bash "$ROOT/bin/gates/inventory.sh" --check
