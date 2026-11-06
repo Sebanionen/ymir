@@ -406,7 +406,7 @@ bin[783]{file,does,kind,verdict,disposition,callers,lines}:
   "intake-gate.sh","intake-gate.sh — is this message signal, or noise?","tool","wired","keep",0,79
   "inventory-guard.sh","inventory-guard.sh — a register that runs in no gate is a capability that is silently absent.","tool","wired","keep",2,54
   "inventory.sh","inventory.sh — the honest index of the two shelves nobody can read.","tool","wired","keep",11,285
-  "jev-doors.sh","jev-doors.sh — where the decision models answer, in one read.","tool","wired","keep",1,77
+  "jev-doors.sh","jev-doors.sh — where the decision models answer, in one read.","tool","wired","keep",1,81
   "jira_adapter.py","bin/time/snotra/jira_adapter.py -> systems/snotra/services/cron/jira_adapter.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "journal-append.sh","journal-append.sh — write one idempotent entry to THIS machine's outbox.","tool","tested","keep",0,115
   "journal-receive.sh","journal-receive.sh — the HEART folds the bodies' journals into one record.","tool","tested","keep",1,137
