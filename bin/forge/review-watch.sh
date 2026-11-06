@@ -199,6 +199,8 @@ for repo in "${REPOS[@]}"; do
       mkdir -p "$STATE/.reviewed" 2>/dev/null || true
       printf '%s\n' "$out" >"$marker" 2>/dev/null || true
       RAISED=$((RAISED + 1))
+      # the first mergeable PR this pass raised — the one the seat will judge if it answers itself
+      if [ -z "${FIRST_GOOD:-}" ] && [ "$mergeable" = "MERGEABLE" ]; then FIRST_GOOD="$num"; fi
       rows+=("$(printf 'pr[6]{repo,n,head,state,why,raised}:\n  "%s","%s","%s","%s","%s","%s"' \
         "$repo" "$num" "${head:0:12}" "$mergeable" "asked the lock owner" "yes")")
     else
@@ -236,4 +238,35 @@ else
   for r in "${rows[@]}"; do printf '%s\n' "$r"; done
 fi
 [ "$RAISED" -gt 0 ] || [ "$ALL" = 1 ] || true
+
+# ── the heart answers its own ask (plan 206 §11.3 #2) ───────────────────────────────────────────
+# A headless heart has no interactive primary to answer an ask; the SEAT PRIMARY IS THE REVIEWER.
+# So when this machine's role is `heart` and the seat's primary is the reviewer figure, the watch
+# answers the ask it just raised and RECORDS that the seat decided for itself — the exception is
+# never silent, and it is off on any machine that is not the heart.
+#   YMIR_REVIEW_SELF=1   force on   ·  0 force off   ·  auto (default) = heart + reviewer seat only
+SELF_MODE="${YMIR_REVIEW_SELF:-auto}"
+if [ "$DRY" != 1 ] && [ -z "$JUDGE" ] && [ -n "${FIRST_GOOD:-}" ] && [ "$SELF_MODE" != 0 ]; then
+  self_ok=0
+  if [ "$SELF_MODE" = 1 ]; then self_ok=1; else
+    roles="$(bash "$ROOT/bin/fleet/topology.sh" --json 2>/dev/null       | python3 -c 'import json,sys
+try: d=json.load(sys.stdin)
+except Exception: d={}
+print(",".join(d.get("roles") or []))' 2>/dev/null || true)"
+    me="$(bash "$ROOT/bin/agents/seat-identity.sh" "$(hostname -s 2>/dev/null || hostname)" 2>/dev/null | head -1 || true)"
+    case ",$roles," in *,heart,*) [ "$me" = "forseti" ] && self_ok=1 ;; esac
+  fi
+  if [ "$self_ok" = 1 ]; then
+    printf 'review-watch: the seat answers its own ask for #%s (role heart, primary %s) — recorded\n' \
+      "$FIRST_GOOD" "$(bash "$ROOT/bin/agents/seat-identity.sh" "$(hostname -s)" 2>/dev/null | head -1)" >&2
+    [ -x "$ROOT/bin/notify/send.sh" ] && bash "$ROOT/bin/notify/send.sh" --source engine --severity INFO \
+      --key "review-watch:self-answer:$FIRST_GOOD" \
+      --message "review-watch: the heart answered its own ask for PR #$FIRST_GOOD (plan 206 §11.3 #2 — role heart, seat primary is the reviewer). The seat decided for itself; this record is the exception made visible." >/dev/null 2>&1 || true
+    SEAT="$ROOT/bin/forge/review-seat.sh"
+    if [ -x "$SEAT" ]; then
+      "$SEAT" ensure >/dev/null 2>&1 || die "the review seat could not be raised — review-seat.sh ensure names why"
+      exec "$SEAT" ask "$FIRST_GOOD" --wait
+    fi
+  fi
+fi
 exit 0
