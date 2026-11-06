@@ -25,6 +25,33 @@ Quick rules:
 - Raise/repair: `scripts/start.sh`; if the window is gone but ports answer, the
   shell must be restarted (backend ≠ window).
 
+## The near-loop doors (2026-11-06, plan 199)
+
+Four read-only endpoints carry the seat's own doors to any surface. Each is a **carrier**: it
+runs the door, caches briefly, and never re-implements what the door knows. A door that
+cannot answer returns an `error` object, so a panel paints "did not answer" instead of a zero.
+
+```
+near_loop[4]{route,door,ttl}:
+  "/api/core-four","bin/seat/core-four.sh --json — model · window · both compaction thresholds · prompt surfaces · tool counts","30 s"
+  "/api/pending","bin/seat/pending.sh --json — open PRs · the wake queue · mail drafts · the operator's decisions","15 s"
+  "/api/context","bin/seat/context.sh --json — this session's used · window · remaining · thresholds · verdict","15 s"
+  "/api/plans","the plan ledger read as FILES (not Skuld's table) — README index row carries each state","30 s"
+```
+
+**The read is bounded, and that is load-bearing.** A door may start its own child
+(`core-four.sh` asks `bin/model/catalog.sh`), and a grandchild can hold the stdout pipe open
+after `timeout` kills the shell — so a plain `await new Response(proc.stdout).text()` never
+returns and, with `memoAsync`'s in-flight map, every later caller inherits the dead promise.
+`/api/core-four` hung past 68 s on 2026-11-06 for exactly this. `seatDoor()` therefore spawns
+the door directly, races the read against an 11 s bound, and keeps its own cache key.
+
+**Skuld is the WRITE door; the ledger is the READ source.** `plans_list` answering with no
+rows is not "no plans" — 149 plan files sat in the ledger while the hall's board reported
+empty. `/api/plans` discovers the ledger (`YMIR_PLANS_DIR`, else
+`$YMIR_HOME/svartalfaheim/<realm>/{projects,workspace}/ymir/plans`), reads numbered files,
+and skips the retired `old-plans/` shelf whose numbers repeat the living ones.
+
 ## Where the registries live (2026-09-30, plan 62)
 
 The example registries moved with the rename: **`workspace/` → `registry/`**.

@@ -370,6 +370,225 @@ body {
   text-transform: lowercase;
   color: var(--hall-bone-dim);
 }
+
+/* ── the near loop — the card anatomy, reused from pi-durable-news-agent's
+   browser client (MIT, see src/vendor/jev/VENDOR.md): title · category chip ·
+   score + confidence · source + age · two actions. The STRUCTURE is that app's;
+   the colours are this hall's cloth, so the page is a sibling, not a stranger. */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 0.7rem;
+}
+.card {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  min-height: 148px;
+  background: var(--hall-glass-strong);
+  border: 1px solid var(--hall-steel);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.card[data-category='unread'] {
+  border-color: var(--ymir-danger);
+}
+.card-media {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  margin: 0.5rem 0 0.5rem 0.5rem;
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hall-steel);
+  border-radius: 4px;
+  font-family: var(--ymir-font-head, Georgia, serif);
+  font-size: 1.4rem;
+  color: var(--hall-bronze);
+  opacity: 0.9;
+}
+.card-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem 0.6rem;
+}
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--ymir-font-mono, monospace);
+  font-size: 0.66rem;
+  color: var(--hall-bone-dim);
+  flex: none;
+}
+.card-meta .source {
+  color: var(--hall-bone);
+  max-width: 13rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-decoration: none;
+}
+a.source:hover {
+  color: var(--hall-bronze);
+}
+.card-meta .time {
+  white-space: nowrap;
+}
+.timeline-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--hall-bronze-deep);
+  border-radius: 999px;
+  background: rgba(201, 151, 63, 0.08);
+  color: var(--hall-bronze);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.grow {
+  flex: 1 1 auto;
+}
+.card-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.card-title {
+  margin: 0;
+  font-family: var(--ymir-font-head, Georgia, serif);
+  font-size: 0.98rem;
+  line-height: 1.3;
+  color: var(--hall-bone);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-title.big {
+  font-size: 1.18rem;
+}
+.card-dek,
+.card-body {
+  margin: 0;
+  font-size: 0.79rem;
+  line-height: 1.4;
+  color: var(--hall-bone);
+}
+.card-body.muted {
+  color: var(--hall-bone-dim);
+}
+.card-action {
+  margin: 0;
+  padding-left: 0.45rem;
+  border-left: 2px solid var(--hall-bronze);
+  font-size: 0.78rem;
+  color: var(--hall-bone);
+}
+.verdict {
+  margin: 0;
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: var(--ymir-danger);
+}
+.icon-list {
+  margin: 0;
+  padding-left: 1rem;
+  font-size: 0.74rem;
+  color: var(--hall-bone-dim);
+}
+.card-foot {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+/* score + confidence, in jev's vocabulary */
+.hfs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+.hfs.pending {
+  font-family: var(--ymir-font-mono, monospace);
+  font-size: 0.64rem;
+  color: var(--hall-bone-dim);
+}
+.hfs-chip {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid var(--hall-steel);
+  border-radius: 999px;
+  font-size: 0.63rem;
+  color: var(--hall-bone-dim);
+  overflow: hidden;
+}
+.hfs-chip::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill, 0%);
+  background: currentColor;
+  opacity: 0.16;
+  z-index: -1;
+}
+.hfs-chip > * {
+  position: relative;
+}
+.hfs-chip strong {
+  font-family: var(--ymir-font-mono, monospace);
+  color: var(--hall-bone);
+}
+.hfs-chip.signal.primary {
+  border-color: var(--hall-bronze);
+  color: var(--hall-bronze);
+}
+.hfs-chip.facts.primary {
+  border-color: var(--ymir-ok);
+  color: var(--ymir-ok);
+}
+.hfs-chip.hype.primary {
+  border-color: var(--ymir-danger);
+  color: var(--ymir-danger);
+}
+.hfs-warn {
+  font-size: 0.62rem;
+  color: var(--ymir-danger);
+}
+/* open · dismiss */
+.fb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--hall-steel);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hall-bone-dim);
+  font-family: var(--ymir-font-mono, monospace);
+  font-size: 0.64rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+.fb:hover {
+  color: var(--hall-bone);
+  border-color: var(--hall-bronze-deep);
+}
+.fb.dismiss:hover {
+  color: var(--ymir-danger);
+  border-color: var(--ymir-danger);
+}
 .td-panel h2 {
   font-family: var(--ymir-font-head, Georgia, serif);
   font-size: 1.15rem;
