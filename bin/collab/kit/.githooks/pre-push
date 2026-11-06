@@ -1,35 +1,45 @@
 #!/usr/bin/env bash
-# Four things, in the order they are cheapest: never push a protected branch, never push work nobody can
-# review, never push a behaviour change without its note, never push a red tree.
+# The kit goes into Node, Elixir and shell repositories, so the checks are asked of scripts/checks.sh rather than named
+# here — and every gate is reachable: a gate after an `exit` is a gate that never ran. That fault lived in this hook until
+# 2026-11-06 (docs/fixes/collab/); the order below is the repair.
 #
-# The kit goes into Node, Elixir and shell repositories, so the checks are asked of scripts/checks.sh rather
-# than named here — and every gate below is reachable: a gate after an `exit` is a gate that never ran.
+# Six gates: never push a protected branch, never push work nobody can review, never push a behaviour change without its
+# note, never change the referee in silence, never add a module with no test, and never push a red tree.
 set -u
 
 protected="master main"
-fail=0
-
-while read -r local_ref local_sha remote_ref remote_sha; do
-  bash scripts/gates/pr-guard.sh "${1:-origin}" "$local_ref" "$remote_ref" "$remote_sha" || { fail=1; continue; }
-
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  bash scripts/gates/pr-guard.sh "${1:-origin}" "$_local_ref" "$remote_ref" "$_remote_sha" || exit 1
   case "$remote_ref" in
     refs/heads/*)
       branch="${remote_ref#refs/heads/}"
       for p in $protected; do
         if [ "$branch" = "$p" ]; then
           printf 'pre-push refused: %s is protected — open a pull request; the operator seals merges\n' "$branch" >&2
-          fail=1
+          exit 1
         fi
       done
-      # a behaviour change carries its note: the range git is about to send, not a guess at an upstream
-      base="$remote_sha"
-      case "$base" in ""|0000000000000000000000000000000000000000) base="$(git merge-base "$local_sha" "refs/remotes/${1:-origin}/$protected" 2>/dev/null || true)" ;; esac
-      [ -n "$base" ] && bash scripts/gates/fixes-guard.sh "$base" "$local_sha" || true
       ;;
   esac
 done
 
-[ "$fail" = 0 ] || exit 1
+# The range this push carries: the upstream, or the base branch when the branch is new.
+range_base() {
+  git rev-parse @{u} 2>/dev/null && return 0
+  for candidate in origin/main origin/master main master; do
+    git rev-parse --verify --quiet "$candidate" >/dev/null && { printf '%s\n' "$candidate"; return 0; }
+  done
+  return 1
+}
+
+base="$(range_base || true)"
+head="$(git rev-parse HEAD 2>/dev/null || echo HEAD)"
+
+if [ -n "$base" ] && [ "$base" != "$head" ]; then
+  [ -x scripts/gates/fixes-guard.sh ] && { bash scripts/gates/fixes-guard.sh "$base" "$head" || exit 1; }
+  [ -x scripts/gates/referee-guard.sh ] && { bash scripts/gates/referee-guard.sh "$base" "$head" || exit 1; }
+  [ -x scripts/gates/new-module-test.sh ] && { bash scripts/gates/new-module-test.sh "$base" "$head" || exit 1; }
+fi
 
 if [ -f scripts/checks.sh ]; then
   printf 'pre-push: the checks\n'

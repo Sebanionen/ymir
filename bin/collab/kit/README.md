@@ -1,6 +1,6 @@
 # The collaboration kit — the same discipline in every repository
 
-**What it is.** Eleven small pieces that make a repository reviewable by a stranger: a baton, fix notes, a review shelf, five gates, three
+**What it is.** Fifteen small pieces that make a repository reviewable by a stranger: a baton, fix notes, a review shelf, five gates, three
 hooks, and the two tools that keep them honest. They are the ones this house actually uses — not a template somebody imagined.
 
 **Why a kit instead of a paragraph in each repo.** Two products already carry slightly different versions of the same rules, because each
@@ -8,7 +8,7 @@ was written in the moment. A kit is how they stay the same, and how the next rep
 beginning.
 
 ```
-contents[11]{piece,path,what_it_does}:
+contents[15]{piece,path,what_it_does}:
   "the baton","`handoff/{TEMPLATE.md,check.sh,check.py}` + `handoff/CURRENT.md`","where the work is, what is blocked, and who is blocked for — rewritten at every hand"
   "the fix notes","`scripts/fixes.sh` · `scripts/fixes-components.sh` · `docs/fixes/`","one file per fix, never a changelog; a note says what was wrong, why, and what was run"
   "the review shelf","`scripts/reviews.sh` · `docs/audit/`","a review is a file named for its pull request, listed, and named by the baton"
@@ -20,6 +20,9 @@ contents[11]{piece,path,what_it_does}:
   "the hooks","`.githooks/{pre-commit,commit-msg,pre-push}`","the three moments a mistake is cheapest to stop"
   "the checks door","`scripts/checks.sh`","asks the repository which check it owns — node, elixir, its own `scripts/doctor.sh`, or none, which is a printed skip and never a silent pass"
   "the worktree tool","`scripts/worktree.sh`","one agent, one `.yggdrasil/<id>/` checkout — two hands never share a directory"
+  "the referee guard","`scripts/gates/referee-guard.sh`","a change to a gate, a hook or a ward with no fix note and no word in the message is refused at the push"
+  "the module-test guard","`scripts/gates/new-module-test.sh`","a new module with no test naming it — and no line in `.module-test.allow` — is refused at the push"
+  "the workbench skill","`.agents/skills/smidr-the-workbench/`","the craft taught to a guest hand: the slice, the note, the five things never changed quietly, and what each refusal means"
   "the collaborator door","`docs/collaborator-door.md` · `scripts/collab-connect.sh`","how a hand that is not on our network connects: a public card, a short-lived JWT scoped to one skill, a grant, a Rune per call — and the five refusals a door must still make"
 ```
 
