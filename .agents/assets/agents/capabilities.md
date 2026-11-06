@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",767
+  "shell doors (bin/*.sh)",768
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -548,6 +548,7 @@ capabilities[5]{surface,count}:
 | hermes-session-hook.sh | hermes-session-hook.sh — Hermes' session side of the Gná arm: the Sá | tested+named | keep (a human or a cron row must run it) |
 | hermes-telegram.sh | hermes-telegram.sh — seat THIS machine's Telegram bot into the Hermes  | tested+named | keep (a human or a cron row must run it) |
 | lock-ask.sh | lock-ask.sh — a read-only agent asks the LOCK OWNER for work, and the  | tested | keep (a human or a cron row must run it) |
+| lock-hold.sh | lock-hold.sh — a PRIMARY THAT DOES NOT EXIT: hold this machine's sessi | tested | keep (a human or a cron row must run it) |
 | pending.sh | pending.sh — everything that is waiting on the operator, in ONE list. | tested+named | keep (a human or a cron row must run it) |
 | pi-launcher.sh | pi-launcher.sh — the ONE launcher generator for a pi seat. | tested+named | keep (a human or a cron row must run it) |
 | seat-prove.sh | seat-prove.sh — a spawn is not a seat until the agent list shows it. | tested+named | keep (a human or a cron row must run it) |

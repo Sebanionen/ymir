@@ -16,7 +16,9 @@
 #
 # Usage:
 #   review-seat.sh status                       # is the seat there, and what is it doing
-#   review-seat.sh ensure [--clone <path>]      # raise it (idempotent); prints pane + agent
+#   review-seat.sh ensure [--clone <path>] [--primary]
+#                                               # raise it (idempotent); --primary takes the helm
+#                                               # when no live primary holds the lock
 #   review-seat.sh ask <pr> [--wait]            # put one PR in front of the seated judge
 #   review-seat.sh charter                      # print the charter it would load
 #   review-seat.sh close                        # lower the seat's workspace
@@ -54,9 +56,14 @@ die()    { printf 'review-seat: %s\n' "$*" >&2; exit 1; }
 usage()  { printf 'review-seat: %s\n' "$*" >&2; exit 2; }
 refuse() { printf 'review-seat: REFUSED — %s\n' "$*" >&3; exit 3; }
 
-herdr_ok() { [ "${HERDR_ENV:-}" = 1 ] && command -v herdr >/dev/null 2>&1; }
+# The honest probe is the SERVER answering, not a variable: a herdr CLI reaches its server from
+# a pane, from a timer and over ssh, and refusing on HERDR_ENV alone would refuse every one of
+# those while the server stands (RULES/25 — probe, never assume).
 need_herdr() {
-  herdr_ok || refuse "this is not a herdr pane (HERDR_ENV=${HERDR_ENV:-unset}) — the seat lives in herdr; run this from a pane on the machine that will review"
+  command -v herdr >/dev/null 2>&1 \
+    || refuse "herdr is not installed on this seat — the reviewer's seat lives in herdr"
+  herdr agent list >/dev/null 2>&1 \
+    || refuse "the herdr server does not answer here — start it (herdr) or run this on the machine that will review"
 }
 
 # The agent rows this seat would raise: the pane's cwd is the review clone, so a worktree of a
@@ -122,8 +129,13 @@ print(f"seat[3]{{clone,pane,state}}:\n  \"%s\",\"%s\",\"%s\"" % (sys.argv[1], d.
 }
 
 cmd_ensure() {
-  local clone=$DEFAULT_CLONE
-  while [ $# -gt 0 ]; do case "$1" in --clone) clone="${2:-}"; shift 2 ;; --clone=*) clone="${1#--clone=}"; shift ;; *) shift ;; esac; done
+  local clone=$DEFAULT_CLONE PRIMARY=0
+  while [ $# -gt 0 ]; do case "$1" in
+    --clone) clone="${2:-}"; shift 2 ;;
+    --clone=*) clone="${1#--clone=}"; shift ;;
+    --primary) PRIMARY=1; shift ;;
+    *) shift ;;
+  esac; done
   need_herdr
   [ -d "$clone" ] || refuse "no review clone at $clone — a judge reviews a CLONE of the delivered commit, never a smith's worktree (git clone <remote> $clone)"
   local pane; pane="$(seat_pane "$clone")"
@@ -134,13 +146,29 @@ cmd_ensure() {
   local model; model="$(bash "$ROOT/bin/model/agent-model.sh" forseti --plain 2>/dev/null || true)"
   [ -n "$model" ] || die "no model resolved for the judge on this seat — bin/model/agent-model.sh forseti --explain"
   local charter; charter="$(write_charter "$clone")"
+  # THE SEAT LAW: a seat gets its own machine state, so it never contends for the primary's helm.
+  # `--primary` is the deliberate exception — a machine with NO live primary (measured: the heart's
+  # lock named a dead pid on 2026-11-06) has nobody to drain the arm, so the review seat takes the
+  # helm and says so. It refuses when a live primary already holds it.
   local seat_state="${YMIR_REVIEW_SEAT_STATE:-$STATE/review/seat}"
-  mkdir -p "$seat_state" || die "cannot create the seat's private state at $seat_state"
+  local -a ENV_ARGS=()
+  if [ "$PRIMARY" = 1 ]; then
+    local lk owner
+    lk="$(bash "$ROOT/bin/records/ymir-state.sh" lock lock-path 2>/dev/null || true)"
+    owner="$(bash "$ROOT/bin/records/ymir-state.sh" lock owner 2>/dev/null || true)"
+    if [ -n "$lk" ] && [ -n "$owner" ] && [ -r "/proc/$owner/stat" ]; then
+      refuse "a live primary already holds the lock (pid $owner) — the review seat stays a seat; do not give it the helm"
+    fi
+    printf 'seat[1]{helm}:
+  "primary — no live lock owner on this machine, so the review seat drains the arm itself"\n'
+  else
+    mkdir -p "$seat_state" || die "cannot create the seat's private state at $seat_state"
+    ENV_ARGS=(--env "BROKK_MACHINE_STATE_DIR=$seat_state" --env "BROKK_STATE_OVERRIDE=$seat_state")
+  fi
 
   local ws_out ws
   ws_out="$(herdr workspace create --cwd "$clone" --label "$WORKSPACE_LABEL" --no-focus \
-              --env "BROKK_MACHINE_STATE_DIR=$seat_state" \
-              --env "BROKK_STATE_OVERRIDE=$seat_state" 2>/dev/null)" \
+              "${ENV_ARGS[@]}" 2>/dev/null)" \
     || die "herdr workspace create failed — is a herdr server running here?"
   ws="$(printf '%s' "$ws_out" | python3 -c 'import json,sys;d=json.load(sys.stdin);print(d.get("result",{}).get("workspace",{}).get("workspace_id",""))' 2>/dev/null || true)"
   [ -n "$ws" ] || die "herdr created no workspace (its answer: $(printf '%s' "$ws_out" | head -c 200))"
