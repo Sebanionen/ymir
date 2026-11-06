@@ -9,7 +9,8 @@
 # as consent to whoever is waiting.
 #
 # THE GROUND IS THE HOUSE'S OWN, never a new bus:
-#   the lock     ${XDG_STATE_HOME:-$HOME/.local/state}/ymir/brokk.lock   (one live primary per machine)
+#   the lock     the machine-global lock, resolved by bin/vault/gleipnir-lock-lib.sh (one live
+#                primary per machine; the path is never written here)
 #   the arm      $STATE/.arm.lease                                        (pid, starttime, state=)
 #   the queue    <state>/.wake-queue                                      (the arm's own inbox, drained into the session)
 #   the asks     $STATE/asks/<ask-id>.jsonl                               (one file per ask, append-only)
@@ -60,6 +61,12 @@ STATE="${HOME_DIR:-${YMIR_STATE_DIR:-}}"
 [ -n "$STATE" ] || { printf 'lock-ask: the state dir is unresolved — bin/vault/hoard-lib.sh names it\n' >&2; exit 1; }
 
 STATE_DOOR="$ROOT/bin/records/ymir-state.sh"
+# The lock's own library, so this door never re-implements where the lock lives (Gleipnir's shim
+# exists for exactly that: one implementation, many readers).
+for _gl in "$ROOT/bin/vault/gleipnir-lock-lib.sh" "$SCRIPT_DIR/../vault/gleipnir-lock-lib.sh"; do
+  [ -r "$_gl" ] && { . "$_gl"; break; }
+done
+unset _gl
 die()  { printf 'lock-ask: %s\n' "$*" >&2; exit 1; }
 usage(){ printf 'lock-ask: %s\n' "$*" >&2; exit 2; }
 refuse(){ printf 'lock-ask: REFUSED — %s\n' "$*" >&2; exit 3; }
@@ -69,8 +76,13 @@ json_escape() { python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))
 # ── the lock and the arm ───────────────────────────────────────────────────────────────────────
 lock_path() {
   local p=""
-  [ -x "$STATE_DOOR" ] && p="$("$STATE_DOOR" lock lock-path 2>/dev/null || true)"
-  [ -n "$p" ] || p="${XDG_STATE_HOME:-$HOME/.local/state}/ymir/brokk.lock"
+  if command -v gleipnir_lock_path >/dev/null 2>&1; then
+    gleipnir_lock_path p 2>/dev/null || true
+  fi
+  if [ -z "$p" ] && [ -x "$STATE_DOOR" ]; then
+    p="$("$STATE_DOOR" lock lock-path 2>/dev/null || true)"
+  fi
+  [ -n "$p" ] || return 1
   printf '%s' "$p"
 }
 lock_owner_pid() {
@@ -146,17 +158,23 @@ cmd_who() {
   live=no; [ -n "$pid" ] && pid_alive_since "$pid" "$pst" && live=yes
   lpid="$(arm_pid || true)"; lsession="$(arm_session || true)"; lstate="$(arm_state || true)"
   agree=unknown
-  if [ -n "$pid" ] && [ -n "$lsession" ]; then
-    [ "$pid" = "$lsession" ] && agree=yes || agree="NO (lock pid $pid, arm session ${lsession:-none})"
-  fi
+  case "${lsession:-}" in
+    ""|none|null) agree="unknown (the arm names no session)" ;;
+    *)
+      if [ -n "$pid" ]; then
+        [ "$pid" = "$lsession" ] && agree=yes || agree="NO (lock pid $pid, arm session $lsession)"
+      fi ;;
+  esac
   me="$(self_agent)"
   printf 'lock[7]{lock,owner_pid,live,arm_pid,arm_session,agree,queue}:\n  "%s","%s","%s","%s","%s","%s","%s/.wake-queue"\n' \
     "$lp" "${pid:-none}" "$live" "${lpid:-none}" "${lsession:-none}" "$agree" "${lstate:-$STATE}"
   printf 'me[1]{agent,descends_from_owner}:\n  "%s","%s"\n' "${me:-unknown}" \
     "$(if [ -n "$pid" ] && is_descendant_of "$pid" "$$"; then printf yes; else printf no; fi)"
-  if [ "$agree" != yes ] && [ "$agree" != unknown ]; then
-    printf 'finding[1]{what,why}:\n  "the lock and the arm disagree","the arm drains a queue the lock owner may not read — a wake written to it is a message into a room nobody stands in"\n'
-  fi
+  case "$agree" in
+    yes|unknown*) : ;;
+    *)
+    printf 'finding[1]{what,why}:\n  "the lock and the arm disagree","the arm drains a queue the lock owner may not read — a wake written to it is a message into a room nobody stands in"\n' ;;
+  esac
   return 0
 }
 
@@ -181,9 +199,10 @@ cmd_ask() {
   lsession="$(arm_session || true)"; lstate="$(arm_state || true)"
   queue="${lstate:-$STATE}/.wake-queue"
   [ -d "${lstate:-$STATE}" ] || refuse "the arm lease names state '$lstate', which does not exist — the queue path cannot be resolved from it"
-  if [ -n "$lsession" ] && [ "$lsession" != "$pid" ]; then
-    refuse "the lock owner (pid $pid) and the arm (session $lsession) DISAGREE — a wake would be written to a queue the lock owner does not drain; fix the lease first (bin/pi/syn-watch.sh) and ask again"
-  fi
+  case "${lsession:-}" in
+    ""|none|null) : ;;   # the arm names no session; the queue it drains is still its own `state=`
+    *) [ "$lsession" = "$pid" ] || refuse "the lock owner (pid $pid) and the arm (session $lsession) DISAGREE — a wake would be written to a queue the lock owner does not drain; fix the lease first (bin/pi/syn-watch.sh) and ask again" ;;
+  esac
 
   me="${as:-$(self_agent)}"; [ -n "$me" ] || me=unknown
   mkdir -p "$STATE/asks" || die "cannot create the asks shelf $STATE/asks"

@@ -37,3 +37,9 @@ at the Allfather's word. A machine that cannot serve it corrects its own overlay
 `agent-model.sh --check` on nidavellir: **10 ok / 0 fail**, every row resolving to
 `opencode-go/deepseek-v4.1-flash` from `fleet agents.yaml`. `model-rows-guard` (the 28th ward): `ok`, 10 rows.
 `agent-model.sh forseti --plain` → `opencode-go/deepseek-v4.1-flash`.
+
+## CHANGE LOG
+
+- **2026-11-06** — written with the doors it describes (plan 206): the review loop joined to the
+  spine, the read-only agent's mouth, the resolver that replaced five hardcoded model ids, and the
+  operator-only mail door.

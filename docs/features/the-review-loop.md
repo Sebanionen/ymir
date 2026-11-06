@@ -57,3 +57,9 @@ bin/seat/lock-ask.sh list [--all]             # open asks, or every ask
   `bin/pi/syn-watch.sh` re-arms it. A wake written to a queue nobody drains is a message in a bottle.
 - `agent-model: REFUSED — … is NOT in this seat's catalogue` — the model the fleet declared is not one this
   machine can serve. Correct the row for this machine (`config/agents.<host>.yaml`) or name a listed model.
+
+## CHANGE LOG
+
+- **2026-11-06** — written with the doors it describes (plan 206): the review loop joined to the
+  spine, the read-only agent's mouth, the resolver that replaced five hardcoded model ids, and the
+  operator-only mail door.

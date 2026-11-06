@@ -33,3 +33,9 @@ through the spine's new `--pr` mode.
 `review-watch.sh --dry-run` on nidavellir: `seen 1 · raised 0` for `zerwiz/ymir` #552 (head `fff945404d00`,
 `CONFLICTING`, `ci=none`). A real pass raised one ask (`ask-20261106T204921Z-5dcd`) into
 `state/.wake-queue`, and a second pass raised nothing. `bin/seat/tests/test_lock_ask.sh` — 9 ok / 0 fail.
+
+## CHANGE LOG
+
+- **2026-11-06** — written with the doors it describes (plan 206): the review loop joined to the
+  spine, the read-only agent's mouth, the resolver that replaced five hardcoded model ids, and the
+  operator-only mail door.

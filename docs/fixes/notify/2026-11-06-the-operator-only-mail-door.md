@@ -33,3 +33,9 @@ approval.
 `mail.sh --status` on nidavellir and heimdall: `ready` (the grant mints a token); on the heart it answers
 `no grant` — the vault cannot be opened there, which is the fault plan 206 §3 F1 names. `--dry-run` builds
 and validates the message without sending.
+
+## CHANGE LOG
+
+- **2026-11-06** — written with the doors it describes (plan 206): the review loop joined to the
+  spine, the read-only agent's mouth, the resolver that replaced five hardcoded model ids, and the
+  operator-only mail door.

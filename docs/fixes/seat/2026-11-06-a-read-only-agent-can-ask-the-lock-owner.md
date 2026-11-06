@@ -36,3 +36,9 @@ owner answers and the asker reads it; a second answer is refused (exit 3); a pro
 is refused (`setsid --fork`); closing marks it read; a dead owner, no lock, and a disagreeing lease are each
 refused with the reason. A live end-to-end pass on nidavellir wrote `ask-20261106T204447Z-0639`, the owner
 answered it, and `inbox forseti` showed the answer.
+
+## CHANGE LOG
+
+- **2026-11-06** — written with the doors it describes (plan 206): the review loop joined to the
+  spine, the read-only agent's mouth, the resolver that replaced five hardcoded model ids, and the
+  operator-only mail door.
