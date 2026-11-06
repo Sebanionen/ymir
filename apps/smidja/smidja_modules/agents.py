@@ -20,7 +20,8 @@ from typing import Literal, Optional
 
 import yaml
 
-from . import agent_opencode, agent_pi, lm_local, permissions, prompts, stall_watch
+from . import (agent_opencode, agent_pi, context as context_telemetry, lm_local,
+               permissions, prompts, stall_watch)
 from .data_types import (AgentCall, AgentConfig, EnvelopeBase, EventRecord,
                          GateCheck, GateReport, Phase, PhaseParams, PiRequest,
                          smidjaConfig, UsageBreakdown)
@@ -579,10 +580,30 @@ def _execute(run, phase: Phase, call: AgentCall, agent, agent_dir) -> EnvelopeBa
 
     _persist_envelope(run, phase, agent.name, call, envelope, attempt, valid=True)
     run.console.envelope_summary(envelope)
-    context = latest or result
+    reading = latest or result
+    # THE PHASE'S CONTEXT RECEIPT. Occupancy is what the last turn left in the
+    # window; the window comes from the door the rest of the house uses (never a
+    # table here). Recorded per phase, not per agent, because one agent can run
+    # several phases (build_1, revise_1) and only the phase knows which ceiling
+    # it ended against.
+    window, window_source = context_telemetry.window_for(
+        current_model, hint=reading.context_window)
+    last_usage = reading.last_usage or {}
+    receipt = context_telemetry.phase_context(
+        model=current_model,
+        thinking=agent.thinking,
+        used=reading.context_tokens,
+        window=window,
+        source=window_source,
+        input_tokens=last_usage.get("input") or 0,
+        cache_read=last_usage.get("cacheRead") or 0,
+        output=last_usage.get("output") or 0,
+        finish=reading.last_finish,
+    )
+    run.context_by_phase[phase.phase_id] = receipt
     run.tracer.agent_session_row(run.smidja_id, agent, session_id,
-                                 context_tokens=context.context_tokens,
-                                 context_window=context.context_window)
+                                 context_tokens=reading.context_tokens,
+                                 context_window=window)
     run.save_agent_map(agent.name, {"session_id": session_id, "model": agent.model,
                                     "coding_agent": agent.coding_agent})
     run.tracer.event(EventRecord(smidja_id=run.smidja_id, phase_id=phase.phase_id,
@@ -596,9 +617,11 @@ def _execute(run, phase: Phase, call: AgentCall, agent, agent_dir) -> EnvelopeBa
                                  tokens=spent.total_tokens,
                                  payload={"cost": spent.total_cost,
                                           "usage": spent.model_dump(),
-                                          "context_tokens": context.context_tokens,
-                                          "context_window": context.context_window}))
+                                          "context_tokens": reading.context_tokens,
+                                          "context_window": window,
+                                          "context": receipt}))
     run.console.agent_finished(agent.name, spent.total_tokens, spent.total_cost)
+    run.console.context_receipt(agent.name, receipt)
     if envelope.status != "success":
         raise RuntimeError(f"{agent.name} reported status={envelope.status!r}: {envelope.summary}")
     return envelope

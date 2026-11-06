@@ -71,6 +71,11 @@ sessions:
 phases smidja_id:
     @python3 -c "import sqlite3;c=sqlite3.connect('file:{{db}}?mode=ro',uri=True);[print(*r) for r in c.execute(\"select seq,name,kind,owner,status,attempt from phases where smidja_id='{{smidja_id}}' order by seq\")]"
 
+# one row per phase: who ran, on what model, and how full its window was
+# just trace <smidja_id>   ·   the verdict words are bin/seat/context.sh's
+trace smidja_id:
+    @uv run apps/smidja/smidja_trace.py "{{smidja_id}}" --db "{{db}}" --data-dir apps/smidja/smidja_data
+
 # the live event tail: just tail <smidja_id>
 tail smidja_id:
     @python3 -c "import sqlite3;c=sqlite3.connect('file:{{db}}?mode=ro',uri=True);[print(*r) for r in c.execute(\"select rowid,type,name,started_at from events where smidja_id='{{smidja_id}}' order by rowid desc limit 25\")]"

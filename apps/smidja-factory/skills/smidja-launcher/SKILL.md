@@ -35,6 +35,7 @@ scripts/smidja run --service <name> "<ask>" # one pick = provider × agent × ch
 scripts/smidja services                    # list the 9 whole-stack presets
 scripts/smidja sessions [N]               # last N runs
 scripts/smidja phases <smidja_id>
+scripts/smidja trace <smidja_id>            # one row per phase: model, tools, tokens, window, verdict
 scripts/smidja tail <smidja_id>
 scripts/smidja procs <smidja_id>
 scripts/smidja stop <smidja_id>              # kill children-first (misbehaving agents)
@@ -96,7 +97,15 @@ The files that define what this launcher runs:
    (stronger model, prompt hardening, redundant commit, stopped run). Then
    `smidja learn` writes that outcome + diagnosis into Kaia's engram memory so
    she recalls it and picks better next time — the self-improving loop.
-5. **Launch detached for anything that may outlive a tool-call timeout.** A
+5. **Read the context before blaming the model.** `smidja trace <smidja_id>`
+   prints one row per phase — model, thinking, tools, tokens, window, percent
+   and the verdict (`room to work` · `past the auto threshold` · `near the window
+   — compact now` · `TRUNCATED`). A phase at or above the force threshold (75%
+   of its window) is reported `context-pressed`, never `success`: the run pressed
+   its window, and the next phase inherits the damage. `just trace <id>` is the
+   same verb. Full column list and verdict meanings: `cookbooks/run_smidja.md`
+   → Trace.
+6. **Launch detached for anything that may outlive a tool-call timeout.** A
    35B planner needs minutes per phase. Launching `smidja run` through a short
    tool-call timeout SIGKILLs the subagents mid-generation (LM Studio:
    "Client disconnected") and the run finalizes `fail` with **no** error events
@@ -106,12 +115,12 @@ The files that define what this launcher runs:
      "SMIDJA_PROJECT_DIR=<target-repo> $YMIR_ROOT/scripts/smidja run sdlc '<ask>'"
    # then watch with read-only calls:  smidja sessions / smidja tail <id>
    ```
-6. **Cloud models are three.** deepseek-v4-flash (workhorse), big-pickle,
+7. **Cloud models are three.** deepseek-v4-flash (workhorse), big-pickle,
    nemotron-3-ultra-free — under the `ocrd` opencode profile. Local models
    (LM Studio, `lmstudio/*`) need no keys; local-model reliability evidence
    lives in `tests/local-models/RESULTS.md` (JSON-discipline and read-only
    reviewer gotchas).
-7. **Runaway? Emergency-stop, not stop.** A recursive/admission loop or
+8. **Runaway? Emergency-stop, not stop.** A recursive/admission loop or
    dozens of procs is a `scripts/smidja emergency-stop` (writes a
    `.smidja-emergency` kill-switch — blocks auto-admission — kills every
    smidja pattern, marks in-flight runs `aborted`). Resume after fixing:

@@ -158,6 +158,17 @@ def run(request: PiRequest, on_event: Optional[Callable[[dict], None]] = None,
                     tokens += int(total)
                     context_tokens = int(total)
                     cache = usage_tokens.get("cache") or {}
+                    # The LAST step's raw usage + stop reason, so the phase can
+                    # record input/cache_read/output and whether the turn was cut
+                    # off — the accumulated `usage` cannot answer either.
+                    result.last_usage = {
+                        "input": usage_tokens.get("input") or 0,
+                        "output": usage_tokens.get("output") or 0,
+                        "reasoning": usage_tokens.get("reasoning") or 0,
+                        "cacheRead": cache.get("read") or 0,
+                        "cacheWrite": cache.get("write") or 0,
+                    }
+                    result.last_finish = str(part.get("reason") or "")
                     result.usage.add_turn({
                         "input": usage_tokens.get("input") or 0,
                         "output": usage_tokens.get("output") or 0,
