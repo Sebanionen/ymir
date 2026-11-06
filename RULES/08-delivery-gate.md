@@ -108,3 +108,45 @@ superseded raises a new wake at a new head sha, and a wake already carried is ne
 head — the flood brake this house has already paid for.
 
 The tool is `bin/agents/pr-seal.sh` (`watch` · `seal <n>`); the law it enforces is this section.
+
+---
+
+## Appended 2026-11-06 — the delivery switch: a project may declare that its reviewer merges
+
+**The Allfather's word, and it settles a contradiction this rule has carried since plan 203 §10:**
+*"why aren't the heart reviewing all prs that comes in on the ymir repo and merging them … we have 3 prs
+open."* The reviewer merges — on `zerwiz/ymir`, every PR that comes in, not only the seat's own.
+
+**This is a declaration, not a mood, and it lives in one row.** `hodd/identity/projects.yaml` carries a
+`delivery:` key per project:
+
+```
+delivery[2]{value,meaning}
+  "operator-merges","DEFAULT. A PR is delivered when the Allfather merges it, by his own hand. Unchanged."
+  "reviewer-merges","the project's reviewer merges, on a green, non-conflicting head, with a merge record — and the Allfather can revert, re-open a review, or withdraw the switch in one line."
+```
+
+**The six conditions are not replaced; they are re-owned.** A `reviewer-merges` project keeps every refusal
+above — no merge on a red gate, on a conflict, on a missing review record, on an unverified claim, on a head
+that moved after the packet, or on the reviewer's own authored work — and adds two of its own:
+
+```
+reviewer_merges[4]{rule,why}
+  "the reviewer judges in a FRESH context and runs the gates itself","a claim read from a packet is not evidence; the tests run where the merge will land"
+  "ONE Runes entry per merge, naming reviewer, reviewed sha, ruleset id, gate output, merge commit and the moment","a main that moved must be explainable without asking anyone"
+  "the reviewer's identity can merge and cannot force-push, delete a branch, or administer","a reviewer that can rewrite history is not a gate"
+  "the Allfather is told of every merge — MERGED with the record, or ASK with the question","the authority he keeps is the account, the veto, and the rule"
+```
+
+**Which projects have said so, and how to unsay it:** the row in `hodd/identity/projects.yaml`. Today
+`ymir` reads `reviewer-merges` at his word; every project that does not name the key stays `operator-merges`.
+Changing the row back is the whole withdrawal, and it takes effect at the next judgement.
+
+**What this does not permit.** A reviewer that merges its own authored work (it is a reviewer, not an
+author); a reviewer acting on a packet it did not read; a watch or a timer that merges without a judgement
+(`bin/forge/review-watch.sh` asks, it never merges); and any merge whose record cannot be written — a merge
+with no record is refused, because the record is what makes `main` explainable.
+
+The doors are `bin/agents/eindri-review-spawn.sh --pr <url>` (seat the judge once per head),
+`bin/forge/review-watch.sh` (the trigger), `bin/seat/lock-ask.sh` (the read-only agent's mouth) and
+`bin/notify/mail.sh` (the word reaching him).

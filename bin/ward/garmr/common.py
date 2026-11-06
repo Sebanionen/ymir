@@ -33,8 +33,10 @@ DEFAULTS = {
         "high": "local-or-fleet",
         "critical": "online",
         "fleet": [],
-        "local": "qwen3.6-35b-a3b@q4_k_xl-mtp",
-        "online": "opencode-go/deepseek-v4.1-flash",
+        # Empty means RESOLVE on this seat (bin/model/agent-model.sh); a literal here would be
+        # a promise another machine cannot keep (RULES/25, plan 206 §11).
+        "local": "",
+        "online": "",
         "on": "high",
         "announce_eviction": True,
         "degrade_loudly": True,
