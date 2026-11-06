@@ -20,7 +20,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ymir_home_root HOME_R 2>/dev/null || true
 MAIL_DIR="$HOME_R/hodd/memory/mail"
 STATE="${BROKK_MACHINE_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/ymir}"
-DESK_URL="${GNA_DESK_URL:-http://127.0.0.1:8490}"
+DESK_URL="${GNA_DESK_URL:-http://127.0.0.1:8494}"
 TOKEN_FILE="$HOME_R/hodd/state/gna-desk.token"
 RUNES="$ROOT/bin/records/runes-append.sh"
 

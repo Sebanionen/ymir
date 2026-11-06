@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # install.sh — seat Gná's desk on THIS machine. Idempotent: one desk per install.
 #
-#   bash bin/mail/install.sh [--port 8490] [--user]
+#   bash bin/mail/install.sh [--port 8494] [--user]
 #
 # - installs a systemd USER unit (gna-desk.service) that runs the desk on loopback
 # - Restart=always: a desk that dies is raised again, because a dead desk and an
@@ -15,7 +15,7 @@ set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
-PORT="${GNA_DESK_PORT:-8490}"
+PORT="${GNA_DESK_PORT:-8494}"
 UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
 UNIT="$UNIT_DIR/gna-desk.service"
 PY="$(command -v python3 || echo /usr/bin/python3)"

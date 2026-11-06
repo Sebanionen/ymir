@@ -16,7 +16,7 @@ bin/mail/gna_judge.py     the judge: six classes · six actions · rules only ·
 bin/mail/gna_import.py    the importer: the Gmail API OR IMAP, read-only, one account, --dry-run
 bin/mail/gna_addresses.py the register behind the door: DNS MX by hand, routing, arrival proofs
 bin/mail/addresses.sh     the addresses the house USES, and whether mail can reach them (--check)
-bin/mail/gna_desk.py      the desk: 127.0.0.1:8490, token + account scope, GET only
+bin/mail/gna_desk.py      the desk: 127.0.0.1:8494, token + account scope, GET only
 bin/mail/inbound-test.sh  the acceptance test: send from outside, assert the arrival, or skip
 bin/mail/mail-scan.sh     the earlier one-shot read (kept — it proved the door opened)
 bin/mail/install.sh       seats the desk as a systemd USER unit, restart-always

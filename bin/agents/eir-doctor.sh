@@ -181,7 +181,7 @@ s_vault()     { [ -x "$SCRIPT_DIR/../vault/hnitbjorg-ensure.sh" ] && "$SCRIPT_DI
 s_ward()      { [ -x "$SCRIPT_DIR/../ward/security-audit.sh" ] && "$SCRIPT_DIR/../ward/security-audit.sh" check --quiet >/dev/null 2>&1; }
 f_ward()      { "$SCRIPT_DIR/../ward/harden.sh" apply --ssh-keys-perm >/dev/null 2>&1; }
 f_vault()     { "$SCRIPT_DIR/../vault/hnitbjorg-ensure.sh" ensure --install >/dev/null 2>&1; }
-# ── Gná — the mail desk (:8490, plan 193 §14) ────────────────────────────────
+# ── Gná — the mail desk (:8494, plan 193 §14) ────────────────────────────────
 # Three named truths, and none of them may masquerade as another:
 #   ok            the desk answers /health AND declares an account
 #   unconfigured  the desk answers but has no account row — a NAMED, non-green
