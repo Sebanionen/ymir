@@ -51,3 +51,4 @@ apps/hlidskjalf/tests/swedish-selection.e2e.mjs | fixture | the Swedish selectio
 apps/hlidskjalf/tests/voice.e2e.mjs | fixture | the voice test speaks Swedish samples; the Swedish text is the input under test
 systems/skirnir/services/test_voice_language.py | fixture | the language-selection test: Swedish speech and its function words are the assertion
 apps/hvergelmir/apps/dna-client-tui/tests/render.test.ts | fixture | vendored upstream test proving CJK width handling — the foreign text IS the assertion
+docs/fixes/gates/2026-11-06-the-registers-caught-up-after-the-night-ships.md | quotation | the note QUOTES the character the language ward reported ("â" x460) — naming a fault is not writing in another tongue
