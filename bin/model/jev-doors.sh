@@ -70,7 +70,11 @@ PY
     id="${2-}"; state="${3-}"; questions="${4-}"
     port="$(rows | awk -F'\t' -v want="$id" '$1==want {print $3}' | head -1)"
     [ -n "$port" ] && [ "$port" != "null" ] || { printf 'jev-doors: no door for %s\n' "$id" >&2; exit 2; }
+    # ONE RAIL, ON DEMAND (2026-11-06): the router names the model in the body and swaps it
+    # in; four always-on units held 11.6 GiB of a 16 GiB card and starved a 35B coder.
+    model="$(rows | awk -F'\t' -v want="$id" '$1==want {print $2}' | head -1 | tr '[:upper:]' '[:lower:]')"
     curl -s -X POST "http://$HOST:$port/v1/systemone" -H 'content-type: application/json' \
-      -H "Authorization: Bearer $(key)" -d "{\"state\":$state,\"questions\":$questions}" ;;
+      -H "Authorization: Bearer $(key)" \
+      -d "{\"model\":\"$model\",\"state\":$state,\"questions\":$questions}" ;;
   *) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
