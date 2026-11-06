@@ -31,6 +31,9 @@ that is neither a Node project nor our own. Three faults, each of the class the 
 
 ## Appended — the manifest said `files: 0` on a refresh
 
+Its own note, written after fixes-guard refused a push that carried the fix without one: see
+`docs/fixes/collab/2026-11-06-the-manifest-counted-only-what-it-added.md`.
+
 The installer's manifest counted what the run **added**, so a repository that was already current recorded
 `"files": 0` and a reader would conclude the kit carries nothing. It now records both: `files` is what the kit
 carries (20 at 1.1.0) and `installed_this_run` is what this run added. Seen in a client repository on the first
