@@ -713,8 +713,13 @@ if [ "$DRY" -eq 1 ]; then
     "${ENGINE:-none}" "$ISOLATION_EFFECTIVE" "$ISOLATION_REASON" "$RESOLVED_BACKEND" "$BACKEND_WHY" \
     "$HARNESS" "${HARNESS_PROV:-}" "${MODEL:-<harness default>}" "${MODEL_PROV:-}" "$_wt" "$BRIEF" \
     "${MODE:-scout}" "$YOLO" "$WORTH_VERDICT" "${LOCKED:-no}${LOCK_HOLDER:+ (busy: $LOCK_HOLDER)}"
-  printf '  launch: cd %s && %s%s --prompt "$(cat %s)"\n' \
-    "$_cwd" "$HARNESS" "${MODEL:+ --model $MODEL}" "$BRIEF"
+  if [ "$HARNESS" = opencode ]; then
+    printf '  launch: cd %s && opencode run%s --auto "$(cat %s)"\n' \
+      "$_cwd" "${MODEL:+ --model $MODEL}" "$BRIEF"
+  else
+    printf '  launch: cd %s && %s%s --prompt "$(cat %s)"\n' \
+      "$_cwd" "$HARNESS" "${MODEL:+ --model $MODEL}" "$BRIEF"
+  fi
   [ "$ISOLATION_DECLARED" = utgard ] && [ "$ISOLATION_EFFECTIVE" != on ] && printf '  note: brief declares Isolation: utgard; effective %s. A declared utgard is never silently downgraded; the refusal above is the law, not a fallback.\n' "$ISOLATION_EFFECTIVE"
   [ "$ISOLATION_DECLARED" = herdr ] && [ "$ISOLATION_EFFECTIVE" = on ] && printf '  note: brief declares Isolation: herdr (the ordinary road) but --isolation on forced the sandbox\n'
   printf '  dispatch_profile: %s\n' "${DISPATCH_ACTIVE:-<none active — the machine resolution governs>}"
@@ -802,7 +807,9 @@ build_launch_command() {  # prints the worker command WITHOUT the leading exec
       # EVERY opencode seat was born dead while the dispatcher said "spawned"
       # (measured 2026-10-24, four dispatches, four empty panes). `env` carries the
       # assignment through the exec.
-      printf 'env OPENCODE_CONFIG_CONTENT=%s opencode %s--prompt "$(cat %s)"' \
+      # OpenCode v2 moved the message to `run`; the old top-level --model/--prompt shape answers
+      # "Unrecognized flag: --model in command opencode" and every seat dies in its pane (measured 2026-11-06).
+      printf 'env OPENCODE_CONFIG_CONTENT=%s opencode run %s--auto "$(cat %s)"' \
         "$(shell_quote '{"permission":{"*":"allow"}}')" "$model_flag" "$(shell_quote "$brief_ref")"
       ;;
     pi|pi-signed)
