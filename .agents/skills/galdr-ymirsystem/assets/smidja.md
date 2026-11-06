@@ -111,6 +111,59 @@ re-enters at the phase the checkpoint names, and finished work is never paid for
 
 The cookbook is `apps/smidja-factory/cookbooks/run_smidja.md` §Resume.
 
+## The phase contract — what a phase owes before it may close
+
+`PhaseParams.kind` answers *who runs the block* (`engineer` · `agent` · `code`).
+`PhaseParams.contract` answers *what the phase owes before it may close* — it is
+pi-durable's phase kind, translated (`github.com/zerwiz/durable-pi`,
+`apps/dpi-sdk/src/jobs.ts`), and it defaults to `ordinary`:
+
+| `contract` | meaning |
+|---|---|
+| `ordinary` | the block runs and closes, as before |
+| `approval` | **waits for a person's decision.** The block is never entered on silence; a restart re-enters the phase and waits again |
+| `repeat` | a loop saving **one checkpoint per iteration**; a restart re-enters at the first iteration that never committed |
+
+Decisions are rows in the trace (`decisions`), not side files, so the record, the
+resume and the visualizer read the same answer: `just decide <id> <phase>
+approve|decline [--note]` (`apps/smidja/smidja_decide.py`). A run waiting for one
+exits **3** and prints the door; a declined run exits **4**. Neither is a failure
+of the work, which is why neither is `1`.
+
+`repeat` is `ph.iterations(total)` — declaring the total, then yielding only the
+turns still owed; each `turn.checkpoint(**payload)` is a commit and a `checkpoint`
+event. `runner.declare_iterations` counts the committed ones and announces them,
+so a restart says `2 of 4 iterations still owed ([1, 2] already committed)`.
+
+**The one thing a chain author must know:** on replay the `with run.phase(...)`
+block still executes. The machinery's own doors are answered from the record —
+`ph.call()`, `ph.log()`, `quality.run_tests`, `changes.capture`,
+`git_helper.commit_all`, and an iteration's `checkpoint()`. A block's own side
+effects are the chain's to make idempotent.
+
+## The run as one record
+
+`apps/smidja/smidja_modules/runrecord.py` is the ONE reader of the trace: it
+returns the run as a record — **phases · steps · state · where it stopped** —
+with `PhaseRun.status` (`pending` · `running` · `waiting` · `interrupted` ·
+`done` · `failed`), `checkpoint`, `resume_at`, `where_stopped`, `resumed`, and
+the committed `envelope` / `logged` verdict per phase. `resume` plans on top of
+it; the doors and any UI render it; no second private query exists.
+
+`interrupted` is this house's word: the record says `running` while no process is
+alive — exactly what a SIGKILL leaves. A record that kept calling that `running`
+would have a resume believe in work that is already dead.
+
+Doors: `just record <id> [--json]` (`apps/smidja/smidja_record.py`) and
+`just decide <id> <phase> approve|decline` (`apps/smidja/smidja_decide.py`).
+
+Proof: `apps/smidja-factory/tests/test_recovery.py` starts a real chain in a real
+subprocess, SIGKILLs it inside a phase, restarts it with **no client attached**,
+and asserts (a) the restart re-enters at the checkpoint, (b) the committed
+envelope is handed forward from the trace even with its file deleted, (c) a
+marker line per execution shows no committed phase's work was recomputed, and
+(d) an `approval` phase with no decision does not pass — exit 3, block never run.
+
 ## The trace
 
 - DB: **`$YMIR_HOME/smidja/smidja.db`** (WAL; read-only readers never block a run).
@@ -296,38 +349,3 @@ skills[9]{skill,what it settles}:
 **What this seat is missing against those books** (measured 2026-10-23): no `roster.yaml` (so no
 `stacks:` → no teams), `just` not installed (so no `just rosters/sdlc/sessions`), `START_SMIDJA.md`
 absent. Each is a ticket; none is a reason to improvise a team.
-
-## Appended 2026-11-05 — the trace reads in one row, and a pressed phase is not green
-
-Two doors the smithy now owns, because the audit found both missing.
-
-**`trace` — one row per phase.** `uv run apps/smidja/smidja_trace.py <smidja_id>` (or `just trace
-<smidja_id>`) prints `trace[n]{phase,owner,model,thinking,tools,tokens,window,percent,verdict}` from
-what the run already wrote — the database, `raw_output.jsonl`, `envelope.json`, `prompts/`. No new
-store. `--json` carries `input`, `cache_read`, `output`, `window_source`, `last_finish` and the
-run-level `context_pressed`; `--db` / `--data-dir` name a non-default trace.
-
-**The verdicts are `bin/seat/context.sh`'s four words**, never a second vocabulary:
-`room to work` · `past the auto threshold` · `near the window — compact now` · `TRUNCATED`. Two honest
-empties cover what the door never faces — `window unknown` (no door could name the ceiling) and
-`no usage recorded` (a phase with no usage at all). The window itself is probed, in order: pi's model
-catalog (what the dispatcher already resolved), then `bin/model/catalog.sh`, then
-`bin/seat/core-four.sh --json` — and only when it names the same model. **No table of windows exists
-here** (Rule 07).
-
-**A phase that ends at or above the force threshold (75% of its window), or on a truncated turn, is
-`context-pressed`** — in the session row, the banner (`◐ context-pressed`), `just phases` and the
-trace. It is **never `success`**, and the run exits non-zero, so the database, the banner and `$?`
-tell one story. The receipt is written per agent phase onto its `agent_end` event
-(`payload.context`), not per agent, because one agent may run several phases against the same
-ceiling.
-
-Code: `apps/smidja/smidja_modules/context.py` (the one resolver + vocabulary), `runner.py::finish`,
-`agents.py::_execute`, `smidja_trace.py`. Law: the smithy's hard rule 11 in
-`apps/smidja-factory/AGENTS.md`; the cookbook section `cookbooks/run_smidja.md` → Trace. Note:
-`docs/fixes/smidja/unversioned-2026-11-05-the-phase-records-its-context.md`.
-
-**Not done, said plainly:** `scripts/smidja` lives in the `~/command` provenance repo, so the verb is
-documented in the `smidja-launcher` skill and shipped here as the Python door + `just trace`; the
-launcher picks it up on its next regen. The visualizer renders `context-pressed` as a status word but
-has no colour entry for it yet.

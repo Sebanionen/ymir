@@ -221,6 +221,9 @@ Memory: `smidja/smidja_data/kaia.engram` (UI `http://localhost:4601#/memory`, CL
 | `smidja stop <id>` · `pause <id>` · `resume <id>` · `steer <id> "msg"` | control |
 
 `resume` is not a pause/unpause: it continues a **finished or failed** run at its last green phase (`--from-phase` re-enters at a named phase). It refuses with `no such run` · `nothing green to resume from` · `the roster changed since this run`, and it never resumes a model switch. See `smidja-factory/cookbooks/run_smidja.md` §Resume.
+
+| `smidja record <id>` | the run as ONE record — phases · steps · state · where it stopped (the same shape `resume` reads) |
+| `smidja decide <id> <phase> approve\|decline` | settle an `approval` phase; the block never runs without it (exit 3 while waiting, 4 when declined) |
 | `smidja admit <id>` · `recover <id>` · `watch` | Kaia oversight (see §5) |
 | `just watch` · `just emergency-stop` | run the watchdog / panic button |
 

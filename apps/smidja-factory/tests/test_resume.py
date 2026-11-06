@@ -301,8 +301,8 @@ class RunReplayTest(unittest.TestCase):
 class ShippedCopyTest(unittest.TestCase):
     """The template is what a user's repo gets — the instance must not drift from it."""
 
-    MODULES = ("resume.py", "runner.py", "session.py", "quality.py", "changes.py",
-               "git_helper.py", "data_types.py")
+    MODULES = ("resume.py", "runrecord.py", "runner.py", "session.py", "tracer.py",
+               "quality.py", "changes.py", "git_helper.py", "data_types.py")
 
     def test_the_running_instance_is_the_shipped_template(self) -> None:
         if not INSTANCE.is_dir():
@@ -314,7 +314,7 @@ class ShippedCopyTest(unittest.TestCase):
                 self.assertEqual(shipped, running,
                                  f"smidja_modules/{name} differs between the template and the "
                                  f"running instance — one of them was edited alone")
-        for name in ("smidja_resume.py",):
+        for name in ("smidja_resume.py", "smidja_record.py", "smidja_decide.py"):
             with self.subTest(file=name):
                 self.assertEqual((SHIPPED / name).read_text(), (INSTANCE / name).read_text())
 

@@ -105,6 +105,65 @@ A run whose processes are still alive is also refused, and that one is not in th
 
 `--from-phase <name>` re-enters at a named phase **of this run** — to redo a phase that passed, or to retry the broken one once its input changed. It may not jump over a phase that did not commit: a phase that is `fail`, or that never started, is never skipped. That is the same `nothing green to resume from` refusal, naming the phase it would have skipped.
 
+## The phase contract
+
+A phase has two different kinds of "kind", and they answer different questions.
+
+`kind` says **who runs the block**: `engineer`, `agent` (a coding agent, typed envelope) or `code` (Python, a known command).
+
+`contract` says **what the phase owes before it may close**. It is optional, it defaults to `ordinary`, and it is pi-durable's phase kind translated to the smithy (`github.com/zerwiz/durable-pi`, `apps/dpi-sdk/src/jobs.ts`):
+
+| `contract` | what it does |
+|---|---|
+| `ordinary` (default) | the block runs and closes, exactly as before |
+| `approval` | **waits for a person's decision.** No decision is not a yes: the block is never entered until `approved`, and a restart re-enters the phase and waits again |
+| `repeat` | a loop that saves **one checkpoint per iteration**, so a restart re-enters at the first iteration that never committed |
+
+```python
+with run.phase(PhaseParams(name="signoff", kind="code", owner=run.engineer,
+                           contract="approval",
+                           description="Wait for the operator's yes before the run closes")) as ph:
+    ph.log(approved_by="the operator")
+
+with run.phase(PhaseParams(name="watch", kind="code", owner=run.engineer,
+                           contract="repeat",
+                           description="Poll the change feed, one checkpoint a turn")) as ph:
+    for turn in ph.iterations(4):
+        do_work(turn.index)
+        turn.checkpoint(seen=turn.index)
+```
+
+**Deciding.** The decision is a row in the trace (`decisions`), not a side file, so the record, the resume and the visualizer read the same answer:
+
+```bash
+just decide <smidja_id> signoff approve            # or decline / cancel
+just decide <smidja_id> signoff decline --note "not this week" --by "Josef"
+```
+
+A run that stops at an approval phase **exits 3** and prints the door; a run a person declined **exits 4**. Neither is the run failing at its work, which is why neither is `1`. After a decision, `just resume <smidja_id>` re-enters the phase and runs the block — once.
+
+**Repeats.** `ph.iterations(total)` declares the loop's size and yields only the turns still owed. Each `checkpoint()` is a commit; a restart counts the committed ones and announces them (`iteration 2/4 already committed — handed forward, not re-run`). The record carries the count (`progress: {done, total}`), so `2/4` is a fact rather than an impression.
+
+**One thing a chain author must know:** on replay the `with run.phase(...)` **block still executes**. What is answered from the record are the machinery's own doors — `ph.call()`, `ph.log()`, `quality.run_tests`, `changes.capture`, `git_helper.commit_all`, and an iteration's `checkpoint()`. So a block's own side effects (a file written by hand, an external POST) are the chain's responsibility: put them behind `ph.call()` or a `checkpoint()` if they must not happen twice.
+
+## The run as a record
+
+`just record <smidja_id>` prints the run the way every client should see it — **phases · steps · state · where it stopped** — from one reader (`smidja_modules/runrecord.py`). `resume` reads the same shape, so a plan and a door and a UI cannot disagree about what the run was.
+
+```bash
+just record <smidja_id>             # the run · phases · the steps that stopped it
+just record <smidja_id> --as-steps  # every step of every phase
+just record <smidja_id> --json      # the whole record, for a UI or a test
+```
+
+The default shows the phases that did **not** finish, with the last twenty steps of each
+and an honest count of what it left out — a failed agent phase carries 167 events on the
+oldest trace on this machine, and the finished ones are not why the door is open.
+
+The statuses are honest, not decorative: `running` only while a process is alive, `interrupted` when the record says `running` and nothing is (`interrupted` is the word a SIGKILL leaves behind), `waiting` for an approval phase that owes a decision, `completed`, `failed`, `declined`. Where the trace is silent the record prints the absence rather than a guess.
+
+Proof that it holds under a real kill: `apps/smidja-factory/tests/test_recovery.py` SIGKILLs a running chain mid-phase, restarts it with **no client attached**, and asserts it re-enters at the checkpoint, hands the committed envelope forward from the trace (the envelope file is deleted first), never re-runs a committed phase's work — counted by a marker line per execution — and refuses to let an unsigned approval phase pass.
+
 ## Observe
 
 The trace db is `smidja/smidja_data/smidja.db`. It is WAL, so reads never block the running writers — poll it as often as you like.
@@ -154,74 +213,8 @@ just kill <smidja_id>       # stop it — children first, then the workflow
 
 A killed run marks itself `fail` and closes its process rows, so the trace never claims work is in flight that is already dead.
 
-## Trace
-
-One row per phase, in sequence order, from the records the run already wrote — the
-database, `raw_output.jsonl`, `envelope.json`, `prompts/`. There is no second store:
-
-```bash
-uv run apps/smidja/smidja_trace.py <smidja_id>
-# or the recipe
-just trace <smidja_id>
-```
-
-```
-trace[3]{phase,owner,model,thinking,tools,tokens,window,percent,verdict}:
-  "request","zerwiz","—","—","—","—","—","—","no usage recorded"
-  "build","builder","llama-swap/qwen3.6-35b-a3b@q4_k_xl-mtp","medium","read,grep,bash,edit,write","41203","262144","15.7","room to work"
-  "review","reviewer","llama-swap/qwen3.6-35b-a3b@q4_k_xl-mtp","high","read,grep","213000","262144","81.3","near the window — compact now"
-```
-
-What each column is, and where it came from:
-
-| column | meaning |
-|---|---|
-| `phase` · `owner` | the phase name and the agent it ran as (`phases` table) |
-| `model` | the model the phase ACTUALLY ran on — the fallback model when one was used (the receipt's own `model`, then `agent_start`) |
-| `thinking` | the thinking level the phase ran at (the receipt's own `thinking`, then `agent_start`) |
-| `tools` | the phase's declared capability list; `all` when the roster allows every tool, `—` for an engineer or code phase that ran no agent |
-| `tokens` | **occupancy**, not spend: what the last turn left in the window (input + cache read + output) |
-| `window` | that model's ceiling, from the same doors the house uses — pi's model catalog, then `bin/model/catalog.sh`, then `bin/seat/core-four.sh` |
-| `percent` | `tokens / window`, to one decimal |
-| `verdict` | the phase's context verdict, below |
-
-`--json` carries the parts the table has no room for: `input`, `cache_read`,
-`output`, `window_source`, `last_finish`, `envelope_status`, `pressed`, and a
-run-level `context_pressed`. A run whose database is not the default takes
-`--db`; a sessions shelf that is not beside it takes `--data-dir`.
-
-### The verdicts
-
-Four words, and they are `bin/seat/context.sh`'s own — the smithy does not keep a
-second vocabulary for the same fact:
-
-| verdict | when | what to do |
-|---|---|---|
-| `room to work` | below 50% of the window | nothing |
-| `past the auto threshold` | 50% or more, below 75% | expect a compaction; nothing yet |
-| `near the window — compact now` | 75% or more (the **force** threshold) | the phase is `context-pressed` — see below |
-| `TRUNCATED` | the last turn ended on the length limit | the work was cut off, not finished; re-run smaller |
-
-Two honest empties, never greens (RULES/37 — a surface may not show what it did
-not receive):
-
-| verdict | when |
-|---|---|
-| `window unknown` | no door could say how large that model's window is — `tokens` is real, `percent` is `—` |
-| `no usage recorded` | the phase recorded no usage at all (an engineer/code phase, or a run that died before its first turn) |
-
-### `context-pressed`
-
-A phase that ends at or above the force threshold is **not green**. It did its
-work, but the window is what will kill the next phase — so the phase's status is
-`context-pressed` in the database, the banner prints `◐ context-pressed`, the
-session row says `context-pressed`, and the run exits non-zero. Never `success`:
-a green that hides a full window is the false green this house has paid for twice.
-
 ## Report
 
 Tell the engineer, in order: which chain and which roster you launched (name the config whenever it was not the default), which phase is running now (or which failed), phase statuses in sequence, and for a failure the gate violations or the error verbatim. Remember **every phase defaults to `fail`** — a phase showing `fail` may simply never have completed; `queued` means it never started. Don't dress up a partial run as a success.
-
-**Say `context-pressed` when you see it.** A phase at or above the force threshold (75% of its window) shows as `context-pressed` in `just phases`, in the banner and in `just trace` — report it as its own outcome, with the percent and the window, never fold it into "passed". It is the single most useful line in the report: it explains the phase that fails next, and it is the reason to raise the model's window or split the work rather than blame the model.
 
 For a visual live view, the visualizer app in the skill (`just obs`, or tmux sessions viz-api :4600 + viz-ui :4601) polls this same db — sessions as cards, runs as swim lanes, phases and tool calls drill-in. The sqlite queries above remain the headless equivalent.

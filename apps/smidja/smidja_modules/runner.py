@@ -11,12 +11,70 @@ from __future__ import annotations
 import json
 import time
 from contextlib import contextmanager
+from typing import Iterator, Optional
 from pathlib import Path
 
 from . import agents, git_helper
 from .console import Console
-from .data_types import AgentCall, EnvelopeBase, EventRecord, Phase, PhaseParams
+from .data_types import (AgentCall, ApprovalDecision, EnvelopeBase, EventRecord, Phase,
+                         PhaseParams)
 from .utils import ensure_dir, now_iso
+
+# The two exits an `approval` phase can add. They are separated because they are
+# different answers: one run is waiting for a person, the other was refused by
+# one. Neither is the run failing at its work, and a caller can tell them apart.
+APPROVAL_WAITING_EXIT = 3
+APPROVAL_DECLINED_EXIT = 4
+
+
+class ApprovalWaiting(SystemExit):
+    """The run stopped at an `approval` phase that owes a decision — not a failure.
+
+    The phase row is already settled as `waiting` and the session as `waiting`
+    when this is raised, so the record says the same thing the exit code does.
+    """
+
+    def __init__(self, phase: str, door: str):
+        super().__init__(APPROVAL_WAITING_EXIT)
+        self.phase = phase
+        self.door = door
+
+    def __str__(self) -> str:
+        return f"waiting for a decision on {self.phase!r} — {self.door}"
+
+
+class ApprovalDeclined(SystemExit):
+    """A person said no. The block never runs, and the run does not continue."""
+
+    def __init__(self, phase: str, decision: str, note: str = ""):
+        super().__init__(APPROVAL_DECLINED_EXIT)
+        self.phase = phase
+        self.decision = decision
+        self.note = note
+
+    def __str__(self) -> str:
+        return f"{self.decision} at {self.phase!r}" + (f" — {self.note}" if self.note else "")
+
+
+class Iteration:
+    """One turn of a `repeat` phase. It commits itself, by `checkpoint()`.
+
+    A phase that loops saves one checkpoint per iteration — that is what makes a
+    restart re-enter at the first iteration that never committed instead of
+    starting the loop again.
+    """
+
+    def __init__(self, handle: "PhaseHandle", index: int, total: int):
+        self.handle = handle
+        self.index = index
+        self.total = total
+
+    @property
+    def label(self) -> str:
+        return f"{self.index}/{self.total}"
+
+    def checkpoint(self, **payload) -> None:
+        self.handle.commit(self.index, payload)
 
 
 class PhaseHandle:
@@ -51,6 +109,36 @@ class PhaseHandle:
             raise RuntimeError("ph.call() is only valid inside an agent phase")
         return agents.execute(self.run, self.phase, call)
 
+    def iterations(self, total: int) -> Iterator[Iteration]:
+        """The turns of a `repeat` phase this process still owes.
+
+        Declaring the total first is what lets the record say `2/4` instead of a
+        bare count. Iterations already on the trace are announced and skipped —
+        not re-run, because a checkpoint is a commit and this house does not buy
+        committed work twice.
+        """
+        if self.replay or self.phase is None:
+            self.run.console.note(f"{self.replay or 'phase'}: every iteration already committed — "
+                                  f"nothing to repeat")
+            return
+        done = self.run.declare_iterations(self.phase, total)
+        for index in range(1, total + 1):
+            if index in done:
+                self.run.console.note(f"iteration {index}/{total} already committed — "
+                                      f"handed forward, not re-run")
+                continue
+            yield Iteration(self, index, total)
+
+    def commit(self, index: int, payload: dict) -> None:
+        """Save this iteration's checkpoint. A replayed phase commits nothing new."""
+        if self.phase is None:
+            return
+        self.run.tracer.event(EventRecord(
+            smidja_id=self.run.smidja_id, phase_id=self.phase.phase_id,
+            type="checkpoint", name=self.phase.params.name,
+            payload={"iteration": index, "done": True, **payload}))
+        self.run.console.note(f"checkpoint {index} committed")
+
 
 class Run:
     def __init__(self, cfg, smidja_id: str, tracer, engineer: str,
@@ -62,10 +150,6 @@ class Run:
         self.console = Console(tracer, smidja_id)
         self.engineer = engineer
         self.phases: list[Phase] = []
-        # Per-phase context receipts, keyed by phase_id (agents._execute writes
-        # them; the phase primitive and finish() read them). Kept on the run so
-        # the banner, the session status and the exit code settle from ONE fact.
-        self.context_by_phase: dict[str, dict] = {}
         self._subagent_counter = 0   # unique ids for orchestrator task-dispatch lanes
         # Lanes opened at tool_execution_start (G2) keyed by (phase_id, call_id)
         # so the terminal materialization closes the SAME lane instead of
@@ -119,10 +203,105 @@ class Run:
     def arm_resume(self, plan) -> None:
         """Enter this process as a continuation: these phases are already paid for."""
         self.resume_plan = plan
+        self.tracer.event(EventRecord(
+            smidja_id=self.smidja_id, type="resume", name=plan.boundary,
+            payload={"checkpoint": plan.boundary, "from_phase": plan.from_phase,
+                     "handed_forward": plan.replay}))
         self.console.note(f"resume: checkpoint {plan.boundary} — re-entering at "
                           f"{plan.from_phase or 'the next phase the chain opens'}")
         for name in plan.replay:
             self.console.note(f"resume: {name} already committed — handed forward, not re-run")
+
+    # ── repeat phases: one checkpoint per iteration ──────────────────────────
+    def declare_iterations(self, phase: Phase, total: int) -> set[int]:
+        """Record the loop's size, and return the iterations already committed.
+
+        The `progress` event is the declaration (so the record can say `2/4`);
+        the `checkpoint` events are the commits. A restart counts them here and
+        skips exactly those — nothing else is skipped, ever.
+        """
+        self.tracer.event(EventRecord(smidja_id=self.smidja_id, phase_id=phase.phase_id,
+                                      type="progress", name=phase.params.name,
+                                      payload={"total": total}))
+        rows = self.tracer.conn.execute(
+            "SELECT payload_json FROM events WHERE phase_id = ? AND type = 'checkpoint'",
+            (phase.phase_id,)).fetchall()
+        done: set[int] = set()
+        for row in rows:
+            try:
+                payload = json.loads(row[0] or "{}")
+            except ValueError:
+                continue
+            if payload.get("done"):
+                done.add(int(payload.get("iteration") or 0))
+        if done:
+            self.console.note(f"{total - len(done)} of {total} iterations still owed "
+                              f"({sorted(done)} already committed)")
+        return done
+
+    # ── approval phases: the block does not run without a person's word ──────
+    def _await_decision(self, phase: Phase) -> None:
+        """Open an `approval` phase, or settle it as waiting / declined.
+
+        No decision is NOT an approval. That is the whole contract: the block is
+        never entered on silence, and a restart re-enters here and waits again
+        rather than passing quietly.
+        """
+        name = phase.params.name
+        decision = self.tracer.decision_latest(self.smidja_id, name) or {}
+        answer: ApprovalDecision = decision.get("decision") or ""     # type: ignore[assignment]
+        door = f"just decide {self.smidja_id} {name} approve"
+
+        if answer == "approved":
+            self.tracer.event(EventRecord(
+                smidja_id=self.smidja_id, phase_id=phase.phase_id, type="approval",
+                name=name, payload={"decision": "approved", "by": decision.get("by", ""),
+                                    "note": decision.get("note", "")}))
+            self.console.note(f"approval {name}: approved by "
+                              f"{decision.get('by') or 'a person'}")
+            return
+
+        phase.ended_at = now_iso()
+        if answer in ("declined", "cancelled"):
+            phase.status = "fail"
+            phase.error = f"{answer} by {decision.get('by') or 'a person'}" \
+                          + (f": {decision.get('note')}" if decision.get("note") else "")
+            self.tracer.event(EventRecord(
+                smidja_id=self.smidja_id, phase_id=phase.phase_id, type="approval",
+                name=name, payload={"decision": answer, "by": decision.get("by", ""),
+                                    "note": decision.get("note", "")}))
+            self.tracer.event(EventRecord(smidja_id=self.smidja_id, phase_id=phase.phase_id,
+                                          type="phase_end", name=name,
+                                          payload={"status": "fail"}))
+            self.tracer.phase_upsert(phase)
+            self.tracer.session_status(self.smidja_id, "declined")
+            self.console.note(f"approval {name}: {phase.error} — the block was never run")
+            raise ApprovalDeclined(name, answer, decision.get("note") or "")
+
+        phase.status = "waiting"
+        phase.error = None
+        self.tracer.event(EventRecord(
+            smidja_id=self.smidja_id, phase_id=phase.phase_id, type="approval",
+            name=name, payload={"decision": "pending"}))
+        self.tracer.phase_upsert(phase)
+        self.tracer.session_status(self.smidja_id, "waiting")
+        self.console.note(f"approval {name}: waiting for a decision — the block has not run")
+        self.console.note(f"  decide with: {door}")
+        raise ApprovalWaiting(name, door)
+
+    def _reopen_target(self, name: str) -> Optional[dict]:
+        """The row a resumed phase re-enters, when this phase is where it stopped.
+
+        A phase is one row, not one row per attempt: a `waiting` approval that is
+        later approved, or a failed phase retried, reopens its own row so the
+        record shows one phase whose steps tell the story.
+        """
+        if self.resume_plan is None or self.resume_plan.from_phase != name:
+            return None
+        row = self.tracer.phase_by_name(self.smidja_id, name)
+        if row is None or row["status"] == "success":
+            return None
+        return {"phase_id": row["phase_id"], "seq": row["seq"] or 0}
 
     # ── the phase primitive ─────────────────────────────────────────────────
     def phase(self, params: PhaseParams):
@@ -146,20 +325,30 @@ class Run:
 
     @contextmanager
     def _live(self, params: PhaseParams):
-        self._seq += 1
-        phase = Phase(phase_id=f"{self.smidja_id}_{self._seq:02d}_{params.name}",
-                      smidja_id=self.smidja_id, seq=self._seq, params=params,
-                      status="running", started_at=now_iso())
+        reopen = self._reopen_target(params.name)
+        if reopen is not None:
+            phase_id, seq = reopen["phase_id"], reopen["seq"]
+            self.console.note(f"resume: re-entering phase {params.name!r} at its own row")
+        else:
+            self._seq += 1
+            phase_id, seq = f"{self.smidja_id}_{self._seq:02d}_{params.name}", self._seq
+        phase = Phase(phase_id=phase_id, smidja_id=self.smidja_id, seq=seq,
+                      params=params, status="running", started_at=now_iso())
         self.phases.append(phase)
         self.tracer.phase_upsert(phase)
         self.tracer.event(EventRecord(smidja_id=self.smidja_id, phase_id=phase.phase_id,
                                       type="phase_start", name=params.name,
                                       payload={"kind": params.kind, "owner": params.owner,
+                                               "contract": params.contract,
                                                "description": params.description}))
         self.console.phase_started(phase)
         clock = time.monotonic()
         try:
+            if params.contract == "approval":
+                self._await_decision(phase)   # settled, or raised — the block is never entered on silence
             yield PhaseHandle(self, phase)
+        except (ApprovalWaiting, ApprovalDeclined):
+            raise                             # already settled in the record, on purpose
         except BaseException as error:
             phase.status = "fail"                      # success must be earned
             phase.error = str(error)[:1000]
@@ -177,16 +366,11 @@ class Run:
                                           self.cfg.observability.db)
             raise
         else:
-            # A phase that ended at or above the force threshold is NOT green.
-            # It did its work, but the window is what will kill the next one, so
-            # it earns its own terminal word instead of `success`.
-            receipt = self.context_by_phase.get(phase.phase_id) or {}
-            phase.status = "context-pressed" if receipt.get("pressed") else "success"
+            phase.status = "success"
             phase.ended_at = now_iso()
             self.tracer.event(EventRecord(smidja_id=self.smidja_id, phase_id=phase.phase_id,
                                           type="phase_end", name=params.name,
-                                          payload={"status": phase.status,
-                                                   **({"context": receipt} if receipt else {})}))
+                                          payload={"status": "success"}))
             self.tracer.phase_upsert(phase)
             self.console.phase_ended(phase, time.monotonic() - clock)
 
@@ -208,39 +392,15 @@ class Run:
         now settles the db, the banner, and the exit code together, so the three
         cannot disagree.
         """
-        phases_ok = bool(self.phases) and all(
-            p.status in ("success", "context-pressed") for p in self.phases)
-        pressed = [p for p in self.phases if p.status == "context-pressed"]
-        # A pressed phase is not green: the run settles `context-pressed` in the
-        # db, the banner AND the exit code together. Exiting 0 while the trace
-        # says pressed is exactly the disagreement finish() exists to prevent.
-        ok = phases_ok and accepted and not pressed
-        status = ("fail" if (not phases_ok or not accepted)
-                  else "context-pressed" if pressed else "success")
-        reason = reason or ""
-        if phases_ok and not accepted and not reason:
-            reason = "the run's acceptance criterion was not met"
-        if pressed and phases_ok and accepted:
-            worst = max(pressed, key=lambda p: (self.context_by_phase
-                                                .get(p.phase_id, {}).get("percent") or 0))
-            receipt = self.context_by_phase.get(worst.phase_id, {})
-            reason = (f"{len(pressed)} phase(s) ended at/over the force threshold — "
-                      f"worst: {worst.params.name} {receipt.get('percent', 0)}% of "
-                      f"{receipt.get('window', 0):,} ({receipt.get('verdict', '')})")
-        if status != "success" and reason:
-            # Attach the line to the phase that earned the word: the worst pressed
-            # phase when the run is only pressed, else the last phase that ran.
-            marker = (pressed[0] if (pressed and phases_ok and accepted)
-                      else self.phases[-1] if self.phases else None)
+        phases_ok = bool(self.phases) and all(p.status == "success" for p in self.phases)
+        ok = phases_ok and accepted
+        if phases_ok and not accepted:
+            note = reason or "the run's acceptance criterion was not met"
             self.tracer.event(EventRecord(
                 smidja_id=self.smidja_id,
-                phase_id=marker.phase_id if marker else "",
-                type="error" if status == "fail" else "log",
-                name="context-pressed" if status == "context-pressed" else "not_accepted",
-                payload={"reason": reason, "status": status}))
-            self.console.note(f"not green: {reason}")
-        self.tracer.session_finish(self.smidja_id, ok=ok, status=status)
-        self.console.session_finished(ok, self.tokens, self.cost,
-                                      self.cfg.observability.db,
-                                      status=status, note=reason)
+                phase_id=self.phases[-1].phase_id if self.phases else "",
+                type="error", name="not_accepted", payload={"reason": note}))
+            self.console.note(f"not accepted: {note}")
+        self.tracer.session_finish(self.smidja_id, ok=ok)
+        self.console.session_finished(ok, self.tokens, self.cost, self.cfg.observability.db)
         return 0 if ok else 1

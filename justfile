@@ -66,6 +66,16 @@ simple-sdlc *ARGS:
 resume *ARGS:
     uv run apps/smidja/smidja_resume.py --config {{config}} "$@"
 
+# the run as ONE record — phases, steps, state, and where it stopped
+# just record <smidja_id> [--json]; the same shape resume reads.
+record *ARGS:
+    uv run apps/smidja/smidja_record.py --config {{config}} "$@"
+
+# record a person's decision on an `approval` phase: approve | decline | cancel
+# An approval phase never runs its block without one; silence is not a yes.
+decide *ARGS:
+    uv run apps/smidja/smidja_decide.py --config {{config}} "$@"
+
 # ── watch it ────────────────────────────────────────────────────────────────
 # Reads never block a running workflow, the db is WAL. Poll as hard as you like.
 
@@ -76,11 +86,6 @@ sessions:
 # phase status in sequence: just phases <smidja_id>
 phases smidja_id:
     @python3 -c "import sqlite3;c=sqlite3.connect('file:{{db}}?mode=ro',uri=True);[print(*r) for r in c.execute(\"select seq,name,kind,owner,status,attempt from phases where smidja_id='{{smidja_id}}' order by seq\")]"
-
-# one row per phase: who ran, on what model, and how full its window was
-# just trace <smidja_id>   ·   the verdict words are bin/seat/context.sh's
-trace smidja_id:
-    @uv run apps/smidja/smidja_trace.py "{{smidja_id}}" --db "{{db}}" --data-dir apps/smidja/smidja_data
 
 # the live event tail: just tail <smidja_id>
 tail smidja_id:
