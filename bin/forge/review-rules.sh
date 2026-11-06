@@ -132,6 +132,7 @@ if not quiet:
     print(f'  "seat","{socket.gethostname()}"')
     print(f'  "at","{datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}"')
     print("review-rules: the floor is complete — the law is read before the diff")
-    print("note: the ruleset hash is PER SEAT and PER MOMENT (source 4 is the plan ledger, which "
-          "grows) — a review record carries ruleset + seat + at, never the number alone")
+    print("note: the ruleset hash is per DECLARATION and per moment — a declared source that grows "
+          "(a plan ledger) makes it move; a project that declares none is stable across seats and "
+          "time. A review record carries ruleset + seat + at, never the number alone")
 PY
