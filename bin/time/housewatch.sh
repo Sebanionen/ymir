@@ -100,7 +100,7 @@ ABEAT="$HOME_R/hodd/state/assistant/telegram.heartbeat"
 # A unit file is the evidence; `pgrep -f skirnir` was no good here, because the shell that runs
 # this check carries the word in its own command line and matched itself.
 if ! systemctl --user list-unit-files 2>/dev/null | grep -q '^skirnir[.]service'; then
-  printf '  "assistant","SKIP","the assistant does not run on this seat - a beat in the shared home is another seat'"'"'s fact"\n'
+  printf '  "assistant","SKIP","the assistant is DECLARED (systems/skirnir/, not retired) and not connected on this seat - a beat in the shared home is another seat'"'"'s fact"\n'
 elif [ ! -f "$ABEAT" ]; then
   printf '  "assistant","SKIP","no heartbeat file yet — the service has not run here"\n'
 else
