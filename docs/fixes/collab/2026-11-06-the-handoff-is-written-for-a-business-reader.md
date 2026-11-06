@@ -54,3 +54,8 @@ reason the change is additive rather than a rename.
   it.
 - **No jam in the client's shelf.** Control Tower's copy was refreshed from these templates in the same
   errand, and its baton was rewritten in business language; its history in `handoff/log/` was left untouched.
+
+## CHANGE LOG
+
+- **2026-11-06** — written; the law, the template's `**For:**` line, the seven untouched headings and the
+  house-word check, each with what was proved and what was not.

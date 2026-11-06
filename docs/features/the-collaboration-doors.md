@@ -83,7 +83,7 @@ refreshes its shelf gets the stricter one. Run `handoff/check.sh --check` before
 
 ## What the git hooks run (2026-11-06)
 
-The kit now asks the repository instead of naming a tool: `scripts/checks.sh doctor` and `checks.sh test` run the
-repository's own `scripts/doctor.sh`, or npm for a `package.json`, or `mix` for a `mix.exs`, and print a plain
-**skip** when there is nothing to run. Previously the hooks ran npm in every repository, which refused every
+The kit now asks the repository instead of naming a tool: `checks.sh doctor` and `checks.sh test` run the
+repository's own doctor and test scripts if it names them, or npm for a `package.json`, or `mix` for a `mix.exs`,
+and print a plain **skip** when there is nothing to run. Previously the hooks ran npm in every repository, which refused every
 commit in an Elixir project.

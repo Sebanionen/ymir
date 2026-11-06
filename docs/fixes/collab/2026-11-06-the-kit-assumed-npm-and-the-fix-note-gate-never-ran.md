@@ -63,3 +63,8 @@ Still open on the whole tree — **pre-existing, not this change**: `secret-scan
 the pattern cannot tell) and `bin/collab/who.py` (`postgresql://forgejo:%s@127.0.0.1` — a reference built from a
 vault-read variable). Both need the fixtures-or-reference allowance the gate's own documentation promises; the
 staged view of this change is clean, so neither blocks it.
+
+## CHANGE LOG
+
+- **2026-11-06** — written, then appended the same hour when the private-data gate was found to be a script
+  that could not parse; both faults of that gate carry their fixtures above.

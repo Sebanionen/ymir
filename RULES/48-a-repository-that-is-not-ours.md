@@ -1,4 +1,4 @@
-# Rule 48 — a repository that is not ours
+# 48 — a repository that is not ours
 
 **The house's discipline travels into a client's repository; the house's voice and identity do not.**
 
@@ -44,3 +44,9 @@ The language half is a gate: `handoff/check.py` refuses the house personae in a 
 a merge sealed by their owner — has no ward yet; it is held by review, and this rule is what the review cites.
 A ward that reads `projects.yaml` and refuses an install into a repository the registry calls ours would be the
 next step, and it is named here rather than implied.
+
+## CHANGE LOG
+
+- **2026-11-06** — written at the operator's word, after the collaboration kit was installed into a client
+  repository for the first time (Inmost Invest's Control Tower) and four faults in it were found. The rule
+  names what follows from Rule 41 for a repository the registry does not call ours.
