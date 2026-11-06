@@ -5,7 +5,7 @@ UI, and agents obey it, and a change that contradicts a rule must first change
 the rule (append-only; never silently rewritten).
 
 ```
-rules_index[43]{file,subject}:
+rules_index[44]{file,subject}:
   "01-domains.md","domains (Greinar) · houses · Eindri"
   "02-agents.md","agents: home, kinds, profile contract, no mock"
   "03-houses.md","houses = companies; ownership, records, boundaries"
@@ -36,6 +36,7 @@ rules_index[43]{file,subject}:
   "42-the-home-is-a-contract.md","the home is a contract: every file the runtime reads ships as a template, arrives by ONE door on install, is healed by an update, and is named in one contract a ward reads — a template no row names is a shape that lands in no home"
   "43-two-tongues.md","two tongues: English for the work, Old Norse for the names — nothing else; a foreign script or letter is refused, a foreign prose is caught by its function words, and the four exceptions (fixture · detector · quotation · table) are declared with a reason"
   "45-start-on-the-latest.md","start on the latest: a base is fetched, not remembered — reading is free, taking a number or a branch point is not, a stale base refuses with its repair, offline is a stated skip"
+  "48-a-repository-that-is-not-ours.md","a repository that is not ours: the owner comes from the registry, their law wins, the words are their reader's and never the hall's, our discipline travels and our identity does not, the stack is probed not assumed, an install is proved by one real change, their data stays theirs, the merge is sealed by their door"
   "README.md","this index"
   "37-a-surface-may-not-show-what-it-did-not-receive.md","a surface may not show what it did not receive"
 ```
@@ -116,3 +117,5 @@ Keep each rule short and unambiguous; reference it from code where it bites.
 - **46 — a push proves the rules** · `RULES/46-a-push-proves-the-rules.md`
 
 - **47 — a collaborator sees what a grant names** · `RULES/47-a-collaborator-sees-what-a-grant-names.md`
+
+- **48 — a repository that is not ours** · `RULES/48-a-repository-that-is-not-ours.md`

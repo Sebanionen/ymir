@@ -9,8 +9,13 @@ nothing but python3 in the repository it sits in. It has no dependency on Ymir b
     handoff/check.sh --new --from <name> [--to <name>] [--note "one line"]
 
 It fails when the baton is missing, a section is missing, the date is absent or older than the limit,
-the branch or the deployment is unnamed, a backticked path it names does not exist, or handoff/log/ is
-empty. The seven sections are fixed by handoff/TEMPLATE.md; the check reads the headings.
+the branch or the deployment is unnamed, the reader is unnamed, a house word reached a document a client
+reads, a backticked path it names does not exist, or handoff/log/ is empty. The seven sections are fixed
+by handoff/TEMPLATE.md; the check reads the headings.
+
+Appended 2026-11-06: these repositories are read by more people than the people who work in them, so a
+baton is written for a business reader. `**For:**` names that reader, and the house personae are refused
+unless the line that carries one waives it with `allow-house-word:`.
 
 Exit: 0 clean · 1 a problem · 2 usage.
 """
@@ -44,6 +49,26 @@ SHELVES = ["apps", "bench", "bin", "config", "docs", "handoff", "infra", "lib", 
 PATH_RE = re.compile(r"`((?:%s)/[A-Za-z0-9._/-]+\.[a-z]+)`" % "|".join(SHELVES))
 DATE_RE = re.compile(r"\*\*Date:\*\*\s*(\d{4}-\d{2}-\d{2})")
 
+# House words carry meaning inside our hall and none outside it. A client, a partner, an auditor or a new
+# developer reads the baton; none of them has the glossary. A line that must carry one waives it in
+# writing — on the line it waives, never by widening the list.
+HOUSE_WORDS = ["Allfather", "Brokk", "Eindri", "Galdr", "S\u00e1ga", "Hlidskjalf", "M\u00edmir", "Mimir",
+               "Muninn", "Huginn", "Yggdrasil", "Utgard", "Bifrost", "runes", "the well"]
+WAIVER = "allow-house-word:"
+
+
+def house_words(text):
+    """(line number, word) for every house word a reader outside the hall would not understand."""
+    hits = []
+    for number, line in enumerate(text.splitlines(), 1):
+        if WAIVER in line:
+            continue
+        for word in HOUSE_WORDS:
+            flags = re.IGNORECASE if word.isascii() else 0
+            if re.search(r"\b" + re.escape(word) + r"\b", line, flags):
+                hits.append((number, word))
+    return hits
+
 
 def check(max_age_days):
     problems = []
@@ -74,6 +99,14 @@ def check(max_age_days):
         if "**%s:**" % field not in text:
             problems.append("handoff/CURRENT.md: no `**%s:**` line — the baton says where the work is, "
                             "not what it was like" % field)
+
+    if "**For:**" not in text:
+        problems.append("handoff/CURRENT.md: no `**For:**` line — name the person who reads this and their "
+                        "role; a handoff written for nobody is written for its author")
+
+    for number, word in house_words(text):
+        problems.append("handoff/CURRENT.md line %d: `%s` is a house word — say what a reader outside the "
+                        "hall can see, or waive it on the line with `%s <why>`" % (number, word, WAIVER))
 
     named = sorted(set(PATH_RE.findall(text)))
     for path in named:

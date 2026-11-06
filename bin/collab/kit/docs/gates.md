@@ -48,3 +48,19 @@ borrowed[4]{gate,what_it_does,verdict}:
 
 **The rule for adding a gate:** it must catch something that has actually happened or that would be unrecoverable if it did. A gate
 nobody has ever triggered is a tax on every commit.
+
+## Appended 2026-11-06 — the hooks ask the repository, not npm
+
+The first install of this kit into a non-Node repository (Inmost Invest's Control Tower, an Elixir umbrella)
+found that `pre-commit` and `pre-push` were written for npm: `npm run check`, `npm run typecheck`, `npm run
+test`. In an Elixir repository those commands cannot succeed, so the hooks refused **every commit** — a gate
+that blocks honest work is a gate people learn to pass `--no-verify`, which is worse than no gate at all.
+
+Two changes, both in the kit:
+
+- **`scripts/checks.sh`** decides once, per repository: its own `scripts/doctor.sh` / `scripts/test.sh`, else
+  `package.json` (npm), else `mix.exs` (Elixir), else a **printed skip**. A clean skip is a pass; a silent
+  green is a lie.
+- **`fixes-guard` was unreachable.** `pre-push` ran its npm checks and then `exit 0`, so the fix-note gate
+  below it never ran in any repository. It now runs before the exit, on the range git is about to send, and
+  its code shelves cover Elixir too (`apps/`, `lib/`, `config/`, `priv/`, `rel/`) — not only `src/`.

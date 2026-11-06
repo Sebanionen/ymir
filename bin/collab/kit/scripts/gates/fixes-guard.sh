@@ -14,7 +14,10 @@ fi
 
 changed="$(git diff --name-only "$base..$head" 2>/dev/null)"
 notes="$(printf '%s\n' "$changed" | grep -c '^docs/fixes/.*\.md$' || true)"
-code="$(printf '%s\n' "$changed" | grep -cE '^(backend|src|scripts|shared)/' || true)"
+# The code shelves of every repository the kit goes into — Node, Elixir, shell. Appended 2026-11-06: the first
+# version named only `backend|src|scripts|shared`, which is one project's shape, so in an Elixir repository the
+# guard inspected nothing and refused nothing while looking like it was watching.
+code="$(printf '%s\n' "$changed" | grep -cE '^(\.githooks|apps|backend|bin|config|lib|priv|rel|scripts|shared|src|test|tests)/' || true)"
 
 if [ "${code:-0}" -gt 0 ] && [ "${notes:-0}" -eq 0 ]; then
   printf 'fixes-guard refused: this push changes code and adds no fix note.\n'

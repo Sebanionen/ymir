@@ -60,3 +60,30 @@ the five files it wrote and the exact line that wires the check into that projec
   longer exists; the message names which. Write a new baton with `handoff/check.sh --new --from <name>`.
 - **`ship` refuses.** Either nothing is changed at the named path, or the branch does not exist yet in a repository
   with no commits. It prints which.
+
+## The handoff is written for a business reader (2026-11-06)
+
+The baton shelf looks like an internal document, and it is not one: these repositories are shared with the
+clients and partners whose products they are. So the baton — the file `handoff/CURRENT.md` — is written for
+**a reader outside the house**.
+
+**What that means in practice.** The file carries a `**For:**` line naming the person who reads it and their
+role. Section 1 is two or three sentences a non-engineer can follow. Section 2 gives the result and the screen
+or command that proves it, with money in its own currency. Section 4 names each blocker with the person who owns
+it, by the name on the contract — never an internal nickname.
+
+**House words are refused.** `Allfather`, `Brokk`, `Eindri`, `Galdr`, `Sága`, `Hlidskjalf`, `Mímir`, `Muninn`,
+`Huginn`, `Yggdrasil`, `Utgard`, `Bifrost`, `runes` and `the well` mean something inside the hall and nothing to
+a client, so `handoff/check.sh --check` reports each one with its line number. If a line genuinely must carry
+one, waive it **on that line**: `allow-house-word: <why>`. `Ymir` itself is allowed — naming the tool is honest,
+naming the hall is not.
+
+**The share of it that is not words.** Old copies of the shelf keep passsing their old check; a repository that
+refreshes its shelf gets the stricter one. Run `handoff/check.sh --check` before you stop, as always.
+
+## What the git hooks run (2026-11-06)
+
+The kit now asks the repository instead of naming a tool: `scripts/checks.sh doctor` and `checks.sh test` run the
+repository's own `scripts/doctor.sh`, or npm for a `package.json`, or `mix` for a `mix.exs`, and print a plain
+**skip** when there is nothing to run. Previously the hooks ran npm in every repository, which refused every
+commit in an Elixir project.

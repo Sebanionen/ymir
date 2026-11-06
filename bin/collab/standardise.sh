@@ -8,7 +8,7 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 KIT="$HERE/kit"
-VERSION="1.0.0"
+VERSION="1.1.0"
 
 mode=""; repo=""
 for a in "$@"; do
