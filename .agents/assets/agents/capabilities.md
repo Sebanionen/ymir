@@ -650,6 +650,7 @@ capabilities[5]{surface,count}:
 | vidarr.sh | vidarr.sh — VÍÐARR, the silent avenger: the defender's own door. | tested+named | keep (a human or a cron row must run it) |
 | ward-answer.sh | ward-answer.sh — answer a ward decision. close · keep (with a reason) | tested | keep (a human or a cron row must run it) |
 | ward-ask.sh | ward-ask.sh — Vörðr reports, then ASKS. A finding is not a decision. | tested | keep (a human or a cron row must run it) |
+| well-vault-sync.sh | well-vault-sync.sh — Kaia's memory across the Allfather's machines. | tested+named | keep (a human or a cron row must run it) |
 
 ## 1b · The engine — src/ymir_runtime/*.py (the part a bin-only register skipped)
 
