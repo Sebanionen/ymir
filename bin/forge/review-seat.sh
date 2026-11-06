@@ -41,7 +41,9 @@ if [ -z "${YMIR_HOARD_LIB_LOADED:-}" ]; then
   unset _c
 fi
 STATE=""; hoard_state_dir STATE 2>/dev/null || true
+HOME_DIR=""; ymir_home_root HOME_DIR 2>/dev/null || true
 [ -n "$STATE" ] || { printf 'review-seat: the state dir is unresolved\n' >&2; exit 1; }
+[ -n "$HOME_DIR" ] || { printf 'review-seat: the home is unresolved (bin/vault/hoard-lib.sh)\n' >&2; exit 1; }
 
 WORKSPACE_LABEL="review"
 ROLE_FILE="$ROOT/.agents/agents/forseti-reviewer.md"
@@ -84,7 +86,7 @@ write_charter() {
     printf '2. %s/RULES/ — the house law (04 · 06 · 07 · 08 · 25 · 43 · 44)\n' "$clone"
     printf '3. %s/.review-rules.yaml — this project'"'"'s own declarations (a missing one is a REFUSAL)\n' "$clone"
     printf '4. plan 203 §12 (the reviewer on the heart) and plan 206 (the loop, the mouth, the switch)\n'
-    printf '   in %s\n\n' "${YMIR_HOME:-$HOME/Documents/ymirhome}/svartalfaheim/whynotproductions/projects/ymir/plans"
+    printf '   in %s\n\n' "$HOME_DIR/svartalfaheim/whynotproductions/projects/ymir/plans"
     printf '## What you may do\n\n'
     printf -- '- read everything; run the gates and the tests YOURSELF on the fetched head\n'
     printf -- '- mark every claim in a packet verified or unverified\n'
