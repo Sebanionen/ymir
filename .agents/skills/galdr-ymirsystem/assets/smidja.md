@@ -272,3 +272,45 @@ skills[9]{skill,what it settles}:
 **What this seat is missing against those books** (measured 2026-10-23): no `roster.yaml` (so no
 `stacks:` → no teams), `just` not installed (so no `just rosters/sdlc/sessions`), `START_SMIDJA.md`
 absent. Each is a ticket; none is a reason to improvise a team.
+
+## Appended 2026-11-06 — the smithy can be started by the clock or by an event, and it is still one door
+
+A smithy was started by a person or not at all. It now has three ways in, and all three are
+the SAME two facts: **who may start it** — `trigger:` in its own config — and **what is
+launched** — its `chain:` and its `prompt:`. One door acts on both.
+
+```
+bin/time/event-trigger.sh <event-name> [--payload FILE] [--dry-run]   fire an event
+bin/time/event-trigger.sh --run <config>                              what a cron row calls
+bin/time/event-trigger.sh --install-cron                              write the rows
+bin/time/event-trigger.sh --list                                      who may start each smithy
+```
+
+```
+trigger:
+  mode: manual                 # manual | cron | event — ABSENT MEANS MANUAL
+  role: dev                    # cron only, REQUIRED: an ungated row runs on every seat
+  cron: "0 6 * * *"            # cron only, daily (M H * * *) or hourly (M * * * *)
+  timezone: Europe/Stockholm   # optional; the instant moves to the running seat's clock
+  event: nightly-audit         # event only
+  chain: apps/smidja/smidja_plan_build.py
+  prompt: requests/nightly.md              # a file, or inline text
+trigger_duties[5]{duty,why}:
+  "the block lives in the smithy config, nowhere else","that is the file a run is launched with, so a trigger cannot describe a different smithy than the one that runs"
+  "one reader: bin/time/event-trigger-resolve.py","two parsers of one block is how a schedule and a launcher disagree"
+  "absent is manual, and the template STATES manual","a missing key read as a default is a smithy that starts by surprise"
+  "cron without a role is refused","an ungated row runs on every seat of every machine (RULES/36, the 5-seat cron leak)"
+  "the row is GENERATED, never hand-written","`--install-cron` writes a managed block from the configs and is idempotent; a withdrawn trigger withdraws its row"
+```
+**Refusals, all by name:** a mode that is not one of the three; `cron` with no expression or no
+role; `event` with no event; a cron expression the scheduler cannot express (monthly/weekly);
+a trigger naming no `chain:` or `prompt:`; a `prompt:` that names a path that is not there; a
+second run of a smithy whose lease is still held; an event no smithy claims (the refusal lists
+the events that ARE claimed).
+
+**One shape, not two.** `apps/smidja-factory/templates/smidja.config.yaml` is the ONE config
+template — `make_config.py` copies it, `install.py` stamps it, and the trigger block is part of
+it. A `factory.yaml` / `roster.yaml` / wrapper that restates `roster`, `chain` or `trigger` is a
+second copy of the truth; a factory-level file **references** the smithy config, it never
+restates it. Proof: `bin/time/tests/test_event_trigger.sh` (39 assertions, wired as the `triggers`
+gate in `bin/gates/ci-verify.sh`).

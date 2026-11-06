@@ -67,3 +67,11 @@
 # Rule B (Done + sign-off → To Sign-off), note-on-mis-move.
 # Gated @dev: the board belongs to the seat that holds the place profile.
 @dev 10:00 bin/time/snotra/snotra-card-moves.sh watch
+
+# — A SMITHY STARTED BY THE CLOCK IS NOT WRITTEN HERE BY HAND —
+# Its own config declares it (`trigger:` in smidja/smidja_smidja_config/smidja.config.yaml),
+# and `bin/time/event-trigger.sh --install-cron` writes the row into this file, inside a
+# managed block at the end. Two places claiming one schedule is how a row keeps firing
+# after the trigger was turned off.
+#   bin/time/event-trigger.sh --list            # who may start each smithy
+#   bin/time/event-trigger.sh --install-cron    # write the rows it declares
