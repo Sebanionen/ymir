@@ -23,7 +23,7 @@ _root() {
 ROOT="$(_root)"
 
 # ONE list. A new tree ward appears here or it does not run anywhere.
-WARDS=(runtime-guard.sh runtime-pinned-guard.sh defaults-guard.sh app-folder-guard.sh app-functional-guard.sh rules-number-guard.sh inventory-guard.sh registers-guard.sh fleet-version-guard.sh subsystem-docs-guard.sh path-ledger-guard.sh path-legality-guard.sh packaging-guard.sh public-data-guard.sh cron-guard.sh features-guard.sh weave-guard.sh vault-guard.sh confidential-guard.sh dead-code-guard.sh docs-claims-guard.sh home-contract-guard.sh language-guard.sh pkill-guard.sh skills-share-guard.sh rules-compliance-guard.sh pr-ship-guard.sh)
+WARDS=(runtime-guard.sh runtime-pinned-guard.sh defaults-guard.sh app-folder-guard.sh app-functional-guard.sh rules-number-guard.sh inventory-guard.sh registers-guard.sh fleet-version-guard.sh subsystem-docs-guard.sh path-ledger-guard.sh path-legality-guard.sh packaging-guard.sh public-data-guard.sh cron-guard.sh features-guard.sh weave-guard.sh vault-guard.sh confidential-guard.sh dead-code-guard.sh docs-claims-guard.sh home-contract-guard.sh language-guard.sh pkill-guard.sh skills-share-guard.sh rules-compliance-guard.sh pr-ship-guard.sh model-rows-guard.sh)
 #
 # weave-guard (2026-11-04, plan 175 §3): the weaver was seated and NOTHING CALLED IT — so a stale
 # index (RULES/README.md, a plan row, a feature page's catalogue row) was refused by no ward at all.

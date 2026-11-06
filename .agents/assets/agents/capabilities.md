@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",738
+  "shell doors (bin/*.sh)",739
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -389,6 +389,7 @@ capabilities[5]{surface,count}:
 | identity-guard.sh | identity-guard.sh — a commit that leaves by push must not publish a pr | tested | keep (a human or a cron row must run it) |
 | inventory-guard.sh | inventory-guard.sh — a register that runs in no gate is a capability t | tested | keep (a human or a cron row must run it) |
 | language-guard.sh | language-guard.sh — two tongues: English for the work, Old Norse for t | tested+named | keep (a human or a cron row must run it) |
+| model-rows-guard.sh | model-rows-guard.sh — every agent row names a model THIS machine can a | tested | keep (a human or a cron row must run it) |
 | packaging-guard.sh | packaging-guard.sh — every path a shipped installer names must exist i | tested | keep (a human or a cron row must run it) |
 | path-ledger-guard.sh | path-ledger-guard.sh — Rule 25: a path that MOVED may not be reference | tested+named | keep (a human or a cron row must run it) |
 | path-legality-guard.sh | path-legality-guard.sh — a tracked path must be a name EVERY host can  | tested | keep (a human or a cron row must run it) |
