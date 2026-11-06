@@ -49,11 +49,6 @@ TICK_SECONDS="${REVIEW_TICK_SECONDS:-1800}"
 usage() { sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 die()   { printf 'review-shelf: %s\n' "$1" >&2; exit "${2:-1}"; }
 
-packet_field() {  # <file> <field>
-  sed -n "/^packet\[1\]{/,\$p" "$1" 2>/dev/null | head -3 | sed -n '2p' \
-    | tr ',' '\n' | tr -d '"' | sed -n "$2p"
-}
-
 head_of() { grep -oE '^  "head","[0-9a-f]{40}"' "$1" 2>/dev/null | head -1 | cut -d'"' -f4; }
 
 cmd_drop() {  # <packet>
