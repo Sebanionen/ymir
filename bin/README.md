@@ -11,7 +11,7 @@ vendored `fm-*` script kept byte-comparable to upstream on purpose.
 `disposition` says what happens to it: `keep`, `migrate → src/…` where the
 Python runtime already has the module, `retire` for orphans, `provenance`.
 
-bin[800]{file,does,kind,verdict,disposition,callers,lines}:
+bin[806]{file,does,kind,verdict,disposition,callers,lines}:
   "15-commits-leave-by-pull-request.md","15 — Every commit leaves by a pull request, or it lands in main","data","wired","keep",0,35
   "16-a-review-is-a-file.md","16 — A review is a file in the repository","data","wired","keep",0,32
   "17-one-agent-one-worktree.md","17 — One agent, one worktree","data","wired","keep",0,36
@@ -33,7 +33,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "a2abridge-ensure.sh","a2abridge-ensure.sh — ensure the A2A mesh engine (a2abridge) is present,","tool","wired","keep",3,122
   "adapter-test.sh","bin/assistant/adapter-test.sh -> systems/skirnir/services/adapter-test.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and say…","tool","wired","keep",0,16
   "addresses.sh","addresses.sh — THE register of the mail addresses the house uses, and whether mail can reach them.","tool","wired","keep",3,61
-  "agent-model.sh","agent-model.sh — WHICH MODEL, ON THIS SEAT.","tool","wired","keep",6,293
+  "agent-model.sh","agent-model.sh — WHICH MODEL, ON THIS SEAT.","tool","wired","keep",7,293
   "agent-run.sh","agent-run.sh — run one agent's errand through the harness the Allfather chose.","tool","wired","keep",2,44
   "agents-config.sh","agents-config.sh — one YAML for the Allfather's agent/harness/model combination.","tool","wired","keep",13,310
   "apodex-smoke-test.sh","apodex-smoke-test — validate an Apodex endpoint (GGUF via llama-router).","tool","wired","keep",0,119
@@ -45,7 +45,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "approve.sh","approve.sh — one gesture answers one question.","tool","wired","keep",3,61
   "arm.sh","arm.sh — the Gná arm, honestly: what the watch is, and whether THIS harness can arm it.","tool","tested","keep",23,217
   "asana_adapter.py","bin/time/snotra/asana_adapter.py -> systems/snotra/services/cron/asana_adapter.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
-  "ask.sh","bin/assistant/ask.sh -> systems/skirnir/services/ask.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","tested","keep",9,16
+  "ask.sh","bin/assistant/ask.sh -> systems/skirnir/services/ask.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","tested","keep",10,16
   "asks.sh","bin/assistant/asks.sh -> systems/skirnir/services/asks.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "audio-retention.sh","bin/time/snotra/audio-retention.sh -> systems/snotra/services/ear/audio-retention.sh — RETIRED SHIM","tool","wired","keep",0,12
   "audit-apply.sh","audit-apply.sh — turn an audit into work, in one door.","tool","wired","keep",0,96
@@ -147,7 +147,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "eindri-start.sh","eindri-start.sh — start an Eindri as the Allfather asks.","tool","wired","keep",1,130
   "eindri-wake-lib.sh","eindri-wake-lib.sh — the ONE delivery ledger behind the Eindri push path.","lib","wired","keep",5,48
   "eindri-watch.sh","eindri-watch.sh — the control door on the Eindri→Brokk wake bridge.","tool","wired","keep",5,131
-  "einherjar-spawn.sh","einherjar-spawn.sh - gather an Eindri worker (Einherjar = the chosen who are","tool","wired","keep",15,1098
+  "einherjar-spawn.sh","einherjar-spawn.sh - gather an Eindri worker (Einherjar = the chosen who are","tool","wired","keep",15,1107
   "eir-doctor.sh","eir-doctor.sh — Eir, the healer: diagnose the running system, then mend it.","tool","wired","keep",8,629
   "electron-lib.sh","electron-lib.sh — is a desktop shell's runtime actually there?","lib","tested","keep",7,212
   "erindi-brief.sh","erindi-brief.sh - scaffold an Eindri worker brief at data/<task-id>/brief.md.","tool","wired","keep",4,382
@@ -337,6 +337,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "garmr-smoke.sh","garmr-smoke.sh — GARMR's smoke test.","tool","wired","keep",0,180
   "garmr.sh","garmr.sh — GARMR, the hound at the gate: the door to Ymir's guardian.","tool","wired","keep",4,266
   "gates.md","The gates — what stops what, and why each exists","data","wired","keep",0,68
+  "gh","smith-gh — the `gh` a SMITH sees: everything reads, and nothing ships.","tool","tested","keep",336,77
   "git-clobber-guard.sh","git-clobber-guard.sh — no command that throws away uncommitted work.","tool","wired","keep",0,86
   "github-deploy.sh","github-deploy.sh — zero-trust deploys (W0035).","data","wired","keep",0,96
   "gjallarhorn-expose.sh","gjallarhorn-expose.sh — put EVERY app on its own public hostname (Gjallarhorn).","tool","wired","keep",0,152
@@ -368,7 +369,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "handoff-TEMPLATE.md","Handoff — <from> → <to>","data","wired","keep",1,46
   "handoff-check-wrapper.sh","handoff/check.sh — the stable door for the baton, in any project.","data","wired","keep",1,12
   "handoff-check.py","'''handoff/check.sh — the baton: is it there, complete, fresh, and honest about the paths it names?","tool","wired","keep",1,180
-  "handoff-packet.py","'''handoff-packet.py — the door to the one artefact that crosses from a smith to the reviewer.","tool","wired","keep",1,433
+  "handoff-packet.py","'''handoff-packet.py — the door to the one artefact that crosses from a smith to the reviewer.","tool","wired","keep",3,433
   "harden.sh","harden.sh — Vörðr's hands: the MENDS, written out, and the safe ones applied.","tool","tested","keep",5,151
   "harness-contract-install.sh","harness-contract-install.sh — every harness reads ONE contract, and an update keeps it true.","tool","wired","keep",1,81
   "harness-extensions-install.sh","harness-extensions-install.sh — every harness gets the house's extensions and packages, on install AND on update.","tool","wired","keep",1,191
@@ -388,7 +389,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "hnitbjorg-ensure.sh","hnitbjorg-ensure.sh — ensure the vault's tooling stands and its path is sound.","tool","wired","keep",2,111
   "hnitbjorg.sh","hnitbjorg.sh — Hnitbjörg: the encrypted document vault.","tool","wired","keep",3,250
   "hoard-guard.sh","hoard-guard.sh — the ward for the PRIVATE HOME repo ($YMIR_HOME).","tool","wired","keep",3,150
-  "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",215,116
+  "hoard-lib.sh","hoard-lib.sh — where the operator's HOME lives, and the two roots beneath it.","lib","tested","keep",219,116
   "hodd-set.sh","hodd-set.sh — set ONE key in an age-encrypted secret file, with guards that make a","tool","wired","keep",4,106
   "hodd.sh","hodd.sh — the Allfather's private hoard: path, init, ls, load, tenant.","tool","tested","keep",33,135
   "home-contract-check.sh","home-contract-check.sh — the contract that raises a home is itself checked.","tool","wired","keep",2,160
@@ -428,7 +429,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "linear_adapter.py","bin/time/snotra/linear_adapter.py -> systems/snotra/services/cron/linear_adapter.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "llama-ensure.sh","llama-ensure.sh — stand a CUDA llama.cpp engine for local models, or adopt the","tool","wired","keep",3,163
   "local-model-lock.sh","local-model-lock.sh — serialize LOCAL model inference on one machine.","tool","tested","keep",8,132
-  "lock-ask.sh","lock-ask.sh — a read-only agent asks the LOCK OWNER for work, and the owner answers.","tool","wired","keep",2,367
+  "lock-ask.sh","lock-ask.sh — a read-only agent asks the LOCK OWNER for work, and the owner answers.","tool","wired","keep",3,367
   "logretta-council.sh","logretta-council.sh — the council's MODES: who divides the work, who is sent out, who rules.","tool","wired","keep",0,309
   "logretta-debate.sh","logretta-debate.sh — the council's second round: seats answering SEATS, not the Allfather.","tool","wired","keep",1,118
   "logretta-ensure.sh","logretta-ensure.sh — seat the council's roster on this machine.","tool","tested","keep",6,117
@@ -437,7 +438,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "machine-profile.sh","machine-profile.sh — a body reads its OWN card (wave C, the persona loader).","tool","wired","keep",0,54
   "mail-scan.sh","mail-scan.sh — read-only: the last N hours of a mailbox, as compact JSON.","tool","wired","keep",1,66
   "mail-send.sh","bin/time/snotra/mail-send.sh -> systems/snotra/services/letters/mail-send.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new door and…","tool","wired","keep",8,16
-  "mail.sh","mail.sh — the operator-only mail door: a system tells the Allfather, and nobody else.","tool","wired","keep",3,203
+  "mail.sh","mail.sh — the operator-only mail door: a system tells the Allfather, and nobody else.","tool","wired","keep",4,203
   "manifest.sh","manifest.sh — a skill declares itself; the index is DERIVED from the declarations.","tool","wired","keep",2,404
   "mcp-config.sh","mcp-config.sh — generate the harness MCP config: ONE local gateway door.","tool","tested","keep",0,94
   "mcp-gate.sh","mcp-gate.sh — arm/disarm an on-call MCP server in the seat's pi mcp-adapter.json.","tool","wired","keep",1,65
@@ -510,7 +511,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "participants-fill.sh","bin/time/snotra/participants-fill.sh -> systems/snotra/services/letters/participants-fill.sh — RETIRED SHIM (plan 129, 2026-10-24); execs t…","tool","wired","keep",0,16
   "path-ledger-guard.sh","path-ledger-guard.sh — Rule 25: a path that MOVED may not be referenced again.","tool","tested","keep",1,121
   "path-legality-guard.sh","path-legality-guard.sh — a tracked path must be a name EVERY host can hold.","tool","wired","keep",1,126
-  "pending.sh","pending.sh — everything that is waiting on the operator, in ONE list.","tool","wired","keep",3,91
+  "pending.sh","pending.sh — everything that is waiting on the operator, in ONE list.","tool","wired","keep",4,91
   "people-guard.sh","people-guard.sh — the public tree holds no people.","tool","wired","keep",0,103
   "perm-guard.sh","perm-guard.sh — flag agent profiles whose permissions are self-defeating.","tool","wired","keep",0,32
   "phone-lib.sh","phone-lib.sh — reach the operator's phone storage for the vault's phone key.","lib","wired","keep",1,69
@@ -534,7 +535,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "pr-check.sh","pr-check — is every commit that exists proposed for review?","tool","tested","keep",6,26
   "pr-guard.sh","pr-guard — a branch that exists on the remote must have a pull request.","tool","wired","keep",1,35
   "pr-pretest.sh","pr-pretest.sh — the PR-time gate: a REAL npm installation, locally, before","tool","wired","keep",1,59
-  "pr-seal.sh","pr-seal.sh — the seat's own PR is sealed by the seat, and the word arrives through Gná.","tool","wired","keep",1,324
+  "pr-seal.sh","pr-seal.sh — the seat's own PR is sealed by the seat, and the word arrives through Gná.","tool","wired","keep",2,324
   "pr-ship-guard.sh","pr-ship-guard.sh — Rule 08, the ship door: the BRANCH is a smith's to push; the PR is not.","tool","wired","keep",2,175
   "pre-commit","The cheap checks, so a commit never carries a broken tree.","tool","tested","keep",15,20
   "pre-push","The kit goes into Node, Elixir and shell repositories, so the checks are asked of scripts/checks.sh rather than named","tool","tested","keep",15,55
@@ -575,8 +576,11 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "report.sh","report.sh — THE handoff door.","tool","tested","keep",11,88
   "research-round.sh","research-round.sh — one reusable research errand: seat a skald or a sage, give","tool","wired","keep",0,144
   "research-smoke.sh","bin/assistant/research-smoke.sh -> systems/skirnir/services/research-smoke.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and…","tool","wired","keep",0,16
-  "review-rules.sh","review-rules.sh — the rules floor: load what a reviewer MUST know, or refuse to review.","tool","wired","keep",1,139
-  "review-watch.sh","review-watch.sh — the missing trigger: a PR that arrives is a question the owner is asked.","tool","wired","keep",0,227
+  "review-rules.sh","review-rules.sh — the rules floor: load what a reviewer MUST know, or refuse to review.","tool","wired","keep",3,139
+  "review-seat.sh","review-seat.sh — the reviewer's SEAT: pi in a herdr pane, on the heart, on a loop.","tool","wired","keep",1,214
+  "review-shelf.sh","review-shelf.sh — where a packet LANDS, and the waiting rule that keeps it honest.","tool","wired","keep",0,172
+  "review-verdict.sh","review-verdict.sh — the judge's ONE act of writing: its verdict, and nothing else.","tool","wired","keep",0,132
+  "review-watch.sh","review-watch.sh — the missing trigger: a PR that arrives is a question the owner is asked.","tool","wired","keep",0,240
   "reviews-shelf.sh","reviews-shelf — a review nobody can find is a review that did not happen.","tool","wired","keep",0,35
   "reviews.sh","reviews.sh — a review is a file in the repository, so the next hand gets it without asking anyone.","tool","wired","keep",1,70
   "rodd-operational-input.sh","rodd-operational-input.sh - canonical Rödd operational-input protocol.","tool","wired","keep",1,251
@@ -588,7 +592,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "rules-compliance-guard.sh","rules-compliance-guard.sh — a push proves the house's own rules were followed.","tool","wired","keep",1,112
   "rules-number-guard.sh","rules-number-guard.sh — the house law is NUMBERED, so no two rules may share a number,","tool","tested","keep",1,83
   "rules.py","'''rules.py — the judgement, deterministic and first (plan 98 §4.2).","tool","wired","keep",1,102
-  "runes-append.sh","runes-append.sh — the append-only Runes ledger, a THIN SHIM.","tool","tested","keep",27,117
+  "runes-append.sh","runes-append.sh — the append-only Runes ledger, a THIN SHIM.","tool","tested","keep",28,117
   "runes-project.sh","runes-project.sh — the DAG projector, regenerates runes_audit.md from events.","tool","wired","keep",0,65
   "runtime-deploy.sh","runtime-deploy.sh — move the PINNED runtime checkout to the merged tree, and prove what is running.","tool","wired","keep",2,96
   "runtime-guard.sh","runtime-guard.sh — THE TREE IS NOT A RUNTIME.","data","wired","keep",1,125
@@ -601,7 +605,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "seat-stop.sh","seat-stop.sh — stop a seat WHOLE: every process working in its worktree, not just the pane.","tool","wired","keep",1,78
   "seat-surface.sh","seat-surface.sh — render THIS seat's own name into the AGENTS.md every harness reads.","tool","wired","keep",5,212
   "seat-wire.sh","seat-wire.sh — one seat speaks into another seat's live pane, and says who it is.","tool","wired","keep",1,382
-  "seat.sh","seat.sh — seat Gróa on THIS machine, once.","tool","tested","migrate → src/ymir_runtime/seat.py",11,106
+  "seat.sh","seat.sh — seat Gróa on THIS machine, once.","tool","tested","migrate → src/ymir_runtime/seat.py",13,106
   "seats.sh","seats.sh — where the work actually is: panes in either backend, and the dead shells named.","tool","wired","keep",3,34
   "secret-guard.sh","secret-guard.sh — refuse to commit obvious secrets or private env files.","tool","wired","keep",5,117
   "secret-scan.sh","secret-scan — a credential must never enter this repository, and a hook is cheaper than a history rewrite.","tool","wired","keep",1,37
@@ -614,7 +618,8 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "share-build.sh","share-build.sh — the built copy that may leave.","data","wired","keep",2,413
   "share-scene.py","'''share-scene.py — the consented share door for Excalidraw scenes.","data","wired","keep",1,184
   "share.yaml","The share list for the skills-MCP fixtures — three invented skills, nothing real.","data","wired","keep",2,13
-  "ship.sh","ship.sh — the house's git discipline as one door: branch, commit named paths, merge to the base, push.","tool","wired","keep",2,63
+  "ship.sh","ship.sh — the house's git discipline as one door: branch, commit named paths, merge to the base, push.","tool","wired","keep",4,63
+  "ship.sh","ship.sh — the reviewer's merge: the one door that puts a judged PR on main.","tool","wired","keep",4,203
   "skill-find.sh","skill-find.sh — find the skill you need, without loading any of them.","tool","tested","keep",4,188
   "skill-index.sh","skill-index.sh — Sága's sight over the crafts: one index of EVERY skill we","tool","tested","keep",3,244
   "skill-vendor-sync.sh","skill-vendor-sync.sh — keep imported third-party skill packs current.","tool","wired","keep",0,113
@@ -630,6 +635,7 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "smidja-bootstrap.sh","smidja-bootstrap.sh — make the Smíðja visualizer ready on a fresh install.","tool","wired","keep",3,105
   "smidja-lib.sh","smidja-lib.sh — where the smithy's parts actually live.","lib","wired","keep",4,69
   "smidja-observe.sh","smidja-observe.sh — the smithy's trace, read-only (W0075).","data","wired","keep",1,88
+  "smith-gh","smith-gh — the `gh` a SMITH sees: everything reads, and nothing ships.","tool","wired","keep",1,77
   "smoke.sh","bin/assistant/smoke.sh -> systems/skirnir/services/smoke.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","tested","keep",7,16
   "smoke.sh","bin/time/snotra/smoke.sh -> systems/snotra/tests/smoke.sh — RETIRED SHIM (plan 129, 2026-10-24); execs the new door and says so.","tool","tested","keep",7,16
   "snotra-agenda.py","bin/time/snotra/snotra-agenda.py -> systems/snotra/services/cron/snotra-agenda.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
@@ -813,6 +819,6 @@ bin[800]{file,does,kind,verdict,disposition,callers,lines}:
   "yt-transcript.sh","yt-transcript.sh — read a video: metadata, description, and transcript.","tool","wired","keep",0,85
   "zoom_ingest.py","bin/time/snotra/zoom_ingest.py -> systems/snotra/services/cron/zoom_ingest.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
 
-**Tally.** verdict: wired=543, tested=257
+**Tally.** verdict: wired=548, tested=258
 
-**Tally.** disposition: keep=785, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1
+**Tally.** disposition: keep=791, migrate → src/ymir_runtime/send.py=3, migrate → src/ymir_runtime/backend.py=2, migrate → src/ymir_runtime/state/lock.py=2, migrate → src/ymir_runtime/seat.py=1, migrate → src/ymir_runtime/harness.py=1, migrate → src/ymir_runtime/watch.py=1, migrate → src/ymir_runtime/worktree.py=1, migrate → src/ymir_runtime/doors.py=1, migrate → src/ymir_runtime/state/queue.py=1, migrate → src/ymir_runtime/library.py=1, migrate → src/ymir_runtime/dispatch/registry.py=1

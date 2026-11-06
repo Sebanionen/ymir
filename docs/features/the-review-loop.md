@@ -12,9 +12,18 @@ anything). The loop is those two pieces:
 - **`bin/seat/lock-ask.sh`** — the read-only agent's mouth. It asks the **lock owner** — the one live primary
   on the machine — "may I take this task", and the owner answers. The ask lands in the owner's wake queue
   (the arm drains it into the session between turns) and the answer lands in the asker's own inbox.
-- **`bin/agents/eindri-review-spawn.sh --pr <url>`** — the owner's answer: seat the judge for a PR that has no
-  errand record at all, marked once per **head sha**, so a moved head earns a fresh judgement and the same
-  head twice earns nothing.
+- **`bin/forge/review-seat.sh`** — the reviewer's SEAT: one herdr workspace named `review`, one **pi** agent
+  in it, cwd a **clone** of the repo (never a smith's worktree), its charter the judge's role file plus the law
+  it judges by, its model resolved for that seat. `ask <pr>` puts one PR in front of it.
+- **`bin/forge/review-verdict.sh`** — the judge's ONE act of writing. The charter keeps `edit: deny`,
+  `write: deny`, so the verdict is written through a door that checks the **head sha** and the verdict shape,
+  and `ship.sh` reads it.
+- **`bin/forge/ship.sh`** — the reviewer's merge, and only for a project that declares
+  `delivery: reviewer-merges`. Six conditions, the first failing one named: the switch, an open and
+  mergeable PR, green CI, a verdict that is not a refusal, a verdict naming the SAME head, and no
+  `state/.seal-hold`. Then: merge, ONE Runes entry, and the word to him — MERGED, or a FAIL line.
+- **`bin/agents/eindri-review-spawn.sh --pr <url>`** — the same judge through the einherjar road, for a machine
+  with no herdr seat: a PR with no errand record, marked once per **head sha**.
 
 **What you need.** `gh` logged in on the seat that runs the watch, a live primary holding the lock (the ask is
 refused when there is none), and the home's state directory (resolved through `bin/vault/hoard-lib.sh`). The
@@ -26,7 +35,14 @@ judge's model is **resolved for that seat** by `bin/model/agent-model.sh` — ne
 bin/forge/review-watch.sh                     # one pass: ask about every unjudged open PR
 bin/forge/review-watch.sh --repo owner/repo   # a different repo (repeatable)
 bin/forge/review-watch.sh --dry-run           # what it would ask, and nothing else
-bin/forge/review-watch.sh --judge 552         # the owner's answer: seat the judge for PR #552
+bin/forge/review-watch.sh --judge 552         # the owner's answer: pi in herdr reviews PR #552
+
+bin/forge/review-seat.sh ensure               # raise the reviewer's seat (one herdr workspace, pi)
+bin/forge/review-seat.sh status               # is it there, and what is it doing
+bin/forge/review-seat.sh ask 552 --wait        # one PR in front of the seated judge
+bin/forge/review-verdict.sh write 552 --head <sha> --verdict PASS --reason "…"
+bin/forge/ship.sh --check 552                 # judge the six merge conditions, merge nothing
+bin/forge/ship.sh 552                         # merge, write the Runes entry, mail him
 
 bin/seat/lock-ask.sh who                      # the lock, the arm, and whether they agree
 bin/seat/lock-ask.sh ask "may I judge PR 552" --task pr-552 --as forseti
@@ -46,8 +62,10 @@ bin/seat/lock-ask.sh list [--all]             # open asks, or every ask
   stranger with the file path cannot speak as the owner.
 - **No live owner, no ask.** A dead lock, or a lock and an arm that disagree, is a refusal that names the
   road — never "nothing to do".
-- **The judge may not write.** Forseti's charter keeps `edit: deny`, `write: deny`. If the work needs a hand,
-  the judge asks, and the owner does it or seats someone who can.
+- **The judge may not write** — except its verdict, through `review-verdict.sh`, which checks the head sha.
+  If the work needs a hand, the judge asks the lock owner, and the owner does it or seats someone who can.
+- **A merge needs a project that says so.** `ship.sh` refuses `operator-merges` by name; the switch is one
+  row in `hodd/identity/projects.yaml`.
 
 **If it does not work.**
 

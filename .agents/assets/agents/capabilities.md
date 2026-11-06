@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",763
+  "shell doors (bin/*.sh)",767
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -342,7 +342,11 @@ capabilities[5]{surface,count}:
 | packaged-gate.sh | packaged-gate.sh — prove the PUBLISHED artifact, not the tree. | tested | keep (a human or a cron row must run it) |
 | pr-pretest.sh | pr-pretest.sh — the PR-time gate: a REAL npm installation, locally, be | tested+named | keep (a human or a cron row must run it) |
 | review-rules.sh | review-rules.sh — the rules floor: load what a reviewer MUST know, or  | tested | keep (a human or a cron row must run it) |
+| review-seat.sh | review-seat.sh — the reviewer's SEAT: pi in a herdr pane, on the heart | tested | keep (a human or a cron row must run it) |
+| review-shelf.sh | review-shelf.sh — where a packet LANDS, and the waiting rule that keep | tested | keep (a human or a cron row must run it) |
+| review-verdict.sh | review-verdict.sh — the judge's ONE act of writing: its verdict, and n | tested | keep (a human or a cron row must run it) |
 | review-watch.sh | review-watch.sh — the missing trigger: a PR that arrives is a question | tested | keep (a human or a cron row must run it) |
+| ship.sh | ship.sh — the reviewer's merge: the one door that puts a judged PR on  | tested | keep (a human or a cron row must run it) |
 | skillopt-setup.sh | skillopt-setup.sh — one-time SkillOpt installation for Ymir. | tested | keep (a human or a cron row must run it) |
 | utgard.sh | utgard.sh — the sealed execution barrier (Utgard, the realm outside th | tested+named | keep (a human or a cron row must run it) |
 | yggdrasil.sh | yggdrasil.sh — the worktree manager (Yggdrasil, the world-tree). | tested+named | keep (a human or a cron row must run it) |

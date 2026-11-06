@@ -152,7 +152,20 @@ if [ -n "$JUDGE" ]; then
     fi
   done
   [ -n "$url" ] || refuse "PR #$JUDGE is not readable in ${REPOS[*]} — nothing is seated for a PR that cannot be read"
-  [ "$DRY" = 1 ] && { printf 'review-watch[2]{judge,would_seat}:\n  "%s","%s --pr %s"\n' "$JUDGE" "$SPINE" "$url"; exit 0; }
+  SEAT="$ROOT/bin/forge/review-seat.sh"
+  if [ "$DRY" = 1 ]; then
+    printf 'review-watch[3]{judge,road,would_run}:\n  "%s","%s","%s"\n' "$JUDGE" \
+      "$([ -x "$SEAT" ] && echo "pi in herdr (review-seat.sh)" || echo "the spine (einherjar spawn)")" \
+      "$([ -x "$SEAT" ] && echo "review-seat.sh ensure && review-seat.sh ask $JUDGE" || echo "$SPINE --pr $url")"
+    exit 0
+  fi
+  # THE ALLFATHER'S ROAD (2026-11-06): *"make so we're using the pi harness in herdr for this work."*
+  # The seated judge is a pi agent in a herdr pane on the review clone; the spine's einherjar spawn
+  # is the fallback for a machine with no herdr seat.
+  if [ -x "$SEAT" ] && [ "${HERDR_ENV:-}" = 1 ]; then
+    "$SEAT" ensure >/dev/null 2>&1 || die "the review seat could not be raised — review-seat.sh ensure names why"
+    exec "$SEAT" ask "$JUDGE" --wait
+  fi
   exec "$SPINE" --pr "$url"
 fi
 
