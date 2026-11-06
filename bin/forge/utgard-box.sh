@@ -47,11 +47,23 @@ DOOR_PORT="${UTGARD_BOX_DOOR_PORT:-3128}"
 URL_PORT_BASE="${UTGARD_BOX_PORT_BASE:-8800}"
 # The doors' outward road. A box cannot reach a service on the host at all while
 # the host firewall drops input from a bridge (ufw's default policy is DROP, and
-# container->host is INPUT). So the doors share ONE named network with a fixed
-# subnet, and the operator's firewall rule names that subnet and nothing else.
+# container->host is INPUT). So the doors share ONE named network, and the
+# operator's firewall rule names that network's subnet and nothing else.
+#
+# The subnet is NOT written here: the engine allocates it, and the remedy line is
+# read back from the network that actually exists. A literal in a script is a
+# guess that goes stale on the next machine (Rule 07), and this project's own
+# public-data ward refuses a private range anyway — rightly.
 DOOR_NET="${UTGARD_BOX_DOOR_NET:-utgard-door-net}"
-DOOR_SUBNET="${UTGARD_BOX_DOOR_SUBNET:-172.31.77.0/24}"
+DOOR_SUBNET="${UTGARD_BOX_DOOR_SUBNET:-}"
 RAIL_TARGET="${UTGARD_BOX_RAIL_TARGET:-host.docker.internal:8080}"
+# The name a box uses for the rail. It means nothing outside the door: the door is
+# what resolves it, and the door is what adds the credential.
+BOX_RAIL_SCHEME="${UTGARD_BOX_RAIL_SCHEME:-http}"
+BOX_RAIL_HOST="${UTGARD_BOX_RAIL_HOST:-rail:8080}"
+BOX_RAIL_URL="${UTGARD_BOX_RAIL_URL:-$BOX_RAIL_SCHEME://$BOX_RAIL_HOST/v1}"
+# The box's only proxy: the door, by the name the box knows it by.
+BOX_PROXY_URL="$BOX_RAIL_SCHEME://door:$DOOR_PORT"
 
 usage() { sed -n '2,32p' "$0" | sed 's/^# \{0,1\}//'; }
 
@@ -156,45 +168,50 @@ ttl_seconds() {
 now() { date +%s; }
 
 # The door's outward road: one named network, a fixed subnet, created once.
-# The host's own address in the door subnet: 172.31.78.0/24 -> 172.31.78.1
+# The host's own address on the door network, READ from the network rather than
+# assumed: whatever the engine allocated is the address the door must dial.
+door_subnet() {
+  "$ENGINE" network inspect "$DOOR_NET" \
+    --format '{{range .IPAM.Config}}{{.Subnet}}{{end}}' 2>/dev/null
+}
+
 door_gateway() {
-  local cidr="${DOOR_SUBNET%%/*}"
-  printf '%s.1' "${cidr%.*}"
+  local gw
+  gw="$("$ENGINE" network inspect "$DOOR_NET" \
+    --format '{{range .IPAM.Config}}{{.Gateway}}{{end}}' 2>/dev/null)"
+  if [ -n "$gw" ]; then printf '%s' "$gw"; return 0; fi
+  # A network with no gateway recorded still has one at the first host address.
+  local cidr; cidr="$(door_subnet)"
+  [ -n "$cidr" ] || return 1
+  printf '%s.1' "${cidr%%/*}" | sed 's/\.[0-9]*$/.1/'
 }
 
 ensure_door_net() {
   "$ENGINE" network inspect "$DOOR_NET" >/dev/null 2>&1 && return 0
-  if "$ENGINE" network create --subnet "$DOOR_SUBNET" "$DOOR_NET" >/dev/null 2>&1; then
-    return 0
+  if [ -n "$DOOR_SUBNET" ]; then
+    "$ENGINE" network create --subnet "$DOOR_SUBNET" "$DOOR_NET" >/dev/null 2>&1 && return 0
+    printf 'note: the configured subnet (%s) was refused; letting the engine allocate one\n' "$DOOR_SUBNET" >&2
   fi
-  # A subnet already taken by another engine network is the common case, and a
-  # door that silently loses its road is exactly the fault this house keeps
-  # paying for. Try the neighbours, and SAY which subnet answered.
-  local base="${DOOR_SUBNET%%.*}" second third
-  second="$(printf '%s' "$DOOR_SUBNET" | cut -d. -f2)"
-  third="$(printf '%s' "$DOOR_SUBNET" | cut -d. -f3)"
-  local candidate
-  for candidate in 78 79 80 81 82 83 84 85 86 87 88; do
-    if "$ENGINE" network create --subnet "${base}.${second}.${candidate}.0/24" "$DOOR_NET" >/dev/null 2>&1; then
-      DOOR_SUBNET="${base}.${second}.${candidate}.0/24"
-      printf 'note: the door network took %s (the configured subnet was already in use)\n' "$DOOR_SUBNET"
-      return 0
-    fi
-  done
-  printf 'warn: could not create network %s on any tried subnet\n' "$DOOR_NET" >&2
-  return 1
+  "$ENGINE" network create "$DOOR_NET" >/dev/null 2>&1 \
+    || { printf 'warn: could not create the door network %s\n' "$DOOR_NET" >&2; return 1; }
 }
 
 # The exact rule that opens this one road, printed rather than applied: the ward
 # is the operator's (RULES/24), and a script that silently widens a firewall is
 # the fault this house keeps paying for.
 rail_road_remedy() {
-  local hostport
+  local subnet hostport
+  subnet="$(door_subnet)"
   hostport="${RAIL_TARGET##*:}"
   printf 'remedy: the box cannot reach the rail, because the host firewall drops input from a bridge\n'
   printf '  measured: ufw is active, DEFAULT_INPUT_POLICY=DROP\n'
   printf '  one rule opens exactly this road, and nothing else:\n'
-  printf '    sudo ufw allow from %s to any port %s proto tcp\n' "$DOOR_SUBNET" "$hostport"
+  if [ -n "$subnet" ]; then
+    printf '    sudo ufw allow from %s to any port %s proto tcp\n' "$subnet" "$hostport"
+  else
+    printf '    sudo ufw allow in on <the %s bridge interface> to any port %s proto tcp\n' "$DOOR_NET" "$hostport"
+    printf '  (the engine has not allocated a subnet for %s yet — run a box once, then re-read this)\n' "$DOOR_NET"
+  fi
 }
 
 # Ask the door to dial the rail; a door that cannot reach it is a closed box.
@@ -322,17 +339,17 @@ help: utgard box new $name --model <alias>   (see bin/model/catalog.sh)"
   fi
 
   local -a env_args=(
-    -e "OPENAI_BASE_URL=http://rail:8080/v1"
+    -e "OPENAI_BASE_URL=$BOX_RAIL_URL"
     -e "OPENAI_API_KEY=door"
     -e "OPENAI_MODEL=$model"
     -e "YMIR_BOX=$name"
   )
   if [ "$seal" = "door" ]; then
     env_args+=(
-      -e "HTTP_PROXY=http://door:${DOOR_PORT}"
-      -e "HTTPS_PROXY=http://door:${DOOR_PORT}"
-      -e "http_proxy=http://door:${DOOR_PORT}"
-      -e "https_proxy=http://door:${DOOR_PORT}"
+      -e "HTTP_PROXY=$BOX_PROXY_URL"
+      -e "HTTPS_PROXY=$BOX_PROXY_URL"
+      -e "http_proxy=$BOX_PROXY_URL"
+      -e "https_proxy=$BOX_PROXY_URL"
       -e "NO_PROXY=localhost,127.0.0.1"
     )
   fi
@@ -395,24 +412,20 @@ help: utgard box seal $name none   (a box with no road is still a box)"
 # Write the box's own pi seat: a registry that names `rail` — a name with no
 # meaning outside the door, so the box never learns an address.
 seat_pi() {
-  local name="$1" model="$2" c model_id
+  local name="$1" model="$2" c model_id models settings
   c="$(cname "$name")"
   model_id="${model##*/}"
-  "$ENGINE" exec -i "$c" bash -lc "
-    mkdir -p /home/agent/.pi/agent
-    cat > /home/agent/.pi/agent/models.json <<'JSON'
-{
-  \"providers\": {
-    \"rail\": {
-      \"baseURL\": \"http://rail:8080/v1\",
-      \"apiKey\": \"door\",
-      \"models\": [{ \"id\": \"$model_id\", \"name\": \"$model_id\" }]
-    }
-  }
-}
-JSON
-    printf '{\"defaultProvider\":\"rail\",\"defaultModel\":\"%s\"}' '$model_id' > /home/agent/.pi/agent/settings.json
-  " >/dev/null 2>&1 || printf 'warn: the box has no pi seat written — enter it and seat one by hand\n' >&2
+  models="$(printf '{\n  "providers": {\n    "rail": {\n      "baseURL": "%s",\n      "apiKey": "door",\n      "models": [{ "id": "%s", "name": "%s" }]\n    }\n  }\n}' \
+    "$BOX_RAIL_URL" "$model_id" "$model_id")"
+  settings="$(printf '{"defaultProvider":"rail","defaultModel":"%s"}' "$model_id")"
+  # The container's $HOME, expanded INSIDE it — never the host's (Rule 07: the home
+  # is resolved, not guessed, and a literal path is a guess).
+  printf '%s' "$models" | "$ENGINE" exec -i "$c" bash -lc \
+    'mkdir -p "$HOME/.pi/agent" && cat > "$HOME/.pi/agent/models.json"' >/dev/null 2>&1 \
+    || { printf 'warn: the box has no pi seat written — enter it and seat one by hand\n' >&2; return 0; }
+  printf '%s' "$settings" | "$ENGINE" exec -i "$c" bash -lc \
+    'cat > "$HOME/.pi/agent/settings.json"' >/dev/null 2>&1 || true
+  return 0
 }
 
 url_of() {
@@ -616,10 +629,10 @@ cmd_probe() {
   user="$("$ENGINE" exec "$c" bash -lc 'id -un' 2>/dev/null)"
   rail_code="$("$ENGINE" exec "$c" bash -lc 'curl -s -m 20 -o /tmp/rail.out -w "%{http_code}" "$OPENAI_BASE_URL/models"' 2>/dev/null)"
   rail_body="$("$ENGINE" exec "$c" bash -lc 'head -c 120 /tmp/rail.out 2>/dev/null' 2>/dev/null)"
-  outside_code="$("$ENGINE" exec "$c" bash -lc 'curl -s -m 8 -o /tmp/out.out -w "%{http_code}" http://example.com || echo 000' 2>/dev/null)"
+  outside_code="$("$ENGINE" exec "$c" bash -lc 'curl -s -m 8 -o /tmp/out.out -w "%{http_code}" https://example.com || echo 000' 2>/dev/null)"
   outside_body="$("$ENGINE" exec "$c" bash -lc 'head -c 120 /tmp/out.out 2>/dev/null' 2>/dev/null)"
   local vault_in_box
-  vault_in_box="$("$ENGINE" exec "$c" bash -lc 'ls /home/agent/Documents 2>/dev/null | wc -l' 2>/dev/null)"
+  vault_in_box="$("$ENGINE" exec "$c" bash -lc 'ls "$HOME/Documents" 2>/dev/null | wc -l' 2>/dev/null)"
 
   # One road out means: the door answered, or the door refused. Either proves the
   # box has exactly one peer. A real internet answer is the failure.

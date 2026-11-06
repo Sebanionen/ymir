@@ -163,8 +163,9 @@ class Door:
         )
 
     async def forward(self, method, target, version, header_lines, reader, writer) -> None:
-        # Absolute-form: GET http://rail:8080/v1/models HTTP/1.1
-        if not target.lower().startswith(("http://", "https://")):
+        # Absolute-form: the client names a scheme and a NAME, never a place:
+        #   GET <scheme>://<allowlisted-name>/v1/models HTTP/1.1
+        if target.split(":", 1)[0].lower() not in ("http", "https") or "://" not in target:
             writer.write(
                 self.refusal(
                     "door: this is a proxy. Ask for http://<name>/… and the name must be "

@@ -84,3 +84,8 @@ bin/forge/utgard.sh box probe
   which the script already retries across eleven neighbours.
 - `refused: box X has no door` — it was made with `--seal none` or without a port. Make another with `--port 3000`.
 - The rail answers 401 — the vault holds no `LLAMA_SWAP_API_KEY`; `new` warned about this when it started the box.
+
+## CHANGE LOG
+
+- **2026-11-06** — Carved. The box, the door, the three seals, and the one firewall rule that is owed before a box can
+  reach the rail.

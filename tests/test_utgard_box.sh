@@ -18,14 +18,12 @@ BOX="$ROOT/bin/forge/utgard-box.sh"
 ENGINE="${YMIR_CONTAINER_ENGINE:-docker}"
 TAG="${UTGARD_BOX_IMAGE:-utgard-box:latest}"
 NET="utgard-test-door-net"
-SUBNET="172.31.78.0/24"
 PREFIX="utgardtest"
 KEY="testkey-not-a-real-secret"
 STUB="stubrail"
 
 export UTGARD_BOX_PREFIX="$PREFIX"
 export UTGARD_BOX_DOOR_NET="$NET"
-export UTGARD_BOX_DOOR_SUBNET="$SUBNET"
 export UTGARD_BOX_RAIL_TARGET="$STUB:8080"
 export UTGARD_BOX_KEY="$KEY"
 export UTGARD_BOX_IMAGE="$TAG"
@@ -74,8 +72,7 @@ PY
 # only has to EXIST before the stub can join it; a taken subnet is not a failure,
 # it is the reason the script has a fallback.
 if ! "$ENGINE" network inspect "$NET" >/dev/null 2>&1; then
-  "$ENGINE" network create --subnet "$SUBNET" "$NET" >/dev/null 2>&1 \
-    || "$ENGINE" network create "$NET" >/dev/null 2>&1 \
+  "$ENGINE" network create "$NET" >/dev/null 2>&1 \
     || { skip "could not create a door network for the stub — nothing to prove"; exit 0; }
 fi
 "$ENGINE" rm -f "$STUB" >/dev/null 2>&1 || true
@@ -142,7 +139,7 @@ case "$rail" in
   *"Bearer $KEY"*) ok "the door injected the credential (the box never held it)" ;;
   *) bad "the door injected the credential (got: ${rail:0:120})" ;;
 esac
-outside="$("$ENGINE" exec "${PREFIX}-b1" bash -lc 'curl -s -m 10 http://example.com' 2>/dev/null)"
+outside="$("$ENGINE" exec "${PREFIX}-b1" bash -lc 'curl -s -m 10 https://example.com' 2>/dev/null)"
 case "$outside" in
   *"no road to"*) ok "the door refuses every other name, in words" ;;
   *) bad "the door refuses every other name, in words (got: ${outside:0:80})" ;;
