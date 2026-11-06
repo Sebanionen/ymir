@@ -68,10 +68,13 @@ its row here and write its page (see `AGENTS.md` → *Feature how-tos*).
 | Skills | Galdr + Gungnir | The craft: skills, standards, and synthesis of a missing capability | [docs/features/galdr-and-gungnir-skills.md](docs/features/galdr-and-gungnir-skills.md) |
 | Workers | Hermes runtime | An adopted worker runtime with its own brain, memory, and subagents | [docs/features/hermes-the-worker-runtime.md](docs/features/hermes-the-worker-runtime.md) |
 | Meetings | Snotra doors (`snotra-store`, `ping-room`, `snotra-autojoin`, `snotra-bot`) | One record contract for every meeting: lane directories, append-only writes, generated index, on-demand Þing room, calendar auto-join, and a bot named Snotra | [docs/features/snotra-meetings.md](docs/features/snotra-meetings.md) |
+| Factory | Smíðja trace | One row per phase of a run: the agent, the model it actually ran on, its tools, the window occupancy and the context verdict | [docs/features/smidja-and-volundr.md](docs/features/smidja-and-volundr.md) |
 | Meetings | **A voice in the room** (`systems/snotra/snotra-stream.sh` `say` / `talk`) | Kokoro speaks into the `snotra_mic` PipeWire source so a meeting client on this seat can transmit it; `talk` is the streaming loop — hear in 2 s chunks, answer only when NAMED, speak sentence by sentence; the first word names the speaker, a 20 s cap, `mute` is one command, every utterance a Rune | [docs/features/snotra-meetings.md](docs/features/snotra-meetings.md) |
 | Meetings | Snotra (the meeting ear) | Captures a call (PipeWire), transcribes (whisper.cpp), mines minutes into the hoard | [docs/features/snotra-the-meeting-ear.md](docs/features/snotra-the-meeting-ear.md) |
 | Collaboration | Skills for collaborators (`tools/skills-mcp`) | A four-tool, read-only door onto a built, redacted copy of the skills we choose to share — a collaborator searches, pulls one skill, and fetches its templates without loading the library or seeing our machines, people or runs | [docs/features/skills-mcp-for-collaborators.md](docs/features/skills-mcp-for-collaborators.md) |
 | Delivery | The seat seals its own PR (`pr-seal.sh`) | Green, conflict-free, and the seat's only open PR: merged now, with one Runes entry, and the word carried through Gná | [docs/features/pr-seal.md](docs/features/pr-seal.md) |
+| Factory | Smíðja triggers — the clock and events (`bin/time/event-trigger.sh`) | A smithy starts by a person, the clock or a named event; `trigger:` in its own config, one door for all three, the cron row generated from the config and idempotent | [docs/features/smidja-triggers.md](docs/features/smidja-triggers.md) |
+| Factory | Smíðja — resume · record · decide | A dead run continues at its last green phase; the run reads as one record (phases · steps · state · where it stopped); a phase marked `approval` waits for your decision and a `repeat` phase checkpoints each turn | [docs/features/smidja-and-volundr.md](docs/features/smidja-and-volundr.md) |
 
 ## Surfaces — what you look at
 
@@ -81,6 +84,7 @@ its row here and write its page (see `AGENTS.md` → *Feature how-tos*).
 | Board | Óðrerir (live hall) | The fleet's planning glass — a live board of what is happening | [docs/features/odrerir-the-live-hall.md](docs/features/odrerir-the-live-hall.md) |
 | Desktop | Sessrúmnir (desktop shell) | The desktop app for the portal | [docs/features/sessrumnir-the-desktop.md](docs/features/sessrumnir-the-desktop.md) |
 | Ingress | Bifrost + Heimdall + Gjallarhorn | Routing, OAuth guard, and the outbound tunnel | [docs/features/bifrost-and-heimdall-the-doors.md](docs/features/bifrost-and-heimdall-the-doors.md) |
+| The near loop | The four dials · what is blocked on you · who is working now | One page in Óðrerir (`#/near`) answering "what waits on me" and "what are this agent's four dials" | [docs/features/near-loop.md](docs/features/near-loop.md) |
 
 ## Fleet & models
 
