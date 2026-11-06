@@ -15,7 +15,7 @@ ROOT="$(cd "$HERE/../.." && pwd)"
 ymir_home_root HOME_DIR 2>/dev/null || HOME_DIR="${YMIR_HOME:-$HOME/Documents/ymirhome}"
 REG="${JEV_DOORS:-$HOME/.config/ymir/jev-doors.yaml}"
 [ -r "$REG" ] || REG="$HOME_DIR/config/jev-doors.yaml"
-HOST="${JEV_DOOR_HOST:-heimdall.tailefab81.ts.net}"
+HOST="${JEV_DOOR_HOST:-}"   # never a default host: the operator names the door (Rule 24/39)
 
 key() { bash "$ROOT/bin/vault/hodd.sh" emit secrets/platform.env 2>/dev/null | sed -n 's/^export LLAMA_SWAP_API_KEY=//p' | head -1 | tr -d '"'"'"''; }
 rows() {
@@ -33,6 +33,7 @@ for door in d.get("doors") or []:
     print("\t".join(str(door.get(k, "")) for k in ("id","model","port","license","role","gguf")))
 PY
 }
+[ -n "$HOST" ] || HOST="$(bash "$ROOT/bin/bridge/seat-host.sh" 2>/dev/null || true)"
 case "${1-}" in
   list)
     JSON=0; [ "${2-}" = "--json" ] && JSON=1

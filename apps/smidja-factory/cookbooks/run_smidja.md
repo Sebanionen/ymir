@@ -139,7 +139,7 @@ with run.phase(PhaseParams(name="watch", kind="code", owner=run.engineer,
 
 ```bash
 just decide <smidja_id> signoff approve            # or decline / cancel
-just decide <smidja_id> signoff decline --note "not this week" --by "Josef"
+just decide <smidja_id> signoff decline --note "not this week" --by "<operator>"
 ```
 
 A run that stops at an approval phase **exits 3** and prints the door; a run a person declined **exits 4**. Neither is the run failing at its work, which is why neither is `1`. After a decision, `just resume <smidja_id>` re-enters the phase and runs the block — once.

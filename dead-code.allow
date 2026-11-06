@@ -17,3 +17,9 @@ apps/smidja-factory/apps/visualizer/src/lib/chat-store.ts   # todo: G1 — no im
 apps/smidja-factory/apps/visualizer/src/lib/router.ts       # todo: G1 — no importer; use it or delete it
 apps/hlidskjalf/src/gates/Thradr.tsx                       # todo: plan 93 T3 — register the terminal gate; the file is preserved, not deleted here
 tools/jev/bench/decision-bench.ts                            # consumer: the modeltesting skill's bench records (backends-benchmark.md §10.5.19, llamacpp/TESTING.md §19.11) — a human-run measurement harness, `npm run bench` in its package
+# A VENDORED UPSTREAM keeps its own dead code: these four are imported by the app's own
+# build graph only when its Vue app is built, which this tree does not run (RULES/16 binds OUR code).
+apps/hvergelmir/apps/dna-client-browser/fe/src/client/layout.ts    # todo: vendored upstream, retained verbatim; resolved by that app own vite build, not by this tree
+apps/hvergelmir/apps/dna-client-browser/fe/src/client/pin.ts    # todo: vendored upstream, retained verbatim
+apps/hvergelmir/apps/dna-client-browser/fe/src/client/route.ts    # todo: vendored upstream, retained verbatim
+apps/hvergelmir/apps/dna-client-browser/fe/src/components/cards/props.ts    # todo: vendored upstream, retained verbatim
