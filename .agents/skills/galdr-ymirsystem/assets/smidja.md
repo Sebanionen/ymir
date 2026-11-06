@@ -312,5 +312,7 @@ the events that ARE claimed).
 template — `make_config.py` copies it, `install.py` stamps it, and the trigger block is part of
 it. A `factory.yaml` / `roster.yaml` / wrapper that restates `roster`, `chain` or `trigger` is a
 second copy of the truth; a factory-level file **references** the smithy config, it never
-restates it. Proof: `bin/time/tests/test_event_trigger.sh` (39 assertions, wired as the `triggers`
-gate in `bin/gates/ci-verify.sh`).
+restates it. Proof: `bin/time/tests/test_event_trigger.sh` (42 assertions, wired as the `triggers`
+gate in `bin/gates/ci-verify.sh`) — 42 because the last three prove the lease: a second run of
+one smithy is refused with the pid that holds it, a dry run still answers while it is busy, and
+a stale lease self-heals because the pid is the truth and the file is not.

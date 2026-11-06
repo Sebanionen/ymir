@@ -64,3 +64,9 @@ law[3]{assertion,proved_by}:
 Plus: two claimants are two launches; a cron with no role is refused; a monthly expression is
 refused; an unknown mode and an event with no name are named faults; a faulty config stops the
 door rather than launching the healthy half; `06:00 UTC` is written as `07:00` on this seat.
+
+### Correction, appended the same hour — 42 assertions, not 39
+
+The count above was taken before the last three were written: the lease refuses a second run of
+one smithy (naming the pid that holds it), whose dry run still answers while it is busy, and
+whose stale lease self-heals because the pid is the truth and the file is not.

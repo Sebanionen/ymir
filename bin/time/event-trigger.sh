@@ -208,6 +208,15 @@ launch() {
     *) abs_prompt=$prompt ;;
   esac
   chain_arg=$(rel_to_root "$abs_chain")
+  uv_bin=$(command -v uv 2>/dev/null || true)
+
+  # A dry run launches nothing, so a lease held by a live run must not stop it:
+  # the whole point of --dry-run is to answer "what WOULD this do" while it is busy.
+  if [ "$DRY" = 1 ]; then
+    printf 'would-run\t%s run %s "%s" --config %s  (cwd %s)' \
+      "${uv_bin:-uv}" "$chain_arg" "$abs_prompt" "$(rel_to_root "$abs_config")" "$root"
+    return 0
+  fi
 
   slug=$(slug_of "$abs_config")
   lease="$LEASE_DIR/$slug.pid"
@@ -222,13 +231,7 @@ launch() {
   fi
 
   log="$LOG_DIR/$(date -u +%Y%m%dT%H%M%SZ)-$(basename "$abs_config" .yaml).log"
-  uv_bin=$(command -v uv 2>/dev/null || true)
 
-  if [ "$DRY" = 1 ]; then
-    printf 'would-run\t%s run %s "%s" --config %s  (cwd %s)' \
-      "${uv_bin:-uv}" "$chain_arg" "$abs_prompt" "$(rel_to_root "$abs_config")" "$root"
-    return 0
-  fi
   if [ -z "$uv_bin" ]; then
     printf 'refused\tuv is not on PATH — the smithy is a uv single-file script and cannot be launched'
     return 1

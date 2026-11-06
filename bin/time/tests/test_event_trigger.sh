@@ -215,6 +215,20 @@ while IFS=$'\t' read -r _cfg _root mode _rest; do
 done <"$TMP/scan"
 ok "no smithy in this checkout is armed by default"
 
+# ── one smithy, one live run ────────────────────────────────────────────────
+# The lease is the truth, not the pid file's existence: a dead pid is a stale
+# lease and the next event overwrites it.
+abs_audit=$(cd "$(dirname "$TMP/conf/audit.yaml")" && pwd)/audit.yaml
+slug=$(printf '%s' "$abs_audit" | tr -c 'A-Za-z0-9._-' '_' | cut -c1-120)
+mkdir -p "$BROKK_STATE_OVERRIDE/event-trigger/leases"
+printf '%s\n' "$$" >"$BROKK_STATE_OVERRIDE/event-trigger/leases/$slug.pid"
+export SMIDJA_CONFIGS="$TMP/conf/audit.yaml"
+want 1 "a smithy already running is not started twice" "$DOOR" nightly-audit
+{ cat "$TMP/out" "$TMP/err"; } | grep -q 'already running' && ok "the refusal names the running run" \
+  || bad "the refusal names the running run" "$(cat "$TMP/out")"
+want 0 "a dry run still answers while it is busy" "$DOOR" nightly-audit --dry-run
+rm -f "$BROKK_STATE_OVERRIDE/event-trigger/leases/$slug.pid"
+
 # ── one shape, not two ────────────────────────────────────────────────────────
 # A second file that restates `trigger:` is a second truth, and the two disagree
 # the first time one of them is edited. Only a smithy config (the template
