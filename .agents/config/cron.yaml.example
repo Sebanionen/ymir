@@ -82,3 +82,11 @@
 #   @heart,forge,dev 13:20 bin/time/nornir-job-gna-mail.sh
 #   @heart,forge,dev 15:20 bin/time/nornir-job-gna-mail.sh
 #   @heart,forge,dev 17:20 bin/time/nornir-job-gna-mail.sh
+
+# — A SMITHY STARTED BY THE CLOCK IS NOT WRITTEN HERE BY HAND —
+# Its own config declares it (`trigger:` in smidja/smidja_smidja_config/smidja.config.yaml),
+# and `bin/time/event-trigger.sh --install-cron` writes the row into this file, inside a
+# managed block at the end. Two places claiming one schedule is how a row keeps firing
+# after the trigger was turned off.
+#   bin/time/event-trigger.sh --list            # who may start each smithy
+#   bin/time/event-trigger.sh --install-cron    # write the rows it declares

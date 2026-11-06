@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>__LABEL__</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE__</string>
+    <string>--import</string>
+    <string>tsx</string>
+    <string>hub/src/main.ts</string>
+    <string>--device</string>
+    <string>__DEVICE__</string>
+  </array>
+  <key>WorkingDirectory</key><string>__APP__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>__PATH__</string>
+    <key>HOME</key><string>__HOME__</string>
+    <key>NODE_NO_WARNINGS</key><string>1</string>
+    <key>DNA_HUB_HOST</key><string>0.0.0.0</string>
+    <key>DNA_HUB_PORT</key><string>__HUB_PORT__</string>
+    <key>DNA_HUB_HOSTS</key><string>__HUB_HOSTS__</string>
+    <key>DNA_API_URL</key><string>__API_URL__</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>5</integer>
+  <key>StandardOutPath</key><string>__LOG__</string>
+  <key>StandardErrorPath</key><string>__LOG__</string>
+</dict>
+</plist>

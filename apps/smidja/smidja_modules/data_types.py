@@ -14,7 +14,16 @@ from typing import Any, Callable, Literal, Optional, Type
 from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 PhaseKind = Literal["engineer", "agent", "code"]
-PhaseStatus = Literal["queued", "running", "success", "fail"]
+# The phase CONTRACT is a different question from the lane `kind` answers. `kind`
+# says who runs the block (an engineer, an agent, code); `contract` says what the
+# block owes before it may close. It is pi-durable's phase kind, translated:
+#   ordinary  as today — the block runs and closes
+#   approval  waits for a person's decision, recorded in the trace, before it runs
+#   repeat    a loop that saves ONE checkpoint per iteration, so a restart
+#             re-enters at the first iteration that never committed
+PhaseContract = Literal["ordinary", "approval", "repeat"]
+PhaseStatus = Literal["queued", "running", "success", "fail", "waiting"]
+ApprovalDecision = Literal["approved", "declined", "cancelled"]
 
 
 # ── Phases ────────────────────────────────────────────────────────────────────
@@ -27,6 +36,7 @@ class PhaseParams(BaseModel):
     owner: str                      # engineer's name, "git", or an agent name from config
     description: str                # REQUIRED: what this phase does and why — see below
     retries: int = 0                # agent phases: gate-failure retries via continue
+    contract: PhaseContract = "ordinary"   # what the phase owes before it may close
 
     @field_validator("description")
     @classmethod
@@ -213,10 +223,15 @@ class ChangeSet(BaseModel):
     stat: str = ""                  # `git diff --stat` output, verbatim
     diff_path: str = ""             # the full diff, written into context_handoff/
     truncated: bool = False
+    # A replayed capture (resume.py) knows HOW MANY files changed because the
+    # trace logged the count, not their names. Without this, a resumed run's
+    # rebuilt ChangeSet would look empty and the chain would refuse to document
+    # work that is plainly on disk.
+    recorded_file_count: int = 0
 
     @property
     def empty(self) -> bool:
-        return not (self.files or self.untracked)
+        return not (self.files or self.untracked or self.recorded_file_count)
 
 
 class ChangesOutput(EnvelopeBase):
@@ -350,6 +365,21 @@ class smidjaConfig(BaseModel):
 
 
 # ── Tracing ──────────────────────────────────────────────────────────────────
+
+class DecisionRecord(BaseModel):
+    """A person's decision on an `approval` phase — the only thing that opens one.
+
+    It is written to the trace, not to a side file: the decision is part of the
+    run's record, so a resume (and the visualizer) read the same answer. A phase
+    with contract `approval` and no decision on record never runs its block.
+    """
+
+    smidja_id: str
+    phase: str                      # the phase NAME, which is the run-local id
+    decision: ApprovalDecision
+    by: str = ""                   # who decided — the operator by default
+    note: str = ""                 # why, when a decline needs a reason
+
 
 class EventRecord(BaseModel):
     """One traced event, always logged against smidja_id + phase."""

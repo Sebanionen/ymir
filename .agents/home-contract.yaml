@@ -132,6 +132,12 @@ contract:
     door: bin/engine/home-seed.sh
     required: false
     why: "who may call which skill through the skills door, per person and per tenant; absent, the door grants nothing (plan 184 §10, plan 192)"
+  - path: config/jev-doors.yaml
+    kind: seeded
+    template: .agents/config/jev-doors.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "where the decision models answer: id, model, port, licence, role. Absent, the intake gate refuses by name (plan 201)"
   - path: hodd/identity/doors.yaml
     kind: seeded
     template: .agents/config/doors.yaml.example

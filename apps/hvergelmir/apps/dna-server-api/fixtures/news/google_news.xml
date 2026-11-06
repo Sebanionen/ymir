@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+<channel>
+<title>"agents" - Google News</title>
+<link>https://news.google.com/search?q=agents</link>
+<item><title>Agents get a wrapped link in Google News - Example Org</title><link>https://news.google.com/rss/articles/CBMiKWh0dHBzOi8vZXhhbXBsZS5vcmcvZ29vZ2xlLXdyYXBwZWQtYWdlbnRz0gEA?oc=5</link><guid isPermaLink="false">CBMiKWh0dHBzOi8vZXhhbXBsZS5vcmcvZ29vZ2xlLXdyYXBwZWQtYWdlbnRz0gEA</guid><pubDate>__NOW_RFC822__</pubDate><description>&lt;a href="https://news.google.com/rss/articles/CBMiKWh0dHBzOi8vZXhhbXBsZS5vcmcvZ29vZ2xlLXdyYXBwZWQtYWdlbnRz0gEA?oc=5"&gt;Agents get a wrapped link&lt;/a&gt;</description><source url="https://example.org">Example Org</source></item>
+<item><title>An opaque Google News link stays as it is - Example News</title><link>https://news.google.com/rss/articles/AU_yqLOpaqueIdWithNoUrlInside?oc=5</link><guid isPermaLink="false">AU_yqLOpaqueIdWithNoUrlInside</guid><pubDate>__NOW_RFC822__</pubDate><source url="https://example.com">Example News</source></item>
+</channel>
+</rss>

@@ -369,6 +369,8 @@ def run(request: PiRequest, on_event: Optional[Callable[[dict], None]] = None,
                     # you can't trust, so it must not overwrite a good reading.
                     if turn and message.get("stopReason") not in ("aborted", "error"):
                         result.context_tokens = turn
+                        result.last_usage = usage
+                        result.last_finish = str(message.get("stopReason") or "")
                     result.cost += (usage.get("cost", {}) or {}).get("total", 0.0) or 0.0
                     # P2 additive live-spend forward (mirrors opencode): the
                     # runner traces + bumps the session row mid-run. Additive;

@@ -1,0 +1,346 @@
+{
+  "measured_at": "2026-11-05T23:52:00.292Z",
+  "host": "heimdall",
+  "gpu": "NVIDIA RTX A5000 Laptop GPU 16384 MiB",
+  "endpoint": "http://127.0.0.1:9099/v1/systemone",
+  "model": {
+    "requested": "kev-4b@q8_0",
+    "resolved": "kev-4b@q8_0",
+    "provider": "local"
+  },
+  "door": {
+    "state": "Customer message: I was charged twice for my order last week and nobody has replied.",
+    "question": {
+      "type": "choice",
+      "instructions": "Which team should handle this customer message?",
+      "criteria": {
+        "billing": "A charge, refund, invoice or payment is wrong, duplicated or unexplained",
+        "shipping": "An order is late, lost, damaged in transit, or has to be returned",
+        "technical": "A product, account or integration does not work as documented"
+      }
+    },
+    "response": {
+      "model": "kev-4b@q8_0",
+      "answers": {
+        "route": {
+          "type": "choice",
+          "choice": "billing",
+          "probabilities": {
+            "billing": 0.9635874044638887,
+            "shipping": 0.015319163527649149,
+            "technical": 0.02109343200846203
+          },
+          "confidence": 0.9453811066958329
+        }
+      },
+      "usage": {
+        "input_tokens": 82,
+        "output_tokens": 0
+      }
+    },
+    "response_text": "{\"model\":\"kev-4b@q8_0\",\"answers\":{\"route\":{\"type\":\"choice\",\"choice\":\"billing\",\"probabilities\":{\"billing\":0.9635874044638887,\"shipping\":0.015319163527649149,\"technical\":0.02109343200846203},\"confidence\":0.9453811066958329}},\"usage\":{\"input_tokens\":82,\"output_tokens\":0}}"
+  },
+  "bench": {
+    "options_3": {
+      "rounds": 25,
+      "mean_ms": 100.33,
+      "p50_ms": 96.43,
+      "p95_ms": 122.15,
+      "min_ms": 90.79,
+      "max_ms": 138.24,
+      "decisions_per_second": 9.97,
+      "answers_per_second": 9.97,
+      "mean_input_tokens": 82,
+      "mean_output_tokens": 0,
+      "wall_ms": 2508.41
+    },
+    "options_12": {
+      "rounds": 25,
+      "mean_ms": 208.74,
+      "p50_ms": 199.32,
+      "p95_ms": 256.49,
+      "min_ms": 190.02,
+      "max_ms": 298.5,
+      "decisions_per_second": 4.79,
+      "answers_per_second": 4.79,
+      "mean_input_tokens": 205,
+      "mean_output_tokens": 0,
+      "wall_ms": 5218.48
+    },
+    "option_sets": {
+      "options_3": {
+        "billing": "A charge, refund, invoice or payment is wrong, duplicated or unexplained",
+        "shipping": "An order is late, lost, damaged in transit, or has to be returned",
+        "technical": "A product, account or integration does not work as documented"
+      },
+      "options_12": {
+        "billing_duplicate": "The same charge appears twice on the statement",
+        "billing_refund": "A refund was promised or is overdue",
+        "billing_invoice": "An invoice, receipt or VAT document is wrong or missing",
+        "shipping_late": "The parcel is later than the promised delivery window",
+        "shipping_lost": "The parcel never arrived and no tracking movement is shown",
+        "shipping_damaged": "The parcel arrived damaged or incomplete",
+        "shipping_return": "The customer wants to return or exchange an item",
+        "account_login": "The customer cannot sign in or has lost access to the account",
+        "account_plan": "The plan, seat count or subscription is not what was bought",
+        "technical_api": "An API, webhook or integration fails or returns wrong data",
+        "technical_outage": "The service is down or degraded for everyone",
+        "legal_gdpr": "A data deletion, export or privacy request"
+      }
+    }
+  },
+  "hfs": {
+    "command": {
+      "name": "hfs",
+      "version": 2
+    },
+    "vocabulary": {
+      "categories": {
+        "label_threshold": 50,
+        "tie_order": [
+          "signal",
+          "facts",
+          "hype"
+        ],
+        "attention": {
+          "signal": 0.5,
+          "facts": 0.35,
+          "hype": -0.25,
+          "relevance": 0.4
+        }
+      },
+      "levels": {
+        "hype": {
+          "type": "score",
+          "instructions": "How much of the item in `title` and `excerpt` (the page text) is hype: largely baseless, overhyped, overrated, not driven by true value, exaggerated, heavy opinion or investment bias, or far more popular than its substance? Use `section_keywords.hype` and the reader's `taste_examples` as hints.",
+          "criteria": [
+            "No hype",
+            "Some promotional tone",
+            "Mostly hype",
+            "Pure hype"
+          ]
+        },
+        "facts": {
+          "type": "score",
+          "instructions": "How checkable are the claims in `excerpt` and `findings`, judged from what the text itself shows? A primary source (the maker's own announcement, release notes, a changelog, documentation, code, a paper) or specific, checkable details (versions, numbers, dates, named sources) score high. Claims with no source score low. Score the evidence the text shows, not whether you checked it yourself. Use `section_keywords.facts` as hints.",
+          "criteria": [
+            "No source for its claims",
+            "Reported secondhand",
+            "Primary source or specific, checkable details",
+            "Primary source with code, numbers or a release"
+          ]
+        },
+        "signal": {
+          "type": "score",
+          "instructions": "How useful, valuable and specifically actionable is the item in `title` and `excerpt` for an engineer who builds with AI agents, right now? Use `section_keywords.signal` as hints.",
+          "criteria": [
+            "Not actionable",
+            "Background only",
+            "Useful soon",
+            "Act on it now"
+          ]
+        }
+      }
+    },
+    "runs": [
+      {
+        "expect": "hype",
+        "title": "This new AI agent will replace every engineer by next month, insiders say",
+        "answers": {
+          "hype": {
+            "type": "score",
+            "score": 2.259759180029892,
+            "legend": {
+              "0": "No hype",
+              "1": "Some promotional tone",
+              "2": "Mostly hype",
+              "3": "Pure hype"
+            },
+            "probabilities": {
+              "0": 0.031372875613871025,
+              "1": 0.06401336311945557,
+              "2": 0.5180954668895832,
+              "3": 0.3865182943770902
+            },
+            "confidence": 0.48672259127571227
+          },
+          "facts": {
+            "type": "score",
+            "score": 0.2149451074626231,
+            "legend": {
+              "0": "No source for its claims",
+              "1": "Reported secondhand",
+              "2": "Primary source or specific, checkable details",
+              "3": "Primary source with code, numbers or a release"
+            },
+            "probabilities": {
+              "0": 0.819538304423535,
+              "1": 0.15522205282994186,
+              "2": 0.015995873606887884,
+              "3": 0.00924376913963516
+            },
+            "confidence": 0.7850548925373769
+          },
+          "signal": {
+            "type": "score",
+            "score": 0.7887958319840666,
+            "legend": {
+              "0": "Not actionable",
+              "1": "Background only",
+              "2": "Useful soon",
+              "3": "Act on it now"
+            },
+            "probabilities": {
+              "0": 0.49638153481132335,
+              "1": 0.31238248542755515,
+              "2": 0.09729459272685333,
+              "3": 0.09394138703426824
+            },
+            "confidence": 0.21120416801593345
+          }
+        },
+        "rank": {
+          "ranked": [
+            {
+              "category": "hype",
+              "score": 75,
+              "confidence": 0.48672259127571227
+            },
+            {
+              "category": "signal",
+              "score": 26,
+              "confidence": 0.21120416801593345
+            },
+            {
+              "category": "facts",
+              "score": 7,
+              "confidence": 0.7850548925373769
+            }
+          ],
+          "primary": "hype",
+          "labels": [
+            "hype"
+          ],
+          "scores": {
+            "hype": 75,
+            "signal": 26,
+            "facts": 7
+          },
+          "suspectCombo": false
+        },
+        "input_tokens": 718,
+        "elapsed_ms": 1166
+      },
+      {
+        "expect": "facts",
+        "title": "llama.cpp b11719: /v1/systemone for native decision models",
+        "answers": {
+          "hype": {
+            "type": "score",
+            "score": 0.3968795839789592,
+            "legend": {
+              "0": "No hype",
+              "1": "Some promotional tone",
+              "2": "Mostly hype",
+              "3": "Pure hype"
+            },
+            "probabilities": {
+              "0": 0.7537115259428807,
+              "1": 0.1426883449660402,
+              "2": 0.05660914826031844,
+              "3": 0.04699098083076072
+            },
+            "confidence": 0.6031204160210408
+          },
+          "facts": {
+            "type": "score",
+            "score": 2.4358878928032315,
+            "legend": {
+              "0": "No source for its claims",
+              "1": "Reported secondhand",
+              "2": "Primary source or specific, checkable details",
+              "3": "Primary source with code, numbers or a release"
+            },
+            "probabilities": {
+              "0": 0.020010098003154515,
+              "1": 0.008861766599399447,
+              "2": 0.4863582799885056,
+              "3": 0.4847698554089403
+            },
+            "confidence": 0.4663481819853512
+          },
+          "signal": {
+            "type": "score",
+            "score": 1.5144683831976553,
+            "legend": {
+              "0": "Not actionable",
+              "1": "Background only",
+              "2": "Useful soon",
+              "3": "Act on it now"
+            },
+            "probabilities": {
+              "0": 0.23390342803782516,
+              "1": 0.23610274141877544,
+              "2": 0.31161584985131835,
+              "3": 0.21837798069208106
+            },
+            "confidence": 0.07771242181349325
+          }
+        },
+        "rank": {
+          "ranked": [
+            {
+              "category": "facts",
+              "score": 81,
+              "confidence": 0.4663481819853512
+            },
+            {
+              "category": "signal",
+              "score": 50,
+              "confidence": 0.07771242181349325
+            },
+            {
+              "category": "hype",
+              "score": 13,
+              "confidence": 0.6031204160210408
+            }
+          ],
+          "primary": "facts",
+          "labels": [
+            "facts",
+            "signal"
+          ],
+          "scores": {
+            "facts": 81,
+            "signal": 50,
+            "hype": 13
+          },
+          "suspectCombo": false
+        },
+        "input_tokens": 820,
+        "elapsed_ms": 1074
+      }
+    ]
+  },
+  "ledger": {
+    "calls": 2,
+    "questions": 6,
+    "total_usd": 0
+  },
+  "engine": "llama.cpp b11719 CUDA (5eacac37), throwaway server :9099, direct model (no router)",
+  "placement": {
+    "ctx_verified_by_props": 4096,
+    "n_gpu_layers": 999,
+    "batch": 2048,
+    "ubatch": 2048,
+    "kv": "q8_0/q8_0",
+    "parallel": 1,
+    "threads": 8,
+    "seed": 42,
+    "temp": 0,
+    "flash_attn": "on",
+    "vram_resident_mib": 7761,
+    "card_baseline_mib": 55
+  },
+  "note": "Not the rail preset: run only to compare the hfs triad against Julia-1. One run, 25 rounds."
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <title>Fixture AI News</title>
+    <link>https://openai.com/news</link>
+    <item>
+      <title>Codex CLI adds durable sessions that survive restarts</title>
+      <link>https://openai.com/news/codex-durable-sessions?utm_source=rss</link>
+      <description>&lt;p&gt;Codex CLI 2.4 is available now with durable sessions. Runs survive restarts and resume from a checkpoint. The release notes list the new resume command and a migration guide for existing session files.&lt;/p&gt;</description>
+      <pubDate>__NOW_RFC822__</pubDate>
+      <media:thumbnail url="https://cdn.fixture.dev/images/codex.png"/>
+    </item>
+    <item>
+      <title>Insiders say a secret agent will replace every engineer next month</title>
+      <link>https://openai.com/news/insiders-secret-agent</link>
+      <description>Insiders claim the secret model is 100x smarter and a total game changer. No benchmarks, no release date, but investors call it revolutionary and AGI is basically here.</description>
+      <pubDate>__NOW_RFC822__</pubDate>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,31 @@
+{
+  "hits": [
+    {
+      "objectID": "41000001",
+      "title": "Show HN: A jev classifier that ranks agent news as hype, facts and signal",
+      "url": "https://github.com/fixture/jev-news",
+      "points": 230,
+      "num_comments": 87,
+      "created_at": "__NOW_ISO__",
+      "author": "fixture"
+    },
+    {
+      "objectID": "41000002",
+      "title": "Breaking change: MCP servers must migrate to the new auth spec by November 1",
+      "url": "https://modelcontextprotocol.io/blog/auth-migration",
+      "points": 412,
+      "num_comments": 140,
+      "created_at": "__NOW_ISO__",
+      "author": "fixture"
+    },
+    {
+      "objectID": "41000003",
+      "title": "Show HN: My sourdough starter tracker",
+      "url": "https://sourdough.fixture.dev",
+      "points": 51,
+      "num_comments": 12,
+      "created_at": "__NOW_ISO__",
+      "author": "fixture"
+    }
+  ]
+}

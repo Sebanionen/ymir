@@ -182,6 +182,8 @@ def run_tests(run) -> QualityResult:
     subprocess already knows; the repair loop is unchanged, because a failure
     still reaches the builder through `as_envelope` below.
     """
+    if run.replaying:
+        return run.resume_plan.quality_for(run.replaying_phase)
     check = test(run)
     failures = ([] if check.passed else
                 [f"{check.name}: `{check.command}` exited {check.returncode}\n"
@@ -218,6 +220,8 @@ def run_quality(run) -> QualityResult:
     The runner did its job; the CODE is what failed. Hand this result to the
     builder and let the bounded repair loop decide the run's fate.
     """
+    if run.replaying:
+        return run.resume_plan.quality_for(run.replaying_phase)
     blocks: list[Callable] = [
         test,
         lint,

@@ -45,7 +45,22 @@ export default function PlansBoard() {
 
   async function loadPlans() {
     const p = await skuldCall('plans_list', { namespace: 'ymir' });
-    setRows((p.split('\n') ?? []).filter((r) => r.includes('|')));
+    const skuldRows = (p.split('\n') ?? []).filter((r) => r.includes('|'));
+    if (skuldRows.length) {
+      setRows(skuldRows);
+      return;
+    }
+    // Skuld's plans table has been empty while the LEDGER carries every plan as a file
+    // (measured 2026-11-05: 200 plans, "(no plans)" on the board). Skuld stays the WRITE
+    // door; the read falls back to the record itself.
+    try {
+      const r = await fetch('/api/plans');
+      const d = (await r.json()) as { plans?: Array<{ n: number; state: string; title: string }> };
+      const rows2 = (d.plans ?? []).map((x) => `${x.n}|ymir|${x.state}|-|${x.title}`);
+      setRows(rows2);
+    } catch {
+      setRows([]);
+    }
   }
 
   const d = detail ? detail.split('|') : [];

@@ -78,6 +78,7 @@ just sessions                   # last 10 runs
 just phases <smidja_id>         # phase status in sequence
 just tail   <smidja_id>         # live event tail
 just procs  <smidja_id>         # live pids
+just resume <smidja_id>         # continue at the last green phase (see below)
 
 # raw
 uv run apps/smidja/smidja_prompt.py --agent scout "…"
@@ -86,6 +87,82 @@ uv run apps/smidja/smidja_scout.py "…"
 
 The watch recipes use **`python3 -c`** over the SQLite db (the `sqlite3` CLI is not
 installed on this machine) — do not reintroduce `sqlite3`.
+
+## Resume — continue at the last green phase
+
+`just resume <smidja_id> [--from-phase <name>] [--dry-run]` (or
+`uv run apps/smidja/smidja_resume.py <smidja_id>`) reads the trace, takes the last phase
+that is green **and** whose gate passed as the checkpoint, and re-enters the chain at the
+phase after it — the failed one. It adopts pi-durable's checkpoint discipline
+(`github.com/zerwiz/pi-durable-news-agent`): every phase commits as it closes, a restart
+re-enters at the phase the checkpoint names, and finished work is never paid for twice.
+
+- **Handed forward, never recomputed:** the committed phases' envelopes (as
+  `{{previous_envelope}}`), their code verdicts (suite result, committed sha, change
+  capture — read back from the `log` events), and each agent's session id from
+  `agent_map.json`, so context survives.
+- **Replay is a phase flag:** `Run.phase()` returns a replayed handle (no phase row, no
+  agent) and `quality.*`, `changes.capture`, `git_helper.commit_all` consult
+  `run.replaying`. No chain is edited, so a chain already stamped into a repo resumes too.
+- **Refusals, and they are the feature:** `no such run` · `nothing green to resume from`
+  (including a phase that reports success on a failed gate — resuming past it hides the
+  failure) · `the roster changed since this run` (a changed model means a fresh session,
+  and a bad resume is worse than none). A live run is blocked separately: stop it first.
+
+The cookbook is `apps/smidja-factory/cookbooks/run_smidja.md` §Resume.
+
+## The phase contract — what a phase owes before it may close
+
+`PhaseParams.kind` answers *who runs the block* (`engineer` · `agent` · `code`).
+`PhaseParams.contract` answers *what the phase owes before it may close* — it is
+pi-durable's phase kind, translated (`github.com/zerwiz/durable-pi`,
+`apps/dpi-sdk/src/jobs.ts`), and it defaults to `ordinary`:
+
+| `contract` | meaning |
+|---|---|
+| `ordinary` | the block runs and closes, as before |
+| `approval` | **waits for a person's decision.** The block is never entered on silence; a restart re-enters the phase and waits again |
+| `repeat` | a loop saving **one checkpoint per iteration**; a restart re-enters at the first iteration that never committed |
+
+Decisions are rows in the trace (`decisions`), not side files, so the record, the
+resume and the visualizer read the same answer: `just decide <id> <phase>
+approve|decline [--note]` (`apps/smidja/smidja_decide.py`). A run waiting for one
+exits **3** and prints the door; a declined run exits **4**. Neither is a failure
+of the work, which is why neither is `1`.
+
+`repeat` is `ph.iterations(total)` — declaring the total, then yielding only the
+turns still owed; each `turn.checkpoint(**payload)` is a commit and a `checkpoint`
+event. `runner.declare_iterations` counts the committed ones and announces them,
+so a restart says `2 of 4 iterations still owed ([1, 2] already committed)`.
+
+**The one thing a chain author must know:** on replay the `with run.phase(...)`
+block still executes. The machinery's own doors are answered from the record —
+`ph.call()`, `ph.log()`, `quality.run_tests`, `changes.capture`,
+`git_helper.commit_all`, and an iteration's `checkpoint()`. A block's own side
+effects are the chain's to make idempotent.
+
+## The run as one record
+
+`apps/smidja/smidja_modules/runrecord.py` is the ONE reader of the trace: it
+returns the run as a record — **phases · steps · state · where it stopped** —
+with `PhaseRun.status` (`pending` · `running` · `waiting` · `interrupted` ·
+`done` · `failed`), `checkpoint`, `resume_at`, `where_stopped`, `resumed`, and
+the committed `envelope` / `logged` verdict per phase. `resume` plans on top of
+it; the doors and any UI render it; no second private query exists.
+
+`interrupted` is this house's word: the record says `running` while no process is
+alive — exactly what a SIGKILL leaves. A record that kept calling that `running`
+would have a resume believe in work that is already dead.
+
+Doors: `just record <id> [--json]` (`apps/smidja/smidja_record.py`) and
+`just decide <id> <phase> approve|decline` (`apps/smidja/smidja_decide.py`).
+
+Proof: `apps/smidja-factory/tests/test_recovery.py` starts a real chain in a real
+subprocess, SIGKILLs it inside a phase, restarts it with **no client attached**,
+and asserts (a) the restart re-enters at the checkpoint, (b) the committed
+envelope is handed forward from the trace even with its file deleted, (c) a
+marker line per execution shows no committed phase's work was recomputed, and
+(d) an `approval` phase with no decision does not pass — exit 3, block never run.
 
 ## The trace
 
@@ -272,3 +349,47 @@ skills[9]{skill,what it settles}:
 **What this seat is missing against those books** (measured 2026-10-23): no `roster.yaml` (so no
 `stacks:` → no teams), `just` not installed (so no `just rosters/sdlc/sessions`), `START_SMIDJA.md`
 absent. Each is a ticket; none is a reason to improvise a team.
+
+## Appended 2026-11-06 — the smithy can be started by the clock or by an event, and it is still one door
+
+A smithy was started by a person or not at all. It now has three ways in, and all three are
+the SAME two facts: **who may start it** — `trigger:` in its own config — and **what is
+launched** — its `chain:` and its `prompt:`. One door acts on both.
+
+```
+bin/time/event-trigger.sh <event-name> [--payload FILE] [--dry-run]   fire an event
+bin/time/event-trigger.sh --run <config>                              what a cron row calls
+bin/time/event-trigger.sh --install-cron                              write the rows
+bin/time/event-trigger.sh --list                                      who may start each smithy
+```
+
+```
+trigger:
+  mode: manual                 # manual | cron | event — ABSENT MEANS MANUAL
+  role: dev                    # cron only, REQUIRED: an ungated row runs on every seat
+  cron: "0 6 * * *"            # cron only, daily (M H * * *) or hourly (M * * * *)
+  timezone: Europe/Stockholm   # optional; the instant moves to the running seat's clock
+  event: nightly-audit         # event only
+  chain: apps/smidja/smidja_plan_build.py
+  prompt: requests/nightly.md              # a file, or inline text
+trigger_duties[5]{duty,why}:
+  "the block lives in the smithy config, nowhere else","that is the file a run is launched with, so a trigger cannot describe a different smithy than the one that runs"
+  "one reader: bin/time/event-trigger-resolve.py","two parsers of one block is how a schedule and a launcher disagree"
+  "absent is manual, and the template STATES manual","a missing key read as a default is a smithy that starts by surprise"
+  "cron without a role is refused","an ungated row runs on every seat of every machine (RULES/36, the 5-seat cron leak)"
+  "the row is GENERATED, never hand-written","`--install-cron` writes a managed block from the configs and is idempotent; a withdrawn trigger withdraws its row"
+```
+**Refusals, all by name:** a mode that is not one of the three; `cron` with no expression or no
+role; `event` with no event; a cron expression the scheduler cannot express (monthly/weekly);
+a trigger naming no `chain:` or `prompt:`; a `prompt:` that names a path that is not there; a
+second run of a smithy whose lease is still held; an event no smithy claims (the refusal lists
+the events that ARE claimed).
+
+**One shape, not two.** `apps/smidja-factory/templates/smidja.config.yaml` is the ONE config
+template — `make_config.py` copies it, `install.py` stamps it, and the trigger block is part of
+it. A `factory.yaml` / `roster.yaml` / wrapper that restates `roster`, `chain` or `trigger` is a
+second copy of the truth; a factory-level file **references** the smithy config, it never
+restates it. Proof: `bin/time/tests/test_event_trigger.sh` (42 assertions, wired as the `triggers`
+gate in `bin/gates/ci-verify.sh`) — 42 because the last three prove the lease: a second run of
+one smithy is refused with the pid that holds it, a dry run still answers while it is busy, and
+a stale lease self-heals because the pid is the truth and the file is not.

@@ -1,0 +1,21 @@
+[Unit]
+Description=Durable News Agent API (dna-server-api)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=__USER__
+WorkingDirectory=__APP__
+ExecStart=__NODE__ --import tsx src/main.ts
+Environment=PATH=__PATH__
+Environment=HOME=__HOME__
+Environment=NODE_NO_WARNINGS=1
+Restart=always
+RestartSec=2
+KillSignal=SIGTERM
+TimeoutStopSec=20
+StandardOutput=append:__LOG__
+StandardError=append:__LOG__
+
+[Install]
+WantedBy=multi-user.target

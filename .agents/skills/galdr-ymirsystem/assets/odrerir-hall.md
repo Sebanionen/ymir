@@ -267,3 +267,40 @@ held the seal with three items; this section records the mend.
   written for.
 - **When adding CSS here, do not use a trailing `@import`.** A file-level `@import`
   is only legal at the top; for a kit that must win, import it from the JS.
+
+---
+
+## 6. The near loop — `#/near` (2026-11-06, plan 199)
+
+A fourth door in the top bar: `#/near`, the operator's screen for the posture between
+in-the-loop and out-of-it. Three blocks, each read-only and each filled **independently**,
+so one slow door never blanks the page:
+
+```
+near_blocks[3]{block,what,door}:
+  "the four dials","model · window + both compaction thresholds · prompt surfaces in force · tools by source","/api/core-four + /api/context"
+  "what waits on you","open PRs · the wake queue · mail drafts · his decisions — every card names its shelf","/api/pending"
+  "working now","the agents and panes standing, and the trees in flight","/api/agents + /api/worktrees"
+```
+
+**The card anatomy is reused, not invented.** The page is a sibling of
+`zerwiz/pi-durable-news-agent`'s browser client (MIT): title · category chip · score +
+confidence · source + age · two actions (open · dismiss). That client is **Vue** and nothing
+of it is imported; `src/components/CardView.tsx` re-implements the five shapes
+(`headline` · `brief` · `signal_alert` · `fact_check` · `hype_watch`) behind ONE interface, so
+a pending item, a dial, an agent and a tree all render through the same component. An
+unimplemented shape falls back to `brief`, as that app's own registry does.
+
+**jev is vendored for the HFS vocabulary** — `src/vendor/jev/` (`types.ts` + `policy.ts`,
+MIT, Copyright (c) 2026 IndyDevDan, upstream `273b79b`), with `VENDOR.md` naming what was
+taken and what was refused (its network client, its `node:fs` ledger, its CLI, its mock).
+**Never write an HFS policy here**: the categories, the thresholds, `rankHfs` and
+`suspectCombo` are jev's. No classification has been run for these items, so a card says
+**Not ranked yet** — an invented score is worse than an honest blank.
+
+Laws that hold it honest:
+
+- **It reads; it does not act.** *Dismiss* hides a card from the view only.
+- **A door that fails paints an *unread* card** naming the door and the reason.
+- The cloth is `hall.css` as everywhere else: the card block uses `--hall-*` and `--ymir-*`
+  tokens only. **No new palette, no raw hex.**

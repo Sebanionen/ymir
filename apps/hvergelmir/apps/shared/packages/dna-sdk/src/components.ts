@@ -1,0 +1,63 @@
+// Generative UI: the components the agent may render, by enum. The server checks rules; clients map each to a view.
+
+export const NEWS_COMPONENTS = [
+  "headline",
+  "brief",
+  "signal_alert",
+  "fact_check",
+  "hype_watch",
+  "release",
+  "thread_pulse",
+  "quote",
+] as const;
+export type NewsComponent = (typeof NEWS_COMPONENTS)[number];
+/** Every card is a news card; related cards share a timeline instead of a separate story card. */
+export type CardComponent = NewsComponent;
+
+export const HFS_CATEGORIES = ["hype", "facts", "signal"] as const;
+export type HfsCategory = (typeof HFS_CATEGORIES)[number];
+
+export interface ComponentSpec {
+  use: string;
+  required: readonly string[];
+  rule: string;
+}
+
+export const COMPONENT_SPECS: Record<CardComponent, ComponentSpec> = {
+  headline: {
+    use: "a major item with a strong image",
+    required: ["title", "dek"],
+    rule: "attention 70 or more",
+  },
+  brief: {
+    use: "the default compact card",
+    required: ["title", "summary"],
+    rule: "none",
+  },
+  signal_alert: {
+    use: "something to act on now",
+    required: ["title", "action", "why"],
+    rule: "signal 60 or more",
+  },
+  fact_check: {
+    use: "a claim worth checking",
+    required: ["claim", "verdict", "evidence"],
+    rule: "an hfs classification exists",
+  },
+  hype_watch: {
+    use: "loud but thin",
+    required: ["title", "reality_check"],
+    rule: "hype 40 or more",
+  },
+  release: {
+    use: "a version shipped",
+    required: ["name", "version", "changes"],
+    rule: "none",
+  },
+  thread_pulse: {
+    use: "a discussion matters more than the link",
+    required: ["title", "takes"],
+    rule: "the item has a discussion link",
+  },
+  quote: { use: "one striking line", required: ["quote", "speaker"], rule: "none" },
+};

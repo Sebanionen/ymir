@@ -1,0 +1,36 @@
+# jev-doors — where the decision models answer, so every seat and every gate finds them
+# by one read. Copy to $YMIR_HOME/config/jev-doors.yaml (or ~/.config/ymir/jev-doors.yaml).
+version: 1
+transport: tailscale          # tailscale | cloudflare | public  (RULES/network N6)
+auth_ref: LLAMA_SWAP_API_KEY  # a REFERENCE into the vault, never a value (Rule 24)
+wire: systemone               # POST /v1/systemone — llama.cpp PR 29818 / TypeSafe shape
+doors:
+  - id: jev-julia-1
+    model: Julia-1
+    gguf: ~/Models/jev/Julia-1/Julia-1-Q8_0.gguf
+    port: 8099
+    license: Apache-2.0
+    role: fast router          # ~3 ms class on the vendor's card
+    use: [intake, routing, path ranking]
+  - id: jev-laya
+    model: Laya
+    gguf: ~/Models/jev/Laya/Laya-Q8_0.gguf
+    port: 8097
+    license: Apache-2.0
+    role: english classifier
+    use: [intake]
+  - id: jev-kev-4b
+    model: Kev-4B
+    gguf: ~/Models/jev/Kev-4B/Kev-4B-Q8_0.gguf
+    port: 8098
+    license: Apache-2.0
+    role: judge                 # 4B, the better-calibrated one
+    use: [review gating, agreement, escalation]
+  # NOT FOR A COMMERCIAL CALL — CC BY-NC 4.0. Research only, and never in a paid surface.
+  - id: jev-openjev
+    model: OpenJev
+    gguf: ~/Models/jev/OpenJev/OpenJev-Q4_K_M.gguf
+    port: null
+    license: CC-BY-NC-4.0
+    role: research-only
+    use: []

@@ -649,3 +649,22 @@ that either never fires or fires every tick.
 
 **Deliberately not added:** `*/N`, ranges, calendars. Nornir's value is that the whole schedule is legible in
 a minute; a general cron grammar costs that and buys an hour-shaped need nothing here has.
+
+## Appended 2026-11-06 — a smithy's row is generated, never typed
+
+Nornir's schedule is still one file, `$YMIR_HOME/config/cron.yaml`, read at start by one
+parser. What changed is **who writes one class of row**.
+
+A Smíðja started by the clock declares it in its own config (`trigger: mode: cron`), and
+`bin/time/event-trigger.sh --install-cron` derives the row from that config into a **managed
+block at the end of `cron.yaml`**, between `# >>> event-trigger` and `# <<< event-trigger`.
+
+```
+nornir_smithy_rows[4]{rule,why}:
+  "the block is rewritten, nothing else is touched","the operator's own rows are never reordered, and a second run is byte-identical (idempotent)"
+  "a withdrawn trigger withdraws its row","a schedule that keeps firing after it was turned off is the failure this exists to prevent"
+  "the shape is HH:MM or @hourly:MM only","a monthly expression is refused by name rather than installed as a row that never fires"
+  "no role, no row","an ungated row runs on every seat of every machine — `trigger.role` is required for `mode: cron`"
+```
+The scheduler is unchanged: same parser, same stamps, same role gate. Restart it after an
+install (`bin/time/nornir-cron-start.sh --stop` then again) — it reads the file at start.

@@ -1,0 +1,62 @@
+{
+  "topic": [
+    "durable agents",
+    "pi agent",
+    "pi-durable",
+    "agentic engineering",
+    "Claude Code",
+    "Claude model release",
+    "coding agents",
+    "agent swarms",
+    "proactive agents",
+    "software factories",
+    "agent sandboxes",
+    "exe.dev",
+    "chain of thought monitoring",
+    "agent observability",
+    "context engineering",
+    "compaction",
+    "MCP",
+    "agent benchmarks",
+    "jev",
+    "classifiers",
+    "voice agents",
+    "OpenAI Codex",
+    "Gemini"
+  ],
+  "hype": [
+    "AGI",
+    "game changer",
+    "10x",
+    "revolutionary",
+    "replaces engineers",
+    "valuation",
+    "funding round"
+  ],
+  "facts": [
+    "release notes",
+    "changelog",
+    "benchmark results",
+    "paper",
+    "documentation",
+    "open source",
+    "leaderboard",
+    "SWE-bench",
+    "Terminal-Bench",
+    "ARC-AGI",
+    "eval results",
+    "pass@1",
+    "methodology",
+    "reproducible"
+  ],
+  "signal": [
+    "breaking change",
+    "migration",
+    "new API",
+    "pricing change",
+    "deprecation",
+    "security advisory",
+    "available now",
+    "how to"
+  ]
+}
