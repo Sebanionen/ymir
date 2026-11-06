@@ -11,7 +11,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 TPL="$ROOT/.agents/templates/factory/factory.yaml.example"
 NAME="${1-}"; shift || true
-OUT="${YMIR_HOME:-$HOME/Documents/ymirhome}/hodd/factories"
+ymir_home_root HM 2>/dev/null || { printf "factory-new: the home is unresolved — call bin/vault/hoard-lib.sh\n" >&2; exit 2; }
+OUT="$HM/hodd/factories"
 while [ $# -gt 0 ]; do case "$1" in --out) OUT="${2-}"; shift 2 ;; *) shift ;; esac; done
 
 [ -n "$NAME" ] || { printf 'usage: factory-new.sh <name> [--out DIR]\n' >&2; exit 2; }

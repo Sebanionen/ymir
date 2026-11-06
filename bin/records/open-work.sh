@@ -11,7 +11,7 @@ set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 . "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null || true
-ymir_home_root HOME_DIR 2>/dev/null || HOME_DIR="${YMIR_HOME:-$HOME/Documents/ymirhome}"
+ymir_home_root HOME_DIR 2>/dev/null || { printf "%s: the home is unresolved — call bin/vault/hoard-lib.sh\n" "$(basename "$0")" >&2; exit 2; }
 
 FILE=""; MODE=text
 while [ $# -gt 0 ]; do case "$1" in

@@ -16,7 +16,7 @@ JSON=0
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 . "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null || true
-ymir_home_root HOME_DIR 2>/dev/null || HOME_DIR="${YMIR_HOME:-$HOME/Documents/ymirhome}"
+ymir_home_root HOME_DIR 2>/dev/null || { printf "%s: the home is unresolved — call bin/vault/hoard-lib.sh\n" "$(basename "$0")" >&2; exit 2; }
 
 python3 - "$ROOT" "$HOME_DIR" "$JSON" <<'PY'
 import json, os, re, sys, glob

@@ -12,7 +12,7 @@ set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 . "$ROOT/bin/vault/hoard-lib.sh" 2>/dev/null || true
-ymir_home_root HOME_DIR 2>/dev/null || HOME_DIR="${YMIR_HOME:-$HOME/Documents/ymirhome}"
+ymir_home_root HOME_DIR 2>/dev/null || { printf "%s: the home is unresolved — call bin/vault/hoard-lib.sh\n" "$(basename "$0")" >&2; exit 2; }
 REG="${JEV_DOORS:-$HOME/.config/ymir/jev-doors.yaml}"
 [ -r "$REG" ] || REG="$HOME_DIR/config/jev-doors.yaml"
 HOST="${JEV_DOOR_HOST:-}"   # never a default host: the operator names the door (Rule 24/39)
