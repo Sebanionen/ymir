@@ -68,7 +68,7 @@ POST /observe → {"error": "Engram.observe() got an unexpected keyword argument
 ```
 
 `bin/bridge/mimir-bridge.py:_write` calls the engine with `provenance=` and `quarantined=`, and the installed
-engine is **engram 2.2.1** (`~/.local/lib/python3.12/site-packages/engram`, mtime 2026-10-02), whose
+engine is **engram 2.2.1** (the operator's user site-packages, installed 2026-10-02), whose
 `observe()` takes only `content, actors, tags, salience, emotional_valence, timestamp`. So every write through
 the door raised, `bin/records/mimir.sh` fell back to its offline path, and memory kept arriving **in the log
 only** — the well was read-only in practice, and `GET /health` looked healthy because it counts what is stored.
@@ -98,3 +98,10 @@ The Allfather gave his word on 2026-11-06: the bridge patch ships as a pull requ
 The hall tree's copy is reverted to the shipped state once the branch exists, so one fix lives in one place.
 The running `mimir.service` is pointed at the hall's bridge by a systemd drop-in until this merges; the
 drop-in is removed the day it lands, so the unit returns to the installed tree.
+
+## CHANGE LOG
+
+- **2026-11-06** — Carved. The corrupt index, the salvage proof, the re-seed from the append log, the void of
+  one `undefined` row, the checkpoint roll. Appended the same day: the write door's `provenance` fault, the
+  patch, the scratch-well proof, and the note that it ships as a pull request while `mimir.service` runs a
+  separate checkout. Correct by appending a dated section; never rewrite the account above.
