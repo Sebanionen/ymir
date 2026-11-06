@@ -26,7 +26,7 @@ while IFS= read -r file; do
   esac
   # `%h/Documents/ymirhome` and `$HOME/Documents/ymirhome` are home-relative, which the rule allows; only a
   # literal machine path is a leak. Appended 2026-11-06: the gate cried wolf on a systemd unit that used `%h`.
-  hits="$(grep -nEI "$path_pattern|$mail_pattern" "$file" 2>/dev/null | grep -vE '(%h|\$\{?HOME\}?)/Documents/ymirhome' | cut -c1-120)"
+  hits="$(grep -nEI "$path_pattern|$mail_pattern" "$file" 2>/dev/null | grep -vE '(%h|\$\{?HOME\}?)/Documents/ymirhome' | cut -c1-120)"   # allow-home-default: the pattern NAMES the home in order to allow its relative form and refuse the machine one; it never resolves a path
   if [ -n "$hits" ]; then
     printf 'private-data: %s\n%s\n\n' "$file" "$hits" >&2
     found=1
