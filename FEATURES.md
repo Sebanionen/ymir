@@ -72,6 +72,7 @@ its row here and write its page (see `AGENTS.md` → *Feature how-tos*).
 | Meetings | Snotra (the meeting ear) | Captures a call (PipeWire), transcribes (whisper.cpp), mines minutes into the hoard | [docs/features/snotra-the-meeting-ear.md](docs/features/snotra-the-meeting-ear.md) |
 | Collaboration | Skills for collaborators (`tools/skills-mcp`) | A four-tool, read-only door onto a built, redacted copy of the skills we choose to share — a collaborator searches, pulls one skill, and fetches its templates without loading the library or seeing our machines, people or runs | [docs/features/skills-mcp-for-collaborators.md](docs/features/skills-mcp-for-collaborators.md) |
 | Delivery | The seat seals its own PR (`pr-seal.sh`) | Green, conflict-free, and the seat's only open PR: merged now, with one Runes entry, and the word carried through Gná | [docs/features/pr-seal.md](docs/features/pr-seal.md) |
+| Factory | Smíðja — resume · record · decide | A dead run continues at its last green phase; the run reads as one record (phases · steps · state · where it stopped); a phase marked `approval` waits for your decision and a `repeat` phase checkpoints each turn | [docs/features/smidja-and-volundr.md](docs/features/smidja-and-volundr.md) |
 
 ## Surfaces — what you look at
 

@@ -11,7 +11,9 @@ import json
 import sqlite3
 from pathlib import Path
 
-from .data_types import AgentConfig, EventRecord, GateReport, Phase
+from typing import Optional
+
+from .data_types import AgentConfig, DecisionRecord, EventRecord, GateReport, Phase
 from .utils import ensure_dir, new_id, now_iso
 
 SCHEMA = """
@@ -32,6 +34,7 @@ CREATE TABLE IF NOT EXISTS phases (
   name TEXT, kind TEXT, owner TEXT, description TEXT,
   status        TEXT DEFAULT 'fail',
   attempt       INTEGER DEFAULT 0, retries INTEGER DEFAULT 0,
+  contract      TEXT DEFAULT 'ordinary',   -- ordinary | approval | repeat
   error         TEXT,
   started_at    TEXT, ended_at TEXT
 );
@@ -87,6 +90,15 @@ CREATE TABLE IF NOT EXISTS agent_sessions (
   created_at    TEXT, last_used_at TEXT,
   PRIMARY KEY (smidja_id, agent)
 );
+CREATE TABLE IF NOT EXISTS decisions (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  smidja_id        TEXT REFERENCES sessions,
+  phase_id      TEXT,                -- the row it settles, when the phase exists
+  phase         TEXT,                -- the phase NAME — a decision may precede the row
+  decision      TEXT,                -- approved | declined | cancelled
+  by            TEXT, note TEXT,
+  created_at    TEXT
+);
 """
 
 # Columns added after a schema shipped. CREATE TABLE IF NOT EXISTS never
@@ -96,7 +108,8 @@ MIGRATIONS = [("agent_sessions", "color", "TEXT"),
               ("sessions", "smidja_name", "TEXT"),
               ("agent_sessions", "context_tokens", "INTEGER"),
               ("agent_sessions", "context_window", "INTEGER"),
-              ("sessions", "archived", "INTEGER DEFAULT 0")]
+              ("sessions", "archived", "INTEGER DEFAULT 0"),
+              ("phases", "contract", "TEXT DEFAULT 'ordinary'")]
 
 
 class Tracer:
@@ -164,6 +177,35 @@ class Tracer:
         )
         self.processes_end_all(smidja_id)   # nothing of this run is alive any more
 
+    def session_status(self, smidja_id: str, status: str) -> None:
+        """Settle a session that stopped WITHOUT failing — `waiting` for a decision,
+        `declined` because a person said no. Both end the process; neither is a
+        failure of the work, and the vocabulary is what a resume reads.
+        """
+        self.conn.execute("UPDATE sessions SET status=?, ended_at=? WHERE smidja_id=?",
+                          (status, now_iso(), smidja_id))
+        self.processes_end_all(smidja_id)
+
+    # ── decisions (an `approval` phase's only door) ──────────────────────────
+    def decision_record(self, record: DecisionRecord) -> None:
+        """Record a person's decision. Appended, never replaced: the latest wins."""
+        self.conn.execute(
+            "INSERT INTO decisions (smidja_id, phase_id, phase, decision, by, note, created_at)"
+            " VALUES (?,?,?,?,?,?,?)",
+            (record.smidja_id, "", record.phase, record.decision, record.by,
+             record.note, now_iso()))
+
+    def decision_latest(self, smidja_id: str, phase: str) -> Optional[dict]:
+        """The newest decision on a phase, or None — no decision is not an approval."""
+        row = self.conn.execute(
+            "SELECT decision, by, note, created_at FROM decisions"
+            " WHERE smidja_id=? AND phase=? ORDER BY id DESC LIMIT 1",
+            (smidja_id, phase)).fetchone()
+        if row is None:
+            return None
+        return {"decision": row[0], "by": row[1] or "", "note": row[2] or "",
+                "at": row[3] or ""}
+
     def session_add_usage(self, smidja_id: str, tokens: int, cost: float) -> None:
         self.conn.execute(
             "UPDATE sessions SET total_tokens=total_tokens+?, total_cost=total_cost+? WHERE smidja_id=?",
@@ -215,17 +257,27 @@ class Tracer:
                                 (smidja_id,)).fetchone()
         return row[0] if row and row[0] is not None else 0
 
+    def phase_by_name(self, smidja_id: str, name: str) -> Optional[dict]:
+        """The row a resumed phase re-enters — the LAST one recorded under that name."""
+        row = self.conn.execute(
+            "SELECT phase_id, seq, status FROM phases WHERE smidja_id = ? AND name = ?"
+            " ORDER BY rowid DESC LIMIT 1", (smidja_id, name)).fetchone()
+        if row is None:
+            return None
+        return {"phase_id": row[0], "seq": row[1] or 0, "status": row[2] or ""}
+
     def phase_upsert(self, phase: Phase) -> None:
         p = phase.params
         self.conn.execute(
             "INSERT INTO phases (phase_id, smidja_id, seq, name, kind, owner, description,"
-            " status, attempt, retries, error, started_at, ended_at)"
-            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
+            " status, attempt, retries, contract, error, started_at, ended_at)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
             " ON CONFLICT(phase_id) DO UPDATE SET status=excluded.status,"
-            " attempt=excluded.attempt, error=excluded.error, ended_at=excluded.ended_at",
+            " attempt=excluded.attempt, contract=excluded.contract, error=excluded.error,"
+            " ended_at=excluded.ended_at",
             (phase.phase_id, phase.smidja_id, phase.seq, p.name, p.kind, p.owner,
-             p.description, phase.status, phase.attempt, p.retries, phase.error,
-             phase.started_at, phase.ended_at),
+             p.description, phase.status, phase.attempt, p.retries, p.contract,
+             phase.error, phase.started_at, phase.ended_at),
         )
 
     # ── envelopes / gates / agent sessions ──────────────────────────────────

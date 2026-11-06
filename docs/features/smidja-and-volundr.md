@@ -42,6 +42,38 @@ phases, envelopes, the trace store, the visualizer.
 - **The DB lives in the home**, never a tree; a packaged install and a clone share it.
 - **The visualizer is `:8437`** — raised with the set (`scripts/start.sh`).
 
+## Continue a run, read a run, and say yes to a run
+
+A run that dies does not start again from the top. It continues at the last phase that
+finished green, and the work it already paid for — the agents' reports, the test verdicts,
+the commit — is handed forward instead of being bought twice.
+
+```bash
+just resume <run-id>                       # continue at the phase after the checkpoint
+just resume <run-id> --from-phase build    # re-enter at a named phase instead
+just resume <run-id> --dry-run             # print the plan, launch nothing
+just record <run-id>                       # the run as one record: phases · state · where it stopped
+just record <run-id> --as-steps            # every step of every phase
+just record <run-id> --json                # the same record, whole, for a UI or a script
+```
+
+`just record` is the honest answer to "where is this run?" — every phase with its steps in
+order, the checkpoint it stands on, and one sentence on where it stopped. It says
+`waiting` when a run is waiting for you, and `interrupted` when the process is gone, which
+is what a hard crash leaves behind.
+
+**A phase can be made to wait for your word.** A smithy author marks a phase
+`contract="approval"`, and its work does not happen until you decide:
+
+```bash
+just decide <run-id> signoff approve
+just decide <run-id> signoff decline --note "not this week"
+```
+
+While it waits the run exits with code 3 and tells you the command it needs; a decline
+exits 4 and the phase's work never runs. Silence is never a yes, and restarting the run
+does not sneak past it.
+
 ## If it does not work
 
 | What you see | What to do |

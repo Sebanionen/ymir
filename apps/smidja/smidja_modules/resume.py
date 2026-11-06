@@ -1,16 +1,20 @@
 """Resume: re-enter a run at its last committed phase — or refuse and say why.
 
 The shape is pi-durable's checkpoint discipline
-(`github.com/zerwiz/pi-durable-news-agent`, `news/sweep-task.ts`): a run is a
-sequence of named phases; **every phase commits a checkpoint when it completes**,
-and a restart re-enters at the phase the checkpoint names — never at the top, and
-never past a phase that did not commit.
+(`github.com/zerwiz/durable-pi`, `apps/dpi-backend/tests/recovery.test.ts`): a
+run is a sequence of named phases; **every phase commits a checkpoint when it
+completes**, and a restart re-enters at the phase the checkpoint names — never at
+the top, and never past a phase that did not commit. The reference proves it by
+killing the server with SIGKILL and letting it come back with no client
+attached; `apps/smidja-factory/tests/test_recovery.py` proves the same here.
 
 Translated to the smithy:
 
-  checkpoint   the last phase whose status is green AND whose gate passed
-  work         that phase's envelope (agent phases) or its recorded verdict
-               (code phases) — handed forward, never recomputed
+  checkpoint   the last phase that is green AND whose gate passed AND — when its
+               contract is `approval` — that a person actually approved
+  work         that phase's envelope (agent phases), its recorded verdict (code
+               phases) or its committed iterations (repeat phases) — handed
+               forward, never recomputed
   context      the agent session ids in `agent_map.json`, so each agent resumes
                its own window instead of starting cold
 
@@ -29,24 +33,28 @@ Three refusals, and they are the feature — each one is a way a resume would li
   no such run                     there is no session under that id
   nothing green to resume from    no phase stands green with its gate passed, or
                                   the record contradicts itself (a phase that
-                                  reports success on a failed gate)
+                                  reports success on a failed gate, or an
+                                  `approval` phase that finished with nobody's
+                                  decision on record)
   the roster changed since this run   an agent's model is not the one the run
                                   was started with — a changed model means a
                                   fresh session, and a bad resume is worse
                                   than none
+
+The record it reads is `runrecord.RunRecord` — the same shape the terminal doors
+and any future UI render, so a resume and a client can never disagree about what
+the run was.
 """
 
 from __future__ import annotations
 
-import json
 import os
-import sqlite3
-from pathlib import Path
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
-from .data_types import (BaseRef, ChangeSet, QualityCheckResult, QualityResult)
+from . import runrecord
+from .data_types import BaseRef, ChangeSet, QualityCheckResult, QualityResult
 
 # The refusal vocabulary. These three strings are the contract with the operator,
 # the cookbook and the tests; nothing else is a resume refusal.
@@ -107,6 +115,8 @@ class ResumePlan(BaseModel):
     boundary: str = ""                    # the last green phase (the checkpoint)
     boundary_seq: int = 0
     from_phase: str = ""                  # the phase to re-enter at ("" = whatever comes next)
+    from_contract: str = ""               # ordinary | approval | repeat, at the re-entry point
+    approval: str = ""                    # from_phase's decision state, when it is an approval phase
     replay: list[str] = Field(default_factory=list)        # phase names to hand forward
     envelopes: dict[str, Any] = Field(default_factory=dict)    # phase name -> envelope dict
     records: dict[str, Any] = Field(default_factory=dict)      # phase name -> logged payload
@@ -151,322 +161,138 @@ class ResumePlan(BaseModel):
         rows = [f"run:            {self.smidja_id}",
                 f"chain:          {self.chain or '(unknown)'}",
                 f"checkpoint:     {self.boundary} (seq {self.boundary_seq})",
-                f"re-enter at:    {self.from_phase or 'the next phase the chain opens'}",
-                f"handed forward: {', '.join(self.replay) or '(none)'}"]
+                f"re-enter at:    {self.from_phase or 'the next phase the chain opens'}"]
+        if self.from_contract:
+            rows.append(f"contract:       {self.from_contract}")
+        if self.approval:
+            rows.append(f"approval:       {self.approval}")
+        rows.append(f"handed forward: {', '.join(self.replay) or '(none)'}")
         for agent, session in self.sessions.items():
             rows.append(f"session:        {agent} -> {session} ({self.models.get(agent, '?')})")
         return rows
 
 
-# ── reading the trace ────────────────────────────────────────────────────────
-
-class PhaseRecord(BaseModel):
-    """One phase as the trace holds it, with the gate verdict that settles it."""
-
-    phase_id: str
-    seq: int
-    name: str
-    kind: str
-    owner: str
-    status: str
-    error: str = ""
-    gates: list[tuple[str, bool, str]] = Field(default_factory=list)   # (gate, passed, why)
-
-    @property
-    def gate_failed(self) -> bool:
-        return any(not passed for _name, passed, _why in self.gates)
-
-    @property
-    def green(self) -> bool:
-        """Green is earned twice: the phase finished AND no gate of it failed."""
-        return self.status == "success" and not self.gate_failed
-
-    @property
-    def lied(self) -> bool:
-        """It reports success while a gate of it failed — the record contradicts itself."""
-        return self.status == "success" and self.gate_failed
-
-
 def plan(query: ResumeQuery) -> ResumePlan:
-    """Decide the resume point, or refuse. One read of the trace, one answer."""
-    conn = _connect(query.db_path)
+    """Decide the resume point, or refuse. One read of the record, one answer."""
     try:
-        session = _session(conn, query.smidja_id)
-        _refuse_if_alive(conn, query.smidja_id)
-        session["agent_map"] = _read_agent_map(query.session_dir)
-        phases = _phases(conn, query.smidja_id)
-        if not phases:
-            raise ResumeRefused(NOTHING_GREEN, "the run recorded no phase at all")
+        record = runrecord.load(runrecord.RecordQuery(
+            smidja_id=query.smidja_id, db_path=query.db_path,
+            session_dir=query.session_dir))
+    except runrecord.RecordMissing as missing:
+        raise ResumeRefused(NO_SUCH_RUN, str(missing)) from missing
 
-        # A phase that reports success while its gate failed is a contradiction.
-        # Resuming past it would repeat the lie; resuming at it would re-run a
-        # phase the record already calls green. Neither is honest — refuse.
-        for phase in phases:
-            if phase.lied:
-                failed = [name for name, passed, _ in phase.gates if not passed]
+    _refuse_if_alive(record)
+    phases = record.phases
+    if not phases:
+        raise ResumeRefused(NOTHING_GREEN, "the run recorded no phase at all")
+
+    # A phase that calls itself successful while a gate failed — or, being an
+    # approval phase, while no decision exists — is a contradiction. Resuming
+    # past it would repeat the lie; resuming at it would re-run a phase the
+    # record already calls green. Neither is honest, so refuse.
+    for phase in phases:
+        if phase.lied:
+            if phase.contract == "approval":
                 raise ResumeRefused(
                     NOTHING_GREEN,
-                    f"phase {phase.name!r} reports success but its gate "
-                    f"{', '.join(failed)} failed — resuming would hide the failure")
-
-        boundary = next((p for p in reversed(phases) if p.green), None)
-        if boundary is None:
+                    f"phase {phase.name!r} is an approval phase recorded successful with no "
+                    f"decision on record — a signature nobody gave is not a phase that passed")
+            failed = [gate.gate for gate in phase.gates if not gate.passed]
             raise ResumeRefused(
                 NOTHING_GREEN,
-                "no phase is both green and gate-passed — there is no proven ground to stand on")
+                f"phase {phase.name!r} reports success but its gate "
+                f"{', '.join(failed)} failed — resuming would hide the failure")
 
-        replay, target = _resume_point(phases, boundary, query.from_phase)
+    boundary = next((phase for phase in reversed(phases) if phase.green), None)
+    if boundary is None:
+        raise ResumeRefused(
+            NOTHING_GREEN,
+            "no phase is both green and gate-passed — there is no proven ground to stand on")
 
-        # A run that FINISHED green has nothing to continue. A run that died after
-        # its last green phase has — the chain still owes the phases it never
-        # opened. The session's own status is the fact that tells them apart.
-        if (target is None and len(replay) == len(phases)
-                and session.get("status") == "success"):
-            raise ResumeComplete(
-                f"this run finished green (checkpoint {boundary.name}) — there is nothing "
-                f"left to continue. Use --from-phase <name> to re-run a phase")
+    replay, target = _resume_point(phases, boundary, query.from_phase)
 
-        for phase in replay:
-            if not phase.green:
-                raise ResumeRefused(
-                    NOTHING_GREEN,
-                    f"phase {phase.name!r} is {phase.status} and would be skipped — "
-                    f"a phase that did not commit is never resumed past")
+    # A run that FINISHED green has nothing to continue. A run that died after
+    # its last green phase has — the chain still owes the phases it never
+    # opened. The record's own status is the fact that tells them apart.
+    if target is None and len(replay) == len(phases) and record.status == "completed":
+        raise ResumeComplete(
+            f"this run finished green (checkpoint {boundary.name}) — there is nothing "
+            f"left to continue. Use --from-phase <name> to re-run a phase")
 
-        _refuse_on_roster_change(session, query)
+    for phase in replay:
+        if not phase.green:
+            raise ResumeRefused(
+                NOTHING_GREEN,
+                f"phase {phase.name!r} is {phase.status} and would be skipped — "
+                f"a phase that did not commit is never resumed past")
+        if phase.lane == "agent" and phase.envelope is None:
+            raise ResumeRefused(
+                NOTHING_GREEN,
+                f"phase {phase.name!r} is green but its envelope is not in the record — "
+                f"there is nothing to hand to the next agent")
+        if phase.lane == "code" and phase.logged is None and phase.contract != "approval":
+            raise ResumeRefused(
+                NOTHING_GREEN,
+                f"phase {phase.name!r} is green but logged no verdict — replaying it "
+                f"would re-run work this run already paid for")
 
-        return ResumePlan(
-            smidja_id=query.smidja_id,
-            chain=_last_chain(session.get("smidja_name") or ""),
-            request=_request_text(conn, query.smidja_id, query.session_dir),
-            boundary=boundary.name,
-            boundary_seq=boundary.seq,
-            from_phase=target.name if target else "",
-            replay=[p.name for p in replay],
-            envelopes=_envelopes(conn, query.session_dir, replay),
-            records=_records(conn, query.smidja_id, replay),
-            sessions=_agent_sessions(session),
-            models=_agent_models(conn, query.smidja_id, session),
-        )
-    finally:
-        conn.close()
+    _refuse_on_roster_change(record, query)
+
+    return ResumePlan(
+        smidja_id=query.smidja_id,
+        chain=record.chain,
+        request=record.request,
+        boundary=boundary.name,
+        boundary_seq=boundary.seq,
+        from_phase=target.name if target else "",
+        from_contract=target.contract if target else "",
+        approval=target.approval if target and target.contract == "approval" else "",
+        replay=[phase.name for phase in replay],
+        envelopes={phase.name: phase.envelope for phase in replay
+                   if phase.lane == "agent" and phase.envelope is not None},
+        records={phase.name: phase.logged for phase in replay
+                 if phase.lane == "code" and phase.logged is not None},
+        sessions=record.agent_sessions,
+        models=record.models,
+    )
 
 
-def _resume_point(phases: list[PhaseRecord], boundary: PhaseRecord,
-                  from_phase: Optional[str]) -> tuple[list[PhaseRecord], Optional[PhaseRecord]]:
+def _resume_point(phases: list[runrecord.PhaseRun], boundary: runrecord.PhaseRun,
+                  from_phase: Optional[str]) -> tuple[list[runrecord.PhaseRun],
+                                                      Optional[runrecord.PhaseRun]]:
     """(phases to hand forward, the phase to re-enter at)."""
     if from_phase:
-        target = next((p for p in phases if p.name == from_phase), None)
+        target = next((phase for phase in phases if phase.name == from_phase), None)
         if target is None:
-            recorded = ", ".join(p.name for p in phases)
+            recorded = ", ".join(phase.name for phase in phases)
             raise ResumeRefused(
                 NO_SUCH_RUN,
                 f"phase {from_phase!r} is not in this run — it recorded: {recorded}")
-        return [p for p in phases if p.seq < target.seq], target
-    later = [p for p in phases if p.seq > boundary.seq]
-    return [p for p in phases if p.seq <= boundary.seq], (later[0] if later else None)
+        return [phase for phase in phases if phase.seq < target.seq], target
+    later = [phase for phase in phases if phase.seq > boundary.seq]
+    return [phase for phase in phases if phase.seq <= boundary.seq], (later[0] if later else None)
 
 
-def _refuse_on_roster_change(session: dict, query: ResumeQuery) -> None:
-    """A changed model means a fresh session — and a fresh session is not a resume."""
-    for agent, model in (query.roster or {}).items():
-        was = _recorded_model(session, agent)
-        if was and model and was != model:
-            raise ResumeRefused(
-                ROSTER_CHANGED,
-                f"{agent}: the run used {was}, the roster now names {model} — "
-                f"a changed model starts a fresh session, which is not a resume")
-
-
-def _recorded_model(session: dict, agent: str) -> str:
-    return str((session.get("agent_map") or {}).get(agent, {}).get("model") or "")
-
-
-# ── trace readers ────────────────────────────────────────────────────────────
-
-def _connect(db_path: str) -> sqlite3.Connection:
-    path = Path(db_path)
-    if not path.is_file():
-        raise ResumeRefused(NO_SUCH_RUN, f"no trace database at {db_path}")
-    conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-
-def _session(conn: sqlite3.Connection, smidja_id: str) -> dict:
-    row = conn.execute("SELECT * FROM sessions WHERE smidja_id = ?", (smidja_id,)).fetchone()
-    if row is None:
-        raise ResumeRefused(NO_SUCH_RUN, f"the trace has no session {smidja_id!r}")
-    session = dict(row)
-    session["agent_map"] = {}
-    return session
-
-
-def _refuse_if_alive(conn: sqlite3.Connection, smidja_id: str) -> None:
+def _refuse_if_alive(record: runrecord.RunRecord) -> None:
     """A recorded process that is still breathing means the run is still running.
 
     `ended_at IS NULL` alone is not enough: a SIGKILLed run leaves its rows open
     forever. The pid is the fact — ask the kernel, never the bookkeeping.
     """
-    rows = conn.execute(
-        "SELECT kind, name, pid FROM processes WHERE smidja_id = ? AND ended_at IS NULL",
-        (smidja_id,)).fetchall()
-    for row in rows:
-        pid = int(row["pid"] or 0)
-        if pid and pid != os.getpid() and _alive(pid):
-            raise ResumeBusy(
-                f"the run is still alive (pid {pid}, {row['kind']} "
-                f"{row['name'] or ''}) — stop it first, then resume")
+    for pid in record.live_pids:
+        if pid and pid != os.getpid():
+            raise ResumeBusy(f"the run is still alive (pid {pid}) — stop it first, then resume")
 
 
-def _alive(pid: int) -> bool:
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
-
-
-def _phases(conn: sqlite3.Connection, smidja_id: str) -> list[PhaseRecord]:
-    rows = conn.execute(
-        "SELECT phase_id, seq, name, kind, owner, status, error FROM phases"
-        " WHERE smidja_id = ? ORDER BY seq, rowid", (smidja_id,)).fetchall()
-    gates = _final_gates(conn, smidja_id)
-    return [PhaseRecord(phase_id=r["phase_id"], seq=r["seq"] or 0, name=r["name"] or "",
-                        kind=r["kind"] or "", owner=r["owner"] or "",
-                        status=r["status"] or "fail", error=r["error"] or "",
-                        gates=gates.get(r["phase_id"], []))
-            for r in rows]
-
-
-def _final_gates(conn: sqlite3.Connection, smidja_id: str) -> dict[str, list[tuple[str, bool, str]]]:
-    """The last attempt of each gate, per phase — a retried gate settles on its retry.
-
-    An earlier failed attempt is not a failure of the phase; only the attempt the
-    phase ended on is. Reading every row would mark a corrected phase red forever.
-    """
-    rows = conn.execute(
-        "SELECT phase_id, gate, passed, attempt, violations_json FROM gate_results"
-        " WHERE smidja_id = ? ORDER BY id", (smidja_id,)).fetchall()
-    latest: dict[tuple[str, str], tuple[str, bool, str]] = {}
-    for row in rows:
-        violations = _json(row["violations_json"], [])
-        why = "; ".join(violations) if violations else "passed"
-        latest[(row["phase_id"], row["gate"] or "")] = (row["gate"] or "",
-                                                        bool(row["passed"]), why)
-    out: dict[str, list[tuple[str, bool, str]]] = {}
-    for (phase_id, _gate), value in latest.items():
-        out.setdefault(phase_id, []).append(value)
-    return out
-
-
-def _envelopes(conn: sqlite3.Connection, session_dir: str,
-               replay: list[PhaseRecord]) -> dict[str, Any]:
-    """Each replayed agent phase's envelope: the trace first, the file second."""
-    out: dict[str, Any] = {}
-    for phase in replay:
-        if phase.kind != "agent":
-            continue
-        row = conn.execute(
-            "SELECT payload_json FROM envelopes WHERE phase_id = ? AND valid = 1"
-            " ORDER BY rowid DESC LIMIT 1", (phase.phase_id,)).fetchone()
-        payload = _json(row["payload_json"], None) if row else None
-        if payload is None:
-            payload = _envelope_file(session_dir, phase.owner)
-        if payload is None:
+def _refuse_on_roster_change(record: runrecord.RunRecord, query: ResumeQuery) -> None:
+    """A changed model means a fresh session — and a fresh session is not a resume."""
+    for agent, model in (query.roster or {}).items():
+        was = record.models.get(agent, "")
+        if was and model and was != model:
             raise ResumeRefused(
-                NOTHING_GREEN,
-                f"phase {phase.name!r} is green but its envelope is not in the record — "
-                f"there is nothing to hand to the next agent")
-        out[phase.name] = payload
-    return out
-
-
-def _envelope_file(session_dir: str, agent: str) -> Optional[dict]:
-    path = Path(session_dir) / agent / "envelope.json"
-    if not path.is_file():
-        return None
-    try:
-        record = json.loads(path.read_text())
-    except (OSError, ValueError):
-        return None
-    # The file carries the run's bookkeeping beside the envelope itself.
-    for key in ("agent_name", "purpose", "output_type", "attempt"):
-        record.pop(key, None)
-    return record
-
-
-def _records(conn: sqlite3.Connection, smidja_id: str,
-             replay: list[PhaseRecord]) -> dict[str, Any]:
-    """What each replayed code phase logged — the verdict it already paid for."""
-    out: dict[str, Any] = {}
-    for phase in replay:
-        if phase.kind != "code":
-            continue
-        row = conn.execute(
-            "SELECT payload_json FROM events WHERE phase_id = ? AND type = 'log'"
-            " ORDER BY rowid DESC LIMIT 1", (phase.phase_id,)).fetchone()
-        payload = _json(row["payload_json"], None) if row else None
-        if payload is None:
-            raise ResumeRefused(
-                NOTHING_GREEN,
-                f"phase {phase.name!r} is green but logged no verdict — replaying it "
-                f"would re-run work this run already paid for")
-        out[phase.name] = payload
-    return out
-
-
-def _request_text(conn: sqlite3.Connection, smidja_id: str, session_dir: str) -> str:
-    """The ask, in full. `sessions.request` is clipped at 500 chars; the log is not."""
-    row = conn.execute(
-        "SELECT payload_json FROM events WHERE smidja_id = ? AND type = 'log'"
-        " AND name = 'request' ORDER BY rowid ASC LIMIT 1", (smidja_id,)).fetchone()
-    if row:
-        payload = _json(row["payload_json"], {})
-        text = payload.get("input")
-        if isinstance(text, str) and text.strip():
-            return text
-    row = conn.execute("SELECT request FROM sessions WHERE smidja_id = ?", (smidja_id,)).fetchone()
-    return (row["request"] or "") if row else ""
-
-
-def _agent_sessions(session: dict) -> dict[str, str]:
-    """agent -> coding-agent session id, from the map that keeps context alive."""
-    return {agent: str(entry.get("session_id") or "")
-            for agent, entry in (session.get("agent_map") or {}).items()
-            if isinstance(entry, dict)}
-
-
-def _read_agent_map(session_dir: str) -> dict:
-    path = Path(session_dir) / "agent_map.json"
-    if not path.is_file():
-        return {}
-    try:
-        data = json.loads(path.read_text())
-    except (OSError, ValueError):
-        return {}
-    return data if isinstance(data, dict) else {}
-
-
-def _agent_models(conn: sqlite3.Connection, smidja_id: str, session: dict) -> dict[str, str]:
-    """The model each agent ran on — the map first, the trace second."""
-    models: dict[str, str] = {}
-    for row in conn.execute("SELECT agent, model FROM agent_sessions WHERE smidja_id = ?",
-                            (smidja_id,)).fetchall():
-        if row["model"]:
-            models[row["agent"]] = row["model"]
-    for agent, entry in (session.get("agent_map") or {}).items():
-        if isinstance(entry, dict) and entry.get("model"):
-            models[agent] = str(entry["model"])
-    return models
-
-
-def _last_chain(smidja_name: str) -> str:
-    """A joined session records every chain that ran under it; resume the last one."""
-    names = [n.strip() for n in (smidja_name or "").split("+") if n.strip()]
-    return names[-1] if names else ""
+                ROSTER_CHANGED,
+                f"{agent}: the run used {was}, the roster now names {model} — "
+                f"a changed model starts a fresh session, which is not a resume")
 
 
 # ── record → object ──────────────────────────────────────────────────────────
@@ -511,12 +337,3 @@ def _count(lines: Any, sign: str) -> int:
         if token.startswith(sign) and token[1:].isdigit():
             return int(token[1:])
     return 0
-
-
-def _json(text: Any, default: Any) -> Any:
-    if not text:
-        return default
-    try:
-        return json.loads(text)
-    except (TypeError, ValueError):
-        return default

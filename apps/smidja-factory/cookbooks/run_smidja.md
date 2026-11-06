@@ -105,6 +105,65 @@ A run whose processes are still alive is also refused, and that one is not in th
 
 `--from-phase <name>` re-enters at a named phase **of this run** — to redo a phase that passed, or to retry the broken one once its input changed. It may not jump over a phase that did not commit: a phase that is `fail`, or that never started, is never skipped. That is the same `nothing green to resume from` refusal, naming the phase it would have skipped.
 
+## The phase contract
+
+A phase has two different kinds of "kind", and they answer different questions.
+
+`kind` says **who runs the block**: `engineer`, `agent` (a coding agent, typed envelope) or `code` (Python, a known command).
+
+`contract` says **what the phase owes before it may close**. It is optional, it defaults to `ordinary`, and it is pi-durable's phase kind translated to the smithy (`github.com/zerwiz/durable-pi`, `apps/dpi-sdk/src/jobs.ts`):
+
+| `contract` | what it does |
+|---|---|
+| `ordinary` (default) | the block runs and closes, exactly as before |
+| `approval` | **waits for a person's decision.** No decision is not a yes: the block is never entered until `approved`, and a restart re-enters the phase and waits again |
+| `repeat` | a loop that saves **one checkpoint per iteration**, so a restart re-enters at the first iteration that never committed |
+
+```python
+with run.phase(PhaseParams(name="signoff", kind="code", owner=run.engineer,
+                           contract="approval",
+                           description="Wait for the operator's yes before the run closes")) as ph:
+    ph.log(approved_by="the operator")
+
+with run.phase(PhaseParams(name="watch", kind="code", owner=run.engineer,
+                           contract="repeat",
+                           description="Poll the change feed, one checkpoint a turn")) as ph:
+    for turn in ph.iterations(4):
+        do_work(turn.index)
+        turn.checkpoint(seen=turn.index)
+```
+
+**Deciding.** The decision is a row in the trace (`decisions`), not a side file, so the record, the resume and the visualizer read the same answer:
+
+```bash
+just decide <smidja_id> signoff approve            # or decline / cancel
+just decide <smidja_id> signoff decline --note "not this week" --by "Josef"
+```
+
+A run that stops at an approval phase **exits 3** and prints the door; a run a person declined **exits 4**. Neither is the run failing at its work, which is why neither is `1`. After a decision, `just resume <smidja_id>` re-enters the phase and runs the block — once.
+
+**Repeats.** `ph.iterations(total)` declares the loop's size and yields only the turns still owed. Each `checkpoint()` is a commit; a restart counts the committed ones and announces them (`iteration 2/4 already committed — handed forward, not re-run`). The record carries the count (`progress: {done, total}`), so `2/4` is a fact rather than an impression.
+
+**One thing a chain author must know:** on replay the `with run.phase(...)` **block still executes**. What is answered from the record are the machinery's own doors — `ph.call()`, `ph.log()`, `quality.run_tests`, `changes.capture`, `git_helper.commit_all`, and an iteration's `checkpoint()`. So a block's own side effects (a file written by hand, an external POST) are the chain's responsibility: put them behind `ph.call()` or a `checkpoint()` if they must not happen twice.
+
+## The run as a record
+
+`just record <smidja_id>` prints the run the way every client should see it — **phases · steps · state · where it stopped** — from one reader (`smidja_modules/runrecord.py`). `resume` reads the same shape, so a plan and a door and a UI cannot disagree about what the run was.
+
+```bash
+just record <smidja_id>             # the run · phases · the steps that stopped it
+just record <smidja_id> --as-steps  # every step of every phase
+just record <smidja_id> --json      # the whole record, for a UI or a test
+```
+
+The default shows the phases that did **not** finish, with the last twenty steps of each
+and an honest count of what it left out — a failed agent phase carries 167 events on the
+oldest trace on this machine, and the finished ones are not why the door is open.
+
+The statuses are honest, not decorative: `running` only while a process is alive, `interrupted` when the record says `running` and nothing is (`interrupted` is the word a SIGKILL leaves behind), `waiting` for an approval phase that owes a decision, `completed`, `failed`, `declined`. Where the trace is silent the record prints the absence rather than a guess.
+
+Proof that it holds under a real kill: `apps/smidja-factory/tests/test_recovery.py` SIGKILLs a running chain mid-phase, restarts it with **no client attached**, and asserts it re-enters at the checkpoint, hands the committed envelope forward from the trace (the envelope file is deleted first), never re-runs a committed phase's work — counted by a marker line per execution — and refuses to let an unsigned approval phase pass.
+
 ## Observe
 
 The trace db is `smidja/smidja_data/smidja.db`. It is WAL, so reads never block the running writers — poll it as often as you like.

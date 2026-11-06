@@ -47,13 +47,26 @@ or starting agents, load the sibling instead:
 - **`justfile` (repo root):** the starter recipes — `just scout/sdlc/
   simple-sdlc/orchestrate` run chains, `just sessions/phases/tail/procs/obs`
   watch and open the UI, `just resume <smidja_id> [--from-phase <name>]` continues a run at
-  its last green phase. It calls `smidja-resolve-config`, honoring
+  its last green phase, `just record <smidja_id>` prints the run as one record, and
+  `just decide <smidja_id> <phase> approve|decline` settles an approval phase. It calls
+  `smidja-resolve-config`, honoring
   `SMIDJA_CONFIG` → `SMIDJA_ROSTER` → `SMIDJA_MODEL_TIER` → default `smidja.config.yaml`.
 - **Resume:** `smidja resume <run-id> [--from-phase <name>]` re-enters a run at the phase
   after its last green-and-gate-passed phase, handing the committed envelopes, code
   verdicts and agent session ids forward instead of buying them again
   (`smidja_modules/resume.py`; the three refusals and the model-switch rule are in
   `cookbooks/run_smidja.md` §Resume).
+- **The phase contract:** `PhaseParams(contract=...)` — `ordinary` (default), `approval`
+  (waits for a decision recorded in the trace; the block is never entered on silence,
+  the process exits 3 while waiting and 4 when declined) and `repeat` (one checkpoint
+  per iteration; `ph.iterations(n)` yields only the turns still owed). The contract is
+  in `smidja_modules/runner.py`; the wording is `cookbooks/run_smidja.md` §The phase
+  contract.
+- **The run record:** `smidja_modules/runrecord.py` is the ONE reader of the trace —
+  phases, steps, state and where the run stopped. `just record <id> [--json]` prints it,
+  `resume` plans from it, and a UI renders it, so three clients cannot disagree.
+  `docs`-level proof: `tests/test_recovery.py` SIGKILLs a live chain mid-phase and
+  asserts the restart re-enters at the checkpoint with no client attached.
 - **Visualizer ships with this skill:** `apps/visualizer/` (Vue + vite server).
   Start with `just ui` / `scripts/smidja ui` → UI `http://localhost:4601`, API
   `:4600`, Kaia memory `#/memory`. Sqlite probing still works — the db is WAL.
@@ -128,6 +141,8 @@ Deep specs, when needed: [references/config.md](references/config.md) · [refere
 8. **A known command is code, not an agent** — if you can write the invocation down (`bun test`, `ruff check`), it belongs in a `kind="code"` phase via `smidja_modules/quality.py`. Agents are for the parts that need reading and deciding; failures come back to the builder as an envelope either way.
 9. **`tools:` is a capability list, `writes:` is the boundary** — `bash` runs anything (including `git checkout`) and `write` reaches any path, so a tool list can never make "this agent changes nothing" true. `writes:` per agent and `protected_files` in defaults are enforced in `smidja_modules/permissions.py` after every agent call: unauthorized changes are rolled back and the phase dies. The session runtime under `data_dir` is always writable — a read-only agent is read-only with respect to the REPO, never mute.
 10. **Every smidja ends in `run.finish()`** — phases passing is not the same as the run being accepted. A test phase that ran a red suite succeeded at its job. Pass `accepted=` so the exit code, the session status, and the banner are decided together and cannot disagree.
+11. **A phase's `contract` is a promise, not a label** — `approval` never runs its block without a decision recorded in the trace (`just decide`), and `repeat` commits one checkpoint per iteration so a restart repeats only the turns that never committed. No decision is not a yes, and silence never passes a gate.
+12. **The run is read as ONE record** — `smidja_modules/runrecord.py` is the only reader of the trace; `resume`, the `record` door and any UI take their phases, steps and state from it. A second private query is how two clients end up disagreeing about the same run.
 
 ## current scope (2026-09-01)
 

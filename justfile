@@ -66,6 +66,16 @@ simple-sdlc *ARGS:
 resume *ARGS:
     uv run apps/smidja/smidja_resume.py --config {{config}} "$@"
 
+# the run as ONE record — phases, steps, state, and where it stopped
+# just record <smidja_id> [--json]; the same shape resume reads.
+record *ARGS:
+    uv run apps/smidja/smidja_record.py --config {{config}} "$@"
+
+# record a person's decision on an `approval` phase: approve | decline | cancel
+# An approval phase never runs its block without one; silence is not a yes.
+decide *ARGS:
+    uv run apps/smidja/smidja_decide.py --config {{config}} "$@"
+
 # ── watch it ────────────────────────────────────────────────────────────────
 # Reads never block a running workflow, the db is WAL. Poll as hard as you like.
 
