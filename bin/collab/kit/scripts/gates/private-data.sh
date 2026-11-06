@@ -24,7 +24,9 @@ while IFS= read -r file; do
     docs/*|*.md|*test*|*fixture*|package-lock.json) continue ;;
     scripts/gates/*) continue ;;
   esac
-  hits="$(grep -nEI "$path_pattern|$mail_pattern" "$file" 2>/dev/null | cut -c1-120)"
+  # `%h/Documents/ymirhome` and `$HOME/Documents/ymirhome` are home-relative, which the rule allows; only a
+  # literal machine path is a leak. Appended 2026-11-06: the gate cried wolf on a systemd unit that used `%h`.
+  hits="$(grep -nEI "$path_pattern|$mail_pattern" "$file" 2>/dev/null | grep -vE '(%h|\$\{?HOME\}?)/Documents/ymirhome' | cut -c1-120)"   # allow-home-default: the pattern NAMES the home in order to allow its relative form and refuse the machine one; it never resolves a path
   if [ -n "$hits" ]; then
     printf 'private-data: %s\n%s\n\n' "$file" "$hits" >&2
     found=1
@@ -32,7 +34,7 @@ while IFS= read -r file; do
 done <<< "$files"
 
 if [ "$found" = 1 ]; then
-  printf 'private-data refused: a machine path or a real address is in the change.\n  Private data lives in the house's private home; this repository is public.\n' >&2
+  printf 'private-data refused: a machine path or a real address is in the change.\n  Private data lives in the private home of this house; this repository is public.\n' >&2
   exit 1
 fi
 printf 'private-data: clean\n'
