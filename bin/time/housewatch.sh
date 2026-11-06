@@ -92,7 +92,16 @@ fi
 # ── Skírnir: a mouth that stopped answering must be visible, not discovered ───
 checked=$((checked + 1))
 ABEAT="$HOME_R/hodd/state/assistant/telegram.heartbeat"
-if [ ! -f "$ABEAT" ]; then
+# The heartbeat lives in the SHARED home, so it is not a local fact (plan 203 §19): a seat
+# where the assistant does not run reads another seat's beat as its own, or an absent beat as
+# "not yet", and both are wrong. Measured 2026-11-06: no skirnir unit on this seat, none on the
+# heart, no beat in the home — and the alarm still repeated in the ledger. Ask first whether the
+# mouth is OURS: a local unit or a local process is the only evidence of that.
+# A unit file is the evidence; `pgrep -f skirnir` was no good here, because the shell that runs
+# this check carries the word in its own command line and matched itself.
+if ! systemctl --user list-unit-files 2>/dev/null | grep -q '^skirnir[.]service'; then
+  printf '  "assistant","SKIP","the assistant does not run on this seat - a beat in the shared home is another seat'"'"'s fact"\n'
+elif [ ! -f "$ABEAT" ]; then
   printf '  "assistant","SKIP","no heartbeat file yet — the service has not run here"\n'
 else
   aage=$(( $(date +%s) - $(date -r "$ABEAT" +%s) ))
