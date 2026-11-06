@@ -207,7 +207,13 @@ advise() {
   # 35B. `hound.advisor_online: true` must be set for the online road — an advisor is one thing, but
   # a machine that ships its own topology to a vendor by default is another.
   local primary fallback online cmd
-  primary="${GARMR_ADVISOR_MODEL_NAME:-$(advise_cfg model_name opencode-go/deepseek-v4.1-flash)}"
+  # The advisor's model is RESOLVED for this seat (RULES/25, plan 206 §11): a model id in a
+  # shipped script is a promise the next machine cannot keep. The literal survives only as the
+  # last resort when the resolver itself cannot answer.
+  _am="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/bin/model/agent-model.sh"
+  _resolved=""
+  [ -x "$_am" ] && _resolved="$(bash "$_am" forseti --tier strong --plain 2>/dev/null || true)"
+  primary="${GARMR_ADVISOR_MODEL_NAME:-$(advise_cfg model_name "${_resolved:-opencode-go/deepseek-v4.1-flash}")}"
   fallback="${GARMR_ADVISOR_MODEL_FALLBACK:-$(advise_cfg model_fallback llama-swap/qwen3.6-35b-a3b@q4_k_xl-mtp)}"
   online="${GARMR_ADVISOR_ONLINE:-$(advise_cfg advisor_online false)}"
   if [ -n "${GARMR_ADVISOR_CMD:-}" ]; then

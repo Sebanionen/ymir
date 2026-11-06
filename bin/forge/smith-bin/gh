@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+# smith-gh — the `gh` a SMITH sees: everything reads, and nothing ships.
+#
+# WHY (plan 203 §14.2, plan 205 §2.2): a rule an agent can ignore is a suggestion. A smith may
+# PUSH its branch — that is the transport to the fleet — and may never open a pull request, merge
+# one, close one, or delete a repository. Those are the reviewer's acts, and the reviewer is a
+# different hand with a different token.
+#
+# HOW IT KNOWS IT IS A SMITH, in this order:
+#   1. $YMIR_SMITH is set (the spawn will export it once an identity exists — plan 205 §2.1);
+#   2. the working tree IS a worker's worktree: a path containing `/.yggdrasil/`.
+# Until an identity exists, (2) is the honest signal — a worker's environment is its worktree —
+# and it cannot refuse the operator, who works in the project root.
+#
+# A refusal NAMES THE ROAD: the branch, the packet, the reviewer. It never says "not allowed".
+#
+# Install (a spawn prepends this directory to the agent's PATH):
+#   bin/forge/smith-gh --install <dir>     # writes <dir>/gh -> this script
+#
+# Usage: gh <anything>   (this is the shim; it is reached as `gh`)
+# Exit: the real gh's exit code · 1 on a refused ship act · 2 on a missing gh.
+set -u
+SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+refuse() {  # <what>
+  cat >&2 <<EOF
+⛔ $1 is the reviewer's act, not a smith's.
+   a smith pushes a branch and writes a packet; the reviewer ships.
+     · push the branch:      git push origin eins/<id>     (or smith/<id>)
+     · write the packet:     bin/forge/handoff-packet.py write <id> …
+     · hand it over:         the packet names branch + head sha; the reviewer fetches, refuses a
+                             moved sha, runs the gates on THAT commit, then opens the PR
+   See plan 203 §14.1 and plan 205 §2.2.
+EOF
+  exit 1
+}
+
+is_smith() {
+  [ -n "${YMIR_SMITH:-}" ] && return 0
+  case "$PWD/" in */.yggdrasil/*) return 0 ;; esac
+  return 1
+}
+
+# The real gh: the first `gh` on PATH that is not this file.
+real_gh() {
+  local d
+  IFS=: read -ra _dirs <<<"${PATH:-}"
+  for d in "${_dirs[@]}"; do
+    [ -n "$d" ] || continue
+    [ -x "$d/gh" ] || continue
+    [ "$(cd "$d" && pwd -P)/gh" = "$SELF" ] && continue
+    printf '%s/gh' "$d"; return 0
+  done
+  return 1
+}
+
+case "${1:-}" in
+  --install)
+    dir="${2:-}"; [ -n "$dir" ] || { echo "error: --install needs a directory" >&2; exit 2; }
+    mkdir -p "$dir" || exit 1
+    ln -sf "$SELF" "$dir/gh" || exit 1
+    printf 'smith-gh[1]{installed,as,law}:\n  "%s","gh","a smith pushes a branch and writes a packet; the reviewer ships"\n' "$dir"
+    exit 0 ;;
+  --version-shim) printf '1.0.0\n'; exit 0 ;;
+esac
+
+if is_smith; then
+  case "${1:-} ${2:-}" in
+    "pr create"|"pr merge"|"pr close"|"pr reopen"|"repo delete"|"release create"|"release delete")
+      refuse "gh $1 $2" ;;
+  esac
+fi
+
+target="$(real_gh || true)"
+[ -n "$target" ] || { echo "error: no gh on PATH — install the GitHub CLI, then retry" >&2; exit 2; }
+exec "$target" "$@"

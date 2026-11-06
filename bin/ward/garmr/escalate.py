@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import sys
 import time
 import urllib.error
@@ -120,16 +121,28 @@ SYSTEM = (
 )
 
 
+def _resolve(tier: str) -> str:
+    """The seat's own answer to "which model", never a literal in this file (RULES/25)."""
+    root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
+    door = os.path.join(root, "bin", "model", "agent-model.sh")
+    try:
+        out = subprocess.run(["bash", door, "forseti", "--tier", tier, "--plain"],
+                             capture_output=True, text=True, timeout=25)
+        return out.stdout.strip() if out.returncode == 0 else ""
+    except Exception:
+        return ""
+
+
 def ask(rung: str, cfg: dict, body: str) -> dict | None:
     esc = cfg.get("escalate", {})
     if rung == "online":
         if not _budget_allow(cfg):
             return None
-        spec = str(esc.get("online", "")).split("/", 1)
+        spec = str(esc.get("online") or _resolve("fast")).split("/", 1)
         provider, model = (spec + [""])[:2]
         ordering = [provider]
     elif rung == "local":
-        provider, model = "llama-swap", str(esc.get("local", ""))
+        provider, model = "llama-swap", str(esc.get("local") or _resolve("local"))
         ordering = ["llama-swap"]
     else:
         model = str(esc.get("local", ""))
