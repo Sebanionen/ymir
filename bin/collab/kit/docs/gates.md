@@ -51,7 +51,7 @@ nobody has ever triggered is a tax on every commit.
 
 ## Appended 2026-11-06 — the hooks ask the repository, not npm
 
-The first install of this kit into a non-Node repository (Inmost Invest's Control Tower, an Elixir umbrella)
+The first install of this kit into a client's non-Node repository (an Elixir umbrella)
 found that `pre-commit` and `pre-push` were written for npm: `npm run check`, `npm run typecheck`, `npm run
 test`. In an Elixir repository those commands cannot succeed, so the hooks refused **every commit** — a gate
 that blocks honest work is a gate people learn to pass `--no-verify`, which is worse than no gate at all.

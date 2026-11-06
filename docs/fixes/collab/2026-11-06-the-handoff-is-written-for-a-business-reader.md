@@ -12,8 +12,9 @@ we need to append this to ymir's logic for handoffs."*
 
 The baton shelf was written for a hand inside the hall: it called itself a baton, addressed "the Allfather",
 named seats and personae, and assumed the reader had plans, runes and a Ymir seat. The repositories it is
-installed into are **not** the house's. Control Tower is Inmost Invest's product, read by the client who owns
-it, by Reygan Assareh and by whoever joins next; a partner or an auditor may open `handoff/CURRENT.md` with no
+installed into are **not** the house's. The client application is the client's product, read by the owner who
+commissioned it, by their staff, and by whoever joins next; a partner or an auditor may open
+`handoff/CURRENT.md` with no
 Ymir and no glossary. A handoff that says "Brokk dispatched an Eindri" is not a handoff to them — it is a
 sentence in a language they were never taught, about work they cannot see.
 
@@ -52,7 +53,7 @@ reason the change is additive rather than a rename.
 - **The seven headings were not renamed.** The check matches them literally and three repositories already
   carry them; a rename is a migration, and it would break a client repository's passing gate on the day we did
   it.
-- **No jam in the client's shelf.** Control Tower's copy was refreshed from these templates in the same
+- **No jam in the client's shelf.** That repository's copy was refreshed from these templates in the same
   errand, and its baton was rewritten in business language; its history in `handoff/log/` was left untouched.
 
 ## CHANGE LOG

@@ -74,7 +74,7 @@ law[6]{rule,why}:
 
 | Inside the hall | In a handoff a client reads |
 |---|---|
-| "the Allfather sealed the merge" | "Josef Lindbom approved the change on 6 November 2026" |
+| "the Allfather sealed the merge" | "the named approver accepted the change on 6 November 2026" |
 | "Brokk dispatched an Eindri" | "the assistant gave the work to a separate worker, who opened pull request #3" |
 | "the well was rebuilt" | "the assistant's long-term memory was rebuilt from its own log; nothing was lost" |
 | "the ward refused the push" | "the release check stopped the deploy: one hard-coded password was found and removed" |

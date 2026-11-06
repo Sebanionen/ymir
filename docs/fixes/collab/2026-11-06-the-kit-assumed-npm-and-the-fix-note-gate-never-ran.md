@@ -6,7 +6,7 @@
 
 ## What was wrong
 
-The collaboration kit went into Inmost Invest's Control Tower today — an Elixir umbrella, the first repository
+The collaboration kit went into a client's Elixir umbrella today, the first repository
 that is neither a Node project nor our own. Three faults, each of the class the kit exists to refuse:
 
 1. **`pre-commit` and `pre-push` ran npm.** `npm run check`, `npm run typecheck`, `npm run test`. In an Elixir
@@ -15,7 +15,7 @@ that is neither a Node project nor our own. Three faults, each of the class the 
 2. **`fixes-guard` was unreachable.** `pre-push` ended with `exit 0` and the fix-note gate sat *below* it, so it
    had never run in any repository — the gate was documented, believed, and dead.
 3. **`fixes-guard` looked in the wrong shelves.** Its code pattern was `^(backend|src|scripts|shared)/` — one
-   project's shape. In Control Tower the code is under `apps/`, `lib/`, `config/`, so even a reachable guard
+   project's shape. In that repository the code is under `apps/`, `lib/`, `config/`, so even a reachable guard
    would have refused nothing.
 
 ## What changed
@@ -31,11 +31,11 @@ that is neither a Node project nor our own. Three faults, each of the class the 
 
 ## Proved
 
-- `bash scripts/checks.sh doctor` on Control Tower: `checks[doctor]: mix compile --warnings-as-errors`, and the
+- `bash scripts/checks.sh doctor` in that repository: `checks[doctor]: mix compile --warnings-as-errors`, and the
   compile it runs is the repository's own.
 - The same door in a repository with none of the three shapes prints `skipped — … this is a skip, not a pass`
   and exits 0.
-- `standardise.sh --check` reports 20 present / 0 missing / 0 different on Control Tower after `--apply` of
+- `standardise.sh --check` reports 20 present / 0 missing / 0 different there after `--apply` of
   1.1.0.
 
 ## What was NOT done
