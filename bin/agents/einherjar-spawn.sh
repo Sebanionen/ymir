@@ -992,6 +992,24 @@ fi
 # bin/seat/herdr-agents.py, the one reader of `herdr agent list` — for the agent
 # standing in this worktree or in the recorded pane, and we correct the record
 # when the door names a different pane than the one we chose.
+# A worker queued on the model lock is ALIVE, not absent. The rail serves one
+# resident model (`--models-max 1`, and `bin/model/local-model-lock.sh` enforces
+# concurrency=1), so a second errand on this box waits on the lock before its pi
+# ever starts — and seat-prove, which looks for an AGENT, read that queue as "no
+# agent" and told the operator "do not steer it" about a worker that was about to
+# begin (measured 2026-11-06: skuld-one-surface queued behind sindri-mw5ndywa).
+LOCK_WAITER_PIDS=""
+lock_waiters() {  # <worktree> — pids standing in that worktree, waiting on the lock
+  local wt=$1 pid found=""
+  for pid in /proc/[0-9]*; do
+    [ "$(readlink "$pid/cwd" 2>/dev/null)" = "$wt" ] || continue
+    tr '\0' ' ' <"$pid/cmdline" 2>/dev/null | grep -qE 'local-model[.-]lock' || continue
+    found="$found ${pid#/proc/}"
+  done
+  printf '%s' "${found# }"
+}
+
+SEAT_QUEUED=no
 SEAT_PROVEN=no
 SEAT_PANE=$RUN_TARGET
 SEAT_STATE=unknown
@@ -1009,9 +1027,18 @@ if seat_out=$("$SCRIPT_DIR/../seat/seat-prove.sh" "$RUN_TARGET" "$WT" \
 else
   SEAT_STATE=$(tail -n1 "$STATE/.$ID.seat-prove" 2>/dev/null | sed 's/^seat-prove: //' || true)
   rm -f "$STATE/.$ID.seat-prove"
-  printf 'seat[1]{id,state,pane,settle}:\n  "%s","UNPROVEN","%s","%ss"\n' "$ID" "$RUN_TARGET" "$SEAT_SETTLE" >&2
-  printf 'seat-unproven: the launch produced NO agent — state/%s.meta recorded pane %s but no agent stands there or in %s. The errand is not seated; do not steer it.\n' \
-    "$ID" "$RUN_TARGET" "$WT" >&2
+  LOCK_WAITER_PIDS=$(lock_waiters "$WT")
+  if [ -n "$LOCK_WAITER_PIDS" ]; then
+    SEAT_QUEUED=yes
+    SEAT_STATE=queued
+    printf 'seat[1]{id,state,pane,pids,why}:\n  "%s","QUEUED","%s","%s","waiting on the local-model lock — one resident model; it starts when the lock frees"\n' \
+      "$ID" "$RUN_TARGET" "$LOCK_WAITER_PIDS" >&2
+    printf 'seat-queued: the worker is ALIVE and waiting for the model lock — do not treat it as dead, and do not relaunch it.\n' >&2
+  else
+    printf 'seat[1]{id,state,pane,settle}:\n  "%s","UNPROVEN","%s","%ss"\n' "$ID" "$RUN_TARGET" "$SEAT_SETTLE" >&2
+    printf 'seat-unproven: the launch produced NO agent — state/%s.meta recorded pane %s but no agent stands there or in %s. The errand is not seated; do not steer it.\n' \
+      "$ID" "$RUN_TARGET" "$WT" >&2
+  fi
 fi
 # The pane the RECORD carries is the one the agent actually stands in.
 RUN_TARGET=$SEAT_PANE
@@ -1108,6 +1135,7 @@ if [ "$SEAT_PROVEN" != yes ]; then
     bash "$ROOT/bin/notify/send.sh" --source seat --severity HIGH --key "seat-unproven:$ID:$SPAWN_GEN" \
       --message "seat $ID launched with NO agent in pane $SEAT_PANE — the errand is not running" >/dev/null 2>&1 || true
   fi
+  [ "$SEAT_QUEUED" = yes ] && exit 0
   printf 'error: %s is NOT seated — do not steer pane %s\nhelp: read the pane tail, then relaunch with a fresh launcher\n' "$ID" "$SEAT_PANE" >&2
   exit 3
 fi
