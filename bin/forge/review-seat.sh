@@ -22,6 +22,9 @@
 #   review-seat.sh ask <pr> [--wait]            # put one PR in front of the seated judge
 #   review-seat.sh charter                      # print the charter it would load
 #   review-seat.sh close                        # lower the seat's workspace
+#   review-seat.sh --install-unit               # DURABLE + VISIBLE: a herdr server unit, and a
+#                                               # keeper timer that re-raises the seat if it dies
+#   review-seat.sh --unit-status | --uninstall-unit
 #
 # Exit: 0 ok · 1 a fault (named) · 2 usage · 3 refused (not inside herdr / no clone).
 set -u
@@ -231,6 +234,80 @@ for w in d.get("result", {}).get("workspaces", []):
   herdr workspace close "$ws" >/dev/null 2>&1 || die "herdr refused to close $ws"
   printf 'seat[2]{workspace,state}:\n  "%s","closed"\n' "$WORKSPACE_LABEL"
 }
+
+# ── durable and visible (the Allfather, 2026-11-06: "it should run in herdr so i can see it") ──
+# A pane created by an ssh command dies with the session, and a headless agent is invisible. So the
+# shape is two USER units: the herdr SERVER as a service (the panes outlive every client), and a
+# keeper timer that re-raises the seat when it is gone. Nothing here takes the helm by itself —
+# `ensure --primary` decides that, and refuses when a live primary holds the lock.
+UNIT_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+install_units() {
+  local clone=$1 primary=$2
+  mkdir -p "$UNIT_DIR" || die "cannot create $UNIT_DIR"
+  cat >"$UNIT_DIR/herdr-server.service" <<UNIT
+[Unit]
+Description=herdr server — the panes outlive every client (the review seat lives in one)
+
+[Service]
+Type=simple
+# A server already running is not a fault: the guard sleeps instead of starting a second one.
+ExecStart=/bin/bash -lc 'herdr status server >/dev/null 2>&1 && exec sleep infinity || exec herdr server'
+Restart=on-failure
+RestartSec=15
+
+[Install]
+WantedBy=default.target
+UNIT
+  cat >"$UNIT_DIR/review-seat.service" <<UNIT
+[Unit]
+Description=review-seat keeper — ensure the reviewer's herdr seat exists (idempotent)
+
+[Service]
+Type=oneshot
+WorkingDirectory=$clone
+ExecStart=/usr/bin/env bash $ROOT/bin/forge/review-seat.sh ensure --clone $clone${primary:+ --primary}
+UNIT
+  cat >"$UNIT_DIR/review-seat.timer" <<UNIT
+[Unit]
+Description=review-seat keeper — every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=20s
+Unit=review-seat.service
+
+[Install]
+WantedBy=timers.target
+UNIT
+  systemctl --user daemon-reload 2>/dev/null || true
+  systemctl --user enable --now herdr-server.service >/dev/null 2>&1 || printf 'review-seat: WARNING — herdr-server.service did not start (a server may already be running; the guard sleeps in that case)\n' >&2
+  systemctl --user enable --now review-seat.timer >/dev/null 2>&1 || die "the keeper timer could not be enabled ($UNIT_DIR/review-seat.timer)"
+  printf 'units[4]{herdr_server,keeper_timer,clone,helm}:\n  "%s","%s","%s","%s"\n' \
+    "$(systemctl --user is-active herdr-server.service 2>/dev/null | head -1)" \
+    "$(systemctl --user is-active review-seat.timer 2>/dev/null | head -1)" \
+    "$clone" "$([ -n "$primary" ] && echo primary || echo seat)"
+}
+unit_status() {
+  printf 'units[3]{herdr_server,keeper_timer,next}:\n  "%s","%s","%s"\n' \
+    "$(systemctl --user is-active herdr-server.service 2>/dev/null | head -1)" \
+    "$(systemctl --user is-active review-seat.timer 2>/dev/null | head -1)" \
+    "$(systemctl --user list-timers review-seat.timer --no-pager 2>/dev/null | sed -n '2p' | awk '{print $1, $2, $3}')"
+}
+uninstall_units() {
+  systemctl --user disable --now review-seat.timer >/dev/null 2>&1 || true
+  rm -f "$UNIT_DIR/review-seat.service" "$UNIT_DIR/review-seat.timer"
+  systemctl --user daemon-reload 2>/dev/null || true
+  printf 'units[2]{keeper_timer,state}:\n  "%s","removed (herdr-server.service left in place)"\n' "$UNIT_DIR/review-seat.timer"
+}
+
+case "${1-}" in
+  --install-unit) shift || true; PRIMARY_ARG=""
+                  while [ $# -gt 0 ]; do case "$1" in --primary) PRIMARY_ARG=1; shift ;; --clone) CLONE_ARG="${2:-}"; shift 2 ;; *) shift ;; esac; done
+                  install_units "${CLONE_ARG:-$DEFAULT_CLONE}" "$PRIMARY_ARG"; exit 0 ;;
+  --unit-status)  unit_status; exit 0 ;;
+  --uninstall-unit) uninstall_units; exit 0 ;;
+esac
 
 ACTION="${1:-status}"; shift || true
 case "$ACTION" in
