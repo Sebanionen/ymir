@@ -90,7 +90,7 @@ bin[807]{file,does,kind,verdict,disposition,callers,lines}:
   "channel_todo.py","bin/time/snotra/channel_todo.py -> systems/snotra/services/cron/channel_todo.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "check-row.md","One measured row","data","wired","keep",2,10
   "checks.sh","checks.sh — run this repository's own cheap checks, whatever language it is written in.","tool","wired","keep",3,72
-  "ci-verify.sh","ci-verify.sh — what CI must prove, in one command, for BOTH hosts.","tool","tested","keep",2,139
+  "ci-verify.sh","ci-verify.sh — what CI must prove, in one command, for BOTH hosts.","tool","tested","keep",2,145
   "clickup_adapter.py","bin/time/snotra/clickup_adapter.py -> systems/snotra/services/cron/clickup_adapter.py — RETIRED SHIM (plan 129)","tool","wired","keep",0,10
   "clients.sh","clients.sh — the clients register: load, validate, and check.","tool","tested","keep",1,197
   "codex-plugin-install.mjs","// Valknut's Codex door.","data","wired","keep",3,125
@@ -134,14 +134,14 @@ bin[807]{file,does,kind,verdict,disposition,callers,lines}:
   "ear.sh","bin/assistant/ear.sh -> systems/skirnir/services/ear.sh — RETIRED SHIM (plan 149, 2026-10-31); execs the new door and says so.","tool","wired","keep",0,16
   "editor-place.sh","editor-place.sh — the editor is UNMANAGED by default: it opens on the","tool","wired","keep",3,223
   "eindri-acclaim-silent.sh","eindri-acclaim-silent.sh — action half of the Eindri silence bridge.","tool","wired","keep",1,57
-  "eindri-acclaim.sh","eindri-acclaim.sh — action half of the Eindri→Brokk wake bridge.","tool","tested","keep",6,160
+  "eindri-acclaim.sh","eindri-acclaim.sh — action half of the Eindri→Brokk wake bridge.","tool","tested","keep",6,184
   "eindri-arm.sh","eindri-arm.sh — the Eindri's own arm (plan 42, the automation law).","tool","wired","keep",1,128
   "eindri-checkpoint.sh","eindri-checkpoint.sh — a herdr worker's durable checkpoint, so a dead pane resumes.","tool","wired","keep",3,105
   "eindri-control.sh","eindri-control.sh — the CONTROL plane: allowlisted lifecycle verbs for a","tool","wired","keep",1,40
   "eindri-dispatch.sh","eindri-dispatch.sh — the errand loop: ONE command per errand (plan 42","tool","wired","keep",1,461
   "eindri-handoff.sh","eindri-handoff.sh — the handoff failsafe.","tool","wired","keep",4,202
   "eindri-heartbeat.sh","eindri-heartbeat.sh — condition half of the Eindri silence bridge.","tool","wired","keep",3,106
-  "eindri-liveness.sh","eindri-liveness.sh — the sweep's second question: is the pane still a worker?","tool","wired","keep",1,213
+  "eindri-liveness.sh","eindri-liveness.sh — the sweep's second question: is the pane still a worker?","tool","wired","keep",1,248
   "eindri-review-spawn.sh","eindri-review-spawn.sh — the review spine.","tool","tested","keep",2,335
   "eindri-role.sh","eindri-role.sh — the right smith for the right metal.","tool","wired","keep",2,117
   "eindri-route.sh","eindri-route.sh — which machine should host an errand, by its nature?","tool","tested","keep",0,108

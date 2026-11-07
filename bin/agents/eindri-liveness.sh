@@ -66,6 +66,36 @@ last_status() {  # <id> — the seat's last claim, verbatim
   tail -n1 "$STATE/$1.status" 2>/dev/null || true
 }
 
+# How long the seat has stood. `launched` is the epoch the launch wrote into the
+# meta, so this needs nothing beyond a subtraction.
+seat_age_s() {  # <id> — seconds since launch; empty when the meta carries no epoch
+  local launched
+  launched="$(meta_field "$STATE/$1.meta" launched)"
+  case "$launched" in ''|*[!0-9]*) return 1 ;; esac
+  printf '%s' "$(( $(date +%s) - launched ))"
+}
+
+# A DEAD verdict — unless the seat is still settling.
+#
+# Why this exists (2026-11-06): an errand launched at 23:10:11Z was judged dead at
+# 23:14:10Z, 3m59s later, because herdr reported its agent `done` — and `done`
+# means *idle between turns*, not *finished*. The agent was mid-errand, working,
+# and the false verdict then cost the record its correction: the sweep had already
+# spent the once-only `dead` mark, so the worker's own terminal word could not heal
+# the report or raise a wake. A quiet pane is evidence of quiet; only distance from
+# the launch makes it evidence of death. Inside the grace the verdict is SETTLING,
+# which is not DEAD: it corrects nothing and wakes nobody.
+verdict_dead() {  # <id> <evidence>
+  local id=$1 ev=$2 grace age
+  grace="${YMIR_LIVENESS_GRACE_MIN:-10}"
+  case "$grace" in ''|*[!0-9]*) grace=10 ;; esac
+  if age="$(seat_age_s "$id")" && [ "$age" -ge 0 ] && [ "$age" -lt $((grace * 60)) ]; then
+    printf 'SETTLING\t%s — the seat is %ss old, inside the %s min grace\n' "$ev" "$age" "$grace"
+    return 0
+  fi
+  printf 'DEAD\t%s\n' "$ev"
+}
+
 seats() {  # every id with a meta record, or the ones the caller named
   local f
   if [ $# -gt 0 ]; then printf '%s\n' "$@"; return 0; fi
@@ -117,7 +147,7 @@ judge() {  # <id> -> "verdict\tevidence"
     fi
     case "$cmd" in
       *bash|*zsh|*sh|*fish|*nu)
-        printf 'DEAD\tthe pane holds a shell (%s), not an agent\n' "$(printf '%s' "$cmd" | head -1)"; return 0 ;;
+        verdict_dead "$id" "the pane holds a shell ($(printf '%s' "$cmd" | head -1)), not an agent"; return 0 ;;
       *)
         printf 'ALIVE\tthe pane is running %s\n' "$(printf '%s' "$cmd" | head -1)"; return 0 ;;
     esac
@@ -131,16 +161,16 @@ judge() {  # <id> -> "verdict\tevidence"
     state="$(printf '%s' "$hit" | cut -f2)"
     case "$state" in
       done|blocked|crashed|exited|error|failed)
-        printf 'DEAD\tthe agent in %s is %s and left no terminal line\n' "$(printf '%s' "$hit" | cut -f1)" "$state"; return 0 ;;
+        verdict_dead "$id" "the agent in $(printf '%s' "$hit" | cut -f1) is $state and left no terminal line"; return 0 ;;
       *)
         printf 'ALIVE\tagent %s in %s (%s)\n' "$state" "$(printf '%s' "$hit" | cut -f1)" "$claim"; return 0 ;;
     esac
   fi
   if herdr_pane_exists "$pane"; then
-    printf 'DEAD\tthe pane %s holds no agent — a shell, an exit or a crash where a worker should stand\n' "$pane"
+    verdict_dead "$id" "the pane $pane holds no agent — a shell, an exit or a crash where a worker should stand"
     return 0
   fi
-  printf 'DEAD\tthe pane %s is gone, and no agent stands in %s\n' "$pane" "${wt:-the worktree}"
+  verdict_dead "$id" "the pane $pane is gone, and no agent stands in ${wt:-the worktree}"
 }
 
 DEAD_FOUND=0
@@ -162,6 +192,11 @@ judge_rows() {  # the loop `check` and `sweep` share
 correct() {  # <id> <evidence> — write the truth, then hand it to Gná, ONCE
   local id=$1 evidence=$2 claim ts line kind commits
   claim="$(last_status "$id")"
+  # A worker's own word is never overwritten by an inference: if the seat finished
+  # between the verdict and this write, the finish stands and nothing is appended.
+  case "$claim" in
+    done:*|needs-decision:*|paused:*) return 0 ;;
+  esac
   ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   # A seat that FINISHED is not a seat that failed. Measured 2026-11-05: an errand
   # committed its work and stopped without the terminal `eindri-acclaim`; the sweep
@@ -182,7 +217,7 @@ print(f"last checkpoint: {d.get(chr(34)+chr(115)+chr(116)+chr(101)+chr(112)+chr(
   if [ "$kind" = finished ]; then
     line="done: finished with $commits commit(s) and no terminal word — ${cp:-no checkpoint saved}; run eindri-acclaim to close it"
   else
-    line="failed: the pane held no agent — $evidence (status claimed: ${claim})${cp:+ · $cp}"
+    line="failed: [liveness] the pane held no agent — $evidence (status claimed: ${claim})${cp:+ · $cp}"
   fi
   printf '%s\n' "$line" >>"$STATE/$id.status"
   printf 'liveness=dead corrected=%s evidence=%s\n' "$ts" "$evidence" >>"$STATE/$id.meta" 2>/dev/null || true

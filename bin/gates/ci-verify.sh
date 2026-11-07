@@ -60,6 +60,12 @@ fi
 gate ward        "the tree wards (runtime, defaults)"   bash "$ROOT/bin/gates/guards.sh"
 gate dead-code-paths "the dead-code ward judges normal and Yggdrasil checkouts" \
      python3 "$ROOT/tests/test_dead_code_worktrees.py"
+# 2026-11-06 — the sweep judged a LIVE errand dead 3m59s after launch, because herdr
+# reported its agent `done` and `done` means idle, not finished. The grace is what makes
+# a quiet pane evidence of quiet rather than evidence of death; this is the proof it bites
+# both ways (SETTLING inside the window, DEAD past it).
+gate liveness-grace "the sweep never calls a live seat dead inside the settling grace" \
+     bash "$ROOT/tests/test_eindri_liveness_grace.sh"
 # RULES/04 — the public tree carries TEMPLATES and LOGIC. The ward is in the list above; this is
 # the proof that it BITES (a ward never seen to refuse is decoration, and this one wore that coat).
 gate public-data "RULES/04 — a secret, a name, a topology or a mailbox is refused, and the ward is proved to refuse" \
