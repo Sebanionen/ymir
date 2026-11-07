@@ -8,6 +8,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { z } from "zod";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { ledgerPlans, ledgerLine, ledgerRefusal } from "./ledger.mjs";
 
 const DB = process.env.SKULD_PGHOST || "127.0.0.1";
 const ROLE = process.env.SKULD_PGROLE || "skuld";
@@ -37,6 +41,12 @@ function blockedResult(agent) {
   const b = blockStatus(agent);
   return b ? `blocked: ${b.split("|")[0]} — an agent that does not make tickets and plans correctly is blocked; the operator clears it (blocks/clear)` : null;
 }
+// WHICH VERBS THE BLOCK ACTUALLY STOPS — measured 2026-11-06, because the house believed "every
+// write" and that was wrong: the block guards THREE verbs, `tickets_create`, `tickets_update` and
+// `namespaces_create` (the ones that call this helper). `plans_create`, `plans_update` and
+// `comments_post` are NOT guarded, which is why an empty `plans` table was never the block's
+// doing — nobody had ever called them. A gate that claims more than it does is worse than no
+// gate, so the list is named here and in the plan (210 §10).
 function guarded(name, args) {
   const agent = agentOf();
   const bad = blockedResult(agent);
@@ -134,9 +144,14 @@ server.registerTool("plans_update", { title: "Approve or ship a plan", descripti
   const r = q(`UPDATE plans SET status = :'st', updated_at = now() WHERE id = :'id' RETURNING id`, { id: String(a.id), st: to });
   return r.ok ? { content: [{ type: "text", text: `plan #${r.out} ${to}` }] } : { content: [{ type: "text", text: "store error" }], isError: true };
 });
-server.registerTool("plans_pending", { title: "The awaiting plans", description: "The plans that wait the Allfather's approval.", inputSchema: {} }, async () => {
-  const r = q(`SELECT id, namespace, title, status FROM plans WHERE status IN ('drafted','active') ORDER BY id`);
-  return { content: [{ type: "text", text: rows(r.out).join("\n") || "(no plans await)" }] };
+server.registerTool("plans_pending", {
+  title: "The awaiting plans",
+  description: "The plans whose own first lines say they are proposed, drafted, open or awaiting his word.",
+  inputSchema: {}
+}, async () => {
+  const waiting = ledgerPlans().filter(r => /proposed|drafted|draft|open|awaiting/i.test(r.status));
+  if (!waiting.length) return { content: [{ type: "text", text: "(no plans await)" }] };
+  return { content: [{ type: "text", text: `plans_awaiting[${waiting.length}]{number,namespace,status,file,title}:\n` + waiting.map(r => "  " + ledgerLine(r)).join("\n") }] };
 });
 
 server.registerTool("namespaces_list", { title: "The projects", description: "The registered projects (the slugs and their names) — the pickers fill from here.", inputSchema: {} }, async () => {
@@ -162,29 +177,34 @@ server.registerTool("namespaces_create", {
   return { content: [{ type: "text", text: `registered: ${rows(r.out).join(" ") || name}` }] };
 });
 
-server.registerTool("plans_create", { title: "Cut a plan", description: "A title (6+), a body (40+), its tickets[] must exist. The law is on.",
+server.registerTool("plans_create", {
+  title: "Cut a plan — refused here, and told where it goes",
+  description: "The ledger is a shelf of files; this door reads it and refuses to grow a second store. The refusal names the one door that writes a plan.",
   inputSchema: { namespace: z.string(), title: z.string(), body: z.string(), tickets: z.array(z.number()).optional() }
+}, async () => ({ content: [{ type: "text", text: ledgerRefusal() }], isError: true }));
+server.registerTool("plans_list", {
+  title: "The plans",
+  description: "Every plan on the ledger's shelves, read from the FILES (the truth), filtered by namespace.",
+  inputSchema: { namespace: z.string().optional() }
 }, async (a) => {
-  const agent = agentOf();
-  if (blockStatus(agent)) return { content: [{ type: "text", text: "blocked: " + blockStatus(agent) }], isError: true };
-  const ns = String(a.namespace || "");
-  if (!rows(q(`SELECT 1 FROM namespaces WHERE name = :'n'`, { n: ns }).out).length) return { content: [{ type: "text", text: "namespace not registered" }], isError: true };
-  if (String(a.title).trim().length < 6) { violation(agent, "plans_create refused: title"); return { content: [{ type: "text", text: "refused: a plan needs a real title (6+ chars)" }], isError: true }; }
-  if (String(a.body).trim().length < 40) { violation(agent, "plans_create refused: body"); return { content: [{ type: "text", text: "refused: a plan needs a real body (40+ chars)" }], isError: true }; }
-  const ts = (a.tickets || []).map(String);
-  if (ts.length) { const found = rows(q(`SELECT id FROM tickets WHERE namespace = :'n' AND id = ANY (string_to_array(:'ts', ',')::bigint[])`, { n: ns, ts: ts.join(",") }).out).length; if (found !== ts.length) return { content: [{ type: "text", text: `plan tickets must exist (${found}/${ts.length})` }], isError: true }; }
-  const r = q(`INSERT INTO plans (namespace, title, body, tickets, status) VALUES (:'n', :'t', :'d', string_to_array(:'ts', ',')::bigint[], 'active') RETURNING id`, { n: ns, t: String(a.title), d: String(a.body), ts: ts.join(",") });
-  return r.ok ? { content: [{ type: "text", text: `plan #${r.out} created in ${ns}` }] } : { content: [{ type: "text", text: "store error" }], isError: true };
+  let plans = ledgerPlans();
+  if (a.namespace) plans = plans.filter(r => r.ns === String(a.namespace) || r.ns.startsWith(String(a.namespace) + "/"));
+  if (!plans.length) {
+    return { content: [{ type: "text", text: `(no plans) — no plan shelf answered under ${path.join(LEDGER_HOME, "svartalfaheim")}; an unreadable home is not an empty shelf` }], isError: true };
+  }
+  return { content: [{ type: "text", text: `plans[${plans.length}]{number,namespace,status,file,title}:\n` + plans.map(r => "  " + ledgerLine(r)).join("\n") }] };
 });
-server.registerTool("plans_list", { title: "The plans", description: "The roadmap rows with their body-fragments.", inputSchema: { namespace: z.string().optional() } }, async (a) => {
-  const f = a.namespace ? "WHERE namespace = :'n'" : ""; const v = a.namespace ? { n: String(a.namespace) } : {};
-  const r = q(`SELECT id, namespace, status, tickets, title, LEFT(body, 140), created_at FROM plans ${f} ORDER BY id DESC LIMIT 100`, v);
-  return { content: [{ type: "text", text: rows(r.out).join("\n") || "(no plans)" }] };
-});
-server.registerTool("plans_get", { title: "One plan", description: "The full plan row.", inputSchema: { id: z.number() } }, async (a) => {
-  const r = q(`SELECT id, namespace, title, body, status, tickets, created_at FROM plans WHERE id = :'id'`, { id: String(a.id) });
-  const line = rows(r.out)[0];
-  return line ? { content: [{ type: "text", text: line }] } : { content: [{ type: "text", text: `no plan #${a.id}` }], isError: true };
+server.registerTool("plans_get", {
+  title: "One plan",
+  description: "One plan from the ledger: its file, its headline, its status, and its opening body.",
+  inputSchema: { id: z.number() }
+}, async (a) => {
+  const hit = ledgerPlans().filter(r => r.num === Number(a.id));
+  if (!hit.length) return { content: [{ type: "text", text: `no plan #${a.id} on the ledger's shelves` }], isError: true };
+  const r = hit[0];
+  let body = "";
+  try { body = fs.readFileSync(r.file, "utf8").split("\n").slice(0, 40).join("\n"); } catch { body = "(unreadable)"; }
+  return { content: [{ type: "text", text: `${r.num}|${r.ns}|${r.status}|${r.rel}\n\n${body}` }] };
 });
 
 server.registerTool("comments_list", { title: "The thread", description: "A ticket's comments.", inputSchema: { id: z.number() } }, async (a) => {
@@ -198,9 +218,22 @@ server.registerTool("comments_post", { title: "Carve a comment", description: "A
   return r.ok ? { content: [{ type: "text", text: `comment #${r.out} carved` }] } : { content: [{ type: "text", text: "store error" }], isError: true };
 });
 
-server.registerTool("blocks_status", { title: "Your block", description: "The calling agent's ledger state.", inputSchema: {} }, async () => {
-  const b = blockStatus(agentOf());
-  return { content: [{ type: "text", text: b ? `blocked: ${b.split("|")[0]}` : `clean: ${agentOf()}` }] };
+server.registerTool("blocks_status", {
+  title: "Your block — named, with the remedy on the same line",
+  description: "The calling agent's ledger state: clean, or blocked with the reason, which verbs it stops, and who may lift it.",
+  inputSchema: {}
+}, async () => {
+  const agent = agentOf();
+  const b = blockStatus(agent);
+  if (!b) return { content: [{ type: "text", text: `clean: ${agent} — no block stands` }] };
+  const reason = b.split("|")[0];
+  return {
+    content: [{ type: "text", text:
+      `blocked[1]{agent,reason,stops,cleared_by}:\n`
+      + `  "${agent}","${reason}","tickets_create · tickets_update · namespaces_create","the operator (SKULD_OPERATOR) — blocks_clear, never the agent itself"\n`
+      + `blocked: ${reason} — three verbs are refused until the operator clears it; plans and comments are not among them.` }],
+    isError: true
+  };
 });
 server.registerTool("blocks_clear", { title: "The operator's key", description: "Only SKULD_OPERATOR may lift.", inputSchema: { agent: z.string() } }, async (a) => {
   if (agentOf() !== OPER) return { content: [{ type: "text", text: `the operator's door only` }], isError: true };
