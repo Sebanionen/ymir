@@ -59,6 +59,10 @@ refuse() { printf 'review-seat: REFUSED — %s\n' "$*" >&3; exit 3; }
 # The honest probe is the SERVER answering, not a variable: a herdr CLI reaches its server from
 # a pane, from a timer and over ssh, and refusing on HERDR_ENV alone would refuse every one of
 # those while the server stands (RULES/25 — probe, never assume).
+<<<<<<< HEAD
+=======
+herdr_ok() { command -v herdr >/dev/null 2>&1 && herdr agent list >/dev/null 2>&1; }
+>>>>>>> c33aa3ca (forge: the seat probes the herdr server, and a machine with no live primary may give the review seat the helm)
 need_herdr() {
   command -v herdr >/dev/null 2>&1 \
     || refuse "herdr is not installed on this seat — the reviewer's seat lives in herdr"
