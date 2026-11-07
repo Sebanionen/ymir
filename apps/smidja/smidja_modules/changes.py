@@ -51,6 +51,8 @@ def resolve_base(ref: str) -> BaseRef:
 
 def capture(run, params: ChangeCapture) -> ChangeSet:
     """Diff the working tree against the resolved base and persist the evidence."""
+    if run.replaying:
+        return run.resume_plan.changes_for(run.replaying_phase)
     base = resolve_base(params.base)
     files = git_helper.diff_files(base.commit)
     untracked = git_helper.untracked_files() if params.include_untracked else []

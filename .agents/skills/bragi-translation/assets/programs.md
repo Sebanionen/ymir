@@ -11,7 +11,7 @@ before translation work — it is the "how" behind the skill's router.
 ### Where it lives
 
 ```
-heimdall (192.168.68.110, user zerwiz):
+heimdall (192.0.2.110, user zerwiz):
   binary:   ~/whisper.cpp/build/bin/whisper-cli          (also: .../main, .../whisper-bench, .../whisper-vad-speech-segments)
   models:   ~/whisper.cpp/models/ggml-{tiny,base,small,medium}.en.bin
   GPU:      <gpu> (16 GB, CUDA 8.6) — whisper-cli finds it automatically

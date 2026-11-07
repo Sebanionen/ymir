@@ -87,11 +87,32 @@ fi
 #    is blocked and needs an answer, not a review).
 kind="reported"
 detail=""
+corrected=0
 if [ -f "$STATE/eindri-questions/$AGENT.md" ]; then
   kind="QUESTION"
   detail="QUESTION at state/eindri-questions/$AGENT.md — answer with bin/agents/eindri-send.sh $AGENT \"…\""
 elif [ -f "$STATE/eindri-reports/$AGENT.md" ]; then
-  detail="report filed at state/eindri-reports/$AGENT.md"
+  # The shelf may be the SWEEP's snapshot rather than the worker's word: a liveness
+  # pass files "# <id> — finished without a terminal word" when it finds a quiet
+  # pane. That was a GUESS, and a guess must not outlive the evidence that corrects
+  # it — measured 2026-11-06, when a live errand was judged dead at 3m59s, the sweep
+  # filed its snapshot, the once-only `report` mark was spent on it, and the worker's
+  # own terminal word could neither heal the shelf nor raise a wake. So: a shelf
+  # carrying the sweep's header and nothing better is replaced by the terminal word,
+  # and the correction travels as its own kind so the spent `report` cannot mute it.
+  if grep -q ' — finished without a terminal word' "$STATE/eindri-reports/$AGENT.md" 2>/dev/null; then
+    last="$(tail -n1 "$STATE/$AGENT.status" 2>/dev/null || true)"
+    case "$last" in
+      done:*|failed:*)
+        printf '%s\n' "$last" >"$STATE/eindri-reports/$AGENT.md"
+        detail="report healed from the terminal status line, replacing the sweep's snapshot (state/eindri-reports/$AGENT.md)"
+        corrected=1 ;;
+      *)
+        detail="report filed at state/eindri-reports/$AGENT.md (the sweep's snapshot; no terminal word yet)" ;;
+    esac
+  else
+    detail="report filed at state/eindri-reports/$AGENT.md"
+  fi
 else
   # No shelf. A terminal status line IS a report (the worker wrote one shelf and
   # died before the other): heal the report shelf from it, so the two roads read
@@ -119,11 +140,14 @@ fi
 #    the same road: whoever arrives first writes the wake, the other stands down.
 wake_kind=report
 [ "$kind" = "QUESTION" ] && wake_kind=question
+[ "$corrected" = 1 ] && wake_kind=corrected
 if eindri_is_delivered "$AGENT" "$wake_kind"; then
   detail="$detail (already delivered — no duplicate wake)"
 else
   if [ "$kind" = "QUESTION" ]; then
     eindri_queue_wake "eindri $AGENT QUESTION: $STATE/eindri-questions/$AGENT.md — answer with bin/agents/eindri-send.sh $AGENT \"…\""
+  elif [ "$corrected" = 1 ]; then
+    eindri_queue_wake "eindri $AGENT CORRECTED: the sweep's snapshot was a guess — $detail"
   else
     eindri_queue_wake "eindri $AGENT reported: $detail"
   fi

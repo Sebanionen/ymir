@@ -67,6 +67,12 @@ fi
 REMOTE="${REMOTE:-origin}"
 BRANCH="${BRANCH:-main}"
 
+# Rule 45 — an update begins by asking whether the base it will mend is the current one.
+# Fetches and reports; never rebases (that is the caller's act) and never blocks a check run.
+if [ -x "$ROOT/bin/gates/checks/fresh-base-check.sh" ]; then
+  bash "$ROOT/bin/gates/checks/fresh-base-check.sh" 2>&1 | head -1
+fi
+
 declare -a ROWS; NUDGE_IDS=""
 reread=no
 changed_surface=0
@@ -149,6 +155,14 @@ if [ -x "$SCRIPT_DIR/../agents/name-registry.sh" ]; then
 fi
 if [ -x "$SCRIPT_DIR/../agents/seat-identity.sh" ]; then
   printf 'seat-identity: %s\n' "$("$SCRIPT_DIR/../agents/seat-identity.sh" --check "${YMIR_HOST:-$(hostname -s)}" 2>&1 | tail -1)"
+  # the seat's own name rides into every harness AGENTS.md — never the shared Brokk
+  if [ -x "$SCRIPT_DIR/../seat/seat-surface.sh" ]; then
+    "$SCRIPT_DIR/../seat/seat-surface.sh" >/dev/null 2>&1 && printf 'seat-surface: the harness reads this seat'"'"'s own name\n'
+  fi
+  # the woven documents are answered by a merge driver — an update seats it too
+  if [ -x "$SCRIPT_DIR/../records/weave-features.sh" ]; then
+    "$SCRIPT_DIR/../records/weave-features.sh" --install >/dev/null 2>&1 && printf 'weave-driver: the woven documents merge by re-weaving\n'
+  fi
 fi
 if [ -n "${NUDGE_IDS# }" ]; then printf 'nudge-eindri-homes: %s\n' "${NUDGE_IDS# }"; else printf 'nudge-eindri-homes: none\n'; fi
 
@@ -159,11 +173,19 @@ if [ -n "${NUDGE_IDS# }" ]; then printf 'nudge-eindri-homes: %s\n' "${NUDGE_IDS#
 # Heal this home forward (structure migrations) after every update.
 [ -x "$SCRIPT_DIR/../engine/ymir-migrate.sh" ] && "$SCRIPT_DIR/../engine/ymir-migrate.sh" apply >/dev/null 2>&1 || true
 # the hound's units are rendered from the repo, so an update re-seats them
-[ -x "$SCRIPT_DIR/../ward/garmr.sh" ] && "$SCRIPT_DIR/../ward/garmr.sh" refresh >/dev/null 2>&1 || true
+# A refresh that waits on a console, a polkit prompt or a missing unit must not
+# stall the whole update: bound it, detach it, and never let it hold our fds.
+if [ -x "$SCRIPT_DIR/../ward/garmr.sh" ]; then
+  setsid timeout -k 2 "${YMIR_GROA_GARMR_TIMEOUT:-15}" \
+    "$SCRIPT_DIR/../ward/garmr.sh" refresh </dev/null >/dev/null 2>&1 || true
+fi
 
 # Gróa's own body is rendered from the repo too: an update re-seats her, so the
 # features of the new tree are the features she runs. Never fatal.
-[ -x "$SCRIPT_DIR/groa-agent/seat.sh" ] && "$SCRIPT_DIR/groa-agent/seat.sh" --quiet >/dev/null 2>&1 || true
+if [ -x "$SCRIPT_DIR/groa-agent/seat.sh" ]; then
+  setsid timeout -k 2 "${YMIR_GROA_SEAT_TIMEOUT:-20}" \
+    "$SCRIPT_DIR/groa-agent/seat.sh" --quiet </dev/null >/dev/null 2>&1 || true
+fi
 
 # Eir checks after every update, so a desktop that cannot open is REPORTED and
 # never silently dead (P8, 2026-09-24). The update is never blocked on a
@@ -266,6 +288,19 @@ if [ -x "$SCRIPT_DIR/../seat/valknut-load.sh" ]; then
     printf 'FAIL — valknut-load could not seat the seat; this update is NOT complete.\n' >&2
     printf '      run bin/seat/valknut-load.sh --status, then bin/seat/verify-seat.sh\n' >&2
     seat_failed=1
+  fi
+  # The Gná arm's session side (plan 177 H4): re-seated on every update, so a harness that HAS a
+  # hook surface is never left unarmed by an update that moved the code under its feet. This block is
+  # in the APPLY path only (a dry run writes nothing, and this door exits before it in --check). A
+  # host without Hermes is a named skip, never a silent pass (RULES/25).
+  if [ -x "$SCRIPT_DIR/../pi/arm.sh" ]; then
+    if ! command -v hermes >/dev/null 2>&1; then
+      printf 'arm: no Hermes on this host — no session hook to seat\n'
+    elif bash "$SCRIPT_DIR/../pi/arm.sh" hook hermes --install >/dev/null 2>&1; then
+      printf 'arm: hermes session hook re-seated (the session-start digest has a door)\n'
+    else
+      printf 'arm: hermes session hook could not be seated — run bin/pi/arm.sh hook hermes --install\n'
+    fi
   fi
 fi
 

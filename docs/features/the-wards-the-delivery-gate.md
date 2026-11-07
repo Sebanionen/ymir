@@ -84,3 +84,30 @@ Wards also run themselves:
 | `fixes-guard: no fix note in this range` | Add a note under `docs/fixes/<component>/` for THIS push range (`bin/gates/fixes.sh record --component=…`). |
 | A pre‑commit refuses | The same wards run on commit — fix it before committing, or you are committing a leak. |
 | CI fails but the push passed | CI runs the same `guards.sh`; the difference is the tree — re‑run it locally and read the FAIL. |
+
+## The ship door — the PR is what ships, not the push (2026-11-06)
+
+A branch push is how work travels; a pull request is how work ships. Those are two doors, and the
+house now names them apart.
+
+A **smith** — a worker agent — pushes its own branch, under a namespaced name like `eins/<id>`, and
+writes a handoff packet carrying the branch and its head sha. It may never open a pull request and
+may never merge. The **reviewer** fetches the branch, refuses it if the fetched sha is not the sha in
+the packet, runs the rules floor and the tests on that commit, and only then opens the PR and merges.
+
+Two doors enforce it. `branch-guard` keeps the only push refusal that survives: a push that lands on
+`main`. `pr-ship-guard` judges every open pull request by its **author**: a PR opened by a login in
+the smith registry is refused, and the refusal names the PR, its head and the way back.
+
+To name your smiths, copy `hodd/identity/smiths.txt.example` to
+`$YMIR_HOME/hodd/identity/smiths.txt` and list one GitHub login per line. With no registry the ward
+skips and says so — never a silent pass.
+
+```
+bash bin/gates/guards/pr-ship-guard.sh --author <login>   # judge one login, no network
+bash bin/gates/guards/pr-ship-guard.sh check              # judge every open PR
+```
+
+**If it does not work:** a refusal naming a login means a worker opened a PR — close it and let the
+reviewer open its own from the pushed branch. A `SKIP` line is not a failure; it names what is
+missing (no registry, no `gh`, no network) and the gate resumes once that exists.

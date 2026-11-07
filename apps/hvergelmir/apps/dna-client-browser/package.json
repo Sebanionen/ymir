@@ -1,0 +1,29 @@
+{
+  "name": "dna-client-browser",
+  "private": true,
+  "description": "Durable News Agent web client: Vue app behind a token-holding hub",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx hub/src/main.ts --dev",
+    "start": "tsx hub/src/main.ts",
+    "build": "vue-tsc --noEmit -p fe/tsconfig.json && tsc -p hub/tsconfig.json && vite build --config fe/vite.config.ts",
+    "check": "vue-tsc --noEmit -p fe/tsconfig.json && tsc -p hub/tsconfig.json",
+    "lint": "oxlint fe hub tests",
+    "test": "node tests/ui-faux.mjs"
+  },
+  "dependencies": {
+    "@dna/durable-agent": "*",
+    "@dna/sdk": "*",
+    "@lucide/vue": "1.55.0",
+    "dompurify": "3.4.17",
+    "express": "5.3.0",
+    "marked": "18.1.1",
+    "vue": "3.5.43"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@vitejs/plugin-vue": "6.0.10",
+    "vite": "8.3.2",
+    "vue-tsc": "3.3.13"
+  }
+}

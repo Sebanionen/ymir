@@ -65,6 +65,10 @@ cat >"\$refs"
 # origin/main skips cleanly rather than failing every push.
 if git rev-parse -q --verify origin/main >/dev/null 2>&1; then
   "\$ROOT/bin/no-delete-guard.sh" --base origin/main || exit 1
+  # Rule 04/39 — a commit's author line is DATA IN THIS REPOSITORY, and this repository is public.
+  # Measured 2026-11-03: the operator's personal mailbox was the author of 1,236 commits, because
+  # git records whatever `user.email` says and nothing watched it. This refusal is the watch.
+  "\$ROOT/bin/gates/guards/identity-guard.sh" --base origin/main || exit 1
 fi
 "\$ROOT/bin/gates/branch-current.sh" check || exit 1
 EOF
@@ -77,39 +81,9 @@ EOF
 esac
 
 # ── the judgement ────────────────────────────────────────────────────────────
-# The range: from stdin when a hook calls us, else the branch against its base.
-refs="$(cat 2>/dev/null || true)"
-head_sha=""; remote_sha=""
-saw_ref=0; delete_only=1; only_tags=1
-if [ -n "$refs" ]; then
-  while read -r _local local_sha remote_ref remote_sha2; do
-    [ -n "${local_sha:-}" ] || continue
-    saw_ref=1
-    # A TAG IS A POINTER, NOT NEW CONTENT. Its commits were judged when they landed
-    # on a branch; a tag push therefore has no range of its own, and the range this
-    # gate computed from it (`origin/main..<an old tip>`) could never contain the note
-    # it demanded. Three archive-tag pushes were refused tonight while the remedy
-    # the gate printed was already committed (2026-10-24).
-    case "$remote_ref" in refs/tags/*) ;; *) only_tags=0 ;; esac
-    case "$local_sha" in 000000*) continue ;; esac
-    delete_only=0
-    head_sha="$local_sha"; remote_sha="${remote_sha2:-}"
-  done <<<"$refs"
-fi
-if [ "$saw_ref" = 1 ] && [ "$only_tags" = 1 ]; then
-  printf 'fixes-guard[1]{gate,result}:\n  "push","ok — a tag is a pointer; the commits it names were judged when they landed on a branch"\n'
-  exit 0
-fi
-# A branch DELETION delivers no content, so there is nothing to record. Git feeds
-# a delete as an all-zero local sha; a push whose every ref is a delete is a
-# cleanup, and a gate that judges a push's CONTENT must not demand a fix note for
-# it (found 2026-10-18, deleting a merged branch after #349 — it needed
-# --no-verify, and a gate that must be routinely overridden is a gate nobody
-# trusts). Landing on, or deleting, a PROTECTED branch is branch-guard's job.
-if [ "$saw_ref" = 1 ] && [ "$delete_only" = 1 ]; then
-  printf 'fixes-guard[1]{gate,result}:\n  "push","ok — a branch deletion carries no content to record"\n'
-  exit 0
-fi
+# Judge each outgoing branch independently; a later ref cannot hide an earlier one.
+judge_range() {
+  local head_sha="${1:-}" remote_sha="${2:-}" require_record="${3:-0}" base="" range notes touched covered count n c f
 [ -n "$head_sha" ] || head_sha="$(git rev-parse HEAD)"
 
 base=""
@@ -122,7 +96,10 @@ else
     [ -n "$base" ] && break
   done
 fi
-[ -n "$base" ] || { printf 'fixes-guard[1]{gate,result}:\n  "push","no base to compare — first push of a branch is judged on its own"\n'; exit 0; }
+if [ -z "$base" ] && [ "$require_record" = 1 ]; then
+  base="$(git hash-object -t tree --stdin </dev/null)" || return 1
+fi
+[ -n "$base" ] || { printf 'fixes-guard[1]{gate,result}:\n  "push","no base to compare — first push of a branch is judged on its own"\n'; return 0; }
 
 range="${base}..${head_sha}"
 # The note's name is <version>-<slug>.md, and a version is whatever bin/gates/fixes.sh was
@@ -130,15 +107,18 @@ range="${base}..${head_sha}"
 # it. Accepting only a digit-first version made the gate blind to those notes and
 # refused every push that carried one (2026-09-25) — the guard demanded a format its
 # own writer does not require. A note the gate cannot SEE is a note it cannot judge.
-notes="$(git diff --name-only --diff-filter=A "$range" 2>/dev/null | grep -E '^docs/fixes/[a-z]+/([0-9]|unversioned-)[^/]*\.md$' || true)"
-touched="$(git diff --name-only "$range" 2>/dev/null | grep -v '^docs/fixes/' | grep -v '^CHANGELOG' || true)"
+# A MERGE IS NOT A CHANGE: `git diff remote..HEAD` on a branch that merged main drags
+# every path main brought into the range, so a correct note could never cover the push
+# (measured 2026-11-03 on PR #493). Judge OUR OWN non-merge commits instead.
+notes="$(git log --no-merges --diff-filter=A --name-only --format= "$range" 2>/dev/null | grep -E '^docs/fixes/[a-z]+/([0-9]|unversioned-)[^/]*\.md$' || true)"
+touched="$(git log --no-merges --name-only --format= "$range" 2>/dev/null | sed '/^$/d' | sort -u | grep -v '^docs/fixes/' | grep -v '^CHANGELOG' || true)"
 
 if [ -z "$notes" ]; then
   printf 'fixes-guard[1]{gate,result}:\n  "push","refused — no fix note in this range"\n' >&2
   printf 'help: bin/gates/fixes.sh record --component=<%s> --version=<v> --title="what changed"\n' \
     "install|runtime|snotra|skills|agents|hlidskjalf|odrerir|sessrumnir|smidja|hoard|gate" >&2
   printf 'note: a note is a file under docs/fixes/<component>/ — write one, commit it, push again.\n' >&2
-  exit 1
+  return 1
 fi
 
 # The record is there: now say whether it speaks to what the push changed.
@@ -158,7 +138,12 @@ path_component() {  # <path> -> the component it belongs to, or empty
     bin/bridge/a2a-mcp.sh|bin/bridge/ratatoskr.sh) echo runtime ;;
     bin/engine/ymir-install.sh|bin/agents/groa-update.sh|bin/seat/valknut-load.sh|bin/engine/ymir-migrate.sh) echo install ;;
     .pi/*|.agents/skills/*|bin/agents/skill-find.sh|bin/gates/fixes.sh|bin/gates/guards/fixes-guard.sh) echo agents ;;
-    bin/gates/capabilities.sh|bin/gates/inventory.sh|bin/gates/queue.sh|bin/gates/ci-verify.sh|bin/gates/checks/*|bin/no-delete-guard.sh) echo gate ;;
+    bin/gates/capabilities.sh|bin/gates/inventory.sh|bin/gates/registers.sh|bin/gates/registers-*|bin/gates/queue.sh|bin/gates/ci-verify.sh|bin/gates/checks/*|bin/gates/guards.sh|bin/gates/guards/*|bin/gates/tests/*|bin/no-delete-guard.sh) echo gate ;;
+    # The woven catalogue (Þættir) and the derived registers belong to the gate suite:
+    # a fix to them is a gate fix (2026-11-03 — they mapped to nothing and a correct
+    # note could not cover the push; the same class the 2026-10-12 StartLimit mend found).
+    FEATURES.md|docs/features/*) echo gate ;;
+    bin/README.md|.agents/backend/README.md|.agents/assets/agents/capabilities.md) echo gate ;;
     # The unit templates and the renderer that seats them: the seat's services, so a fix
     # here is a runtime fix. Before this row tools/{mill,web}/systemd/* mapped to NO
     # component — a correct runtime note covered nothing and the gate passed on a
@@ -173,6 +158,10 @@ path_component() {  # <path> -> the component it belongs to, or empty
     .agents/skills/galdr-ymirsystem/assets/smidja.md|.agents/skills/smidja-factory/*) echo smidja ;;
     .agents/skills/galdr-ymirsystem/assets/snotra-meeting-ear.md|bin/snotra*|tools/snotra/*) echo snotra ;;
     tools/tickets-mcp/*|bin/desktop/odrerir*|apps/odrerir/*) echo odrerir ;;
+    # The forge: worktrees, the sandbox, and now boxes. Before this row bin/forge/* mapped
+    # to NO component, so a correct forge note could never cover a forge path and the gate
+    # could only warn (2026-11-06, found while shipping the Utgard boxes).
+    bin/forge/*|.agents/sandbox/*) echo forge ;;
   esac
 }
 covered=0
@@ -199,4 +188,34 @@ else
   printf 'note: a note for another component is still a record — but say what THIS push changed.\n' >&2
   printf '      components touched: %s\n' "$(printf '%s' "$touched" | head -4 | tr '\n' ' ')" >&2
 fi
-exit 0
+return 0
+}
+
+# Manual --check keeps its original branch/base judgment, even for published tips.
+if [ "${1-}" = --check ]; then judge_range "" ""; exit $?; fi
+refs="$(cat 2>/dev/null || true)"
+if [ -z "$refs" ]; then judge_range "" ""; exit $?; fi
+failed=0
+while read -r _local local_sha remote_ref remote_sha; do
+  [ -n "${local_sha:-}" ] || continue
+  case "$remote_ref" in refs/tags/*)
+    printf 'fixes-guard: ok — tag pointer %s carries no branch content\n' "$remote_ref"; continue ;;
+  esac
+  case "$local_sha" in 000000*)
+    printf 'fixes-guard: ok — deletion %s carries no content\n' "$remote_ref"; continue ;;
+  esac
+  # Public commits may be named by another branch without inventing a new fix note.
+  # Only already-fetched origin refs establish publication; outgoing siblings do not.
+  if unpublished="$(git rev-list -n1 "$local_sha" --not --remotes=origin 2>/dev/null)"; then
+    if [ -z "$unpublished" ]; then
+      printf 'fixes-guard: ok — %s names only already published commits\n' "$remote_ref"
+      continue
+    fi
+  else
+    printf 'fixes-guard: refused — cannot inspect outgoing ref %s\n' "$remote_ref" >&2
+    failed=1; continue
+  fi
+  printf 'fixes-guard: judging outgoing branch %s\n' "$remote_ref"
+  judge_range "$local_sha" "${remote_sha:-}" 1 || failed=1
+done <<<"$refs"
+exit "$failed"

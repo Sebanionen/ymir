@@ -1,0 +1,52 @@
+# UTGARD BOX — a whole computer for one run, outside the wall.
+#
+# Dockerfile.utgard is the LOCKER: a sealed window in which one script runs for
+# thirty seconds and dies. This is the WORKSHOP: a durable computer an agent owns
+# for the length of a run — its own root, its own clone, its own tools, its own
+# vanishing point. Utgard is the realm outside the wall; a box is a house in it.
+#
+# What it deliberately does NOT have is anything of the operator's: no $HOME, no
+# vault, no ssh key, no git identity, and (because the door injects the rail key)
+# no model credential either.
+#
+# Debian rather than Alpine on purpose: `pi` is a node package with native
+# dependencies, and musl is where they break. A box is meant to be depended on.
+FROM node:20-bookworm-slim
+
+ARG PI_PACKAGE=@earendil-works/pi-coding-agent
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      bash \
+      ca-certificates \
+      curl \
+      git \
+      jq \
+      less \
+      openssh-client \
+      python3 \
+      ripgrep \
+      tini \
+ && rm -rf /var/lib/apt/lists/*
+
+# The harness itself, so `box enter` lands in a computer that can think.
+RUN npm install -g "$PI_PACKAGE" \
+ && npm cache clean --force \
+ && pi --version
+
+# One unprivileged user, one writable volume, nothing else. The box's whole
+# persistent state is /box; it is a named volume, never a host directory.
+RUN useradd --create-home --shell /bin/bash agent \
+ && mkdir -p /box \
+ && chown -R agent:agent /box /home/agent
+
+ENV HOME=/home/agent
+ENV YMIR_BOX=1
+WORKDIR /box
+USER agent
+
+# tini reaps the orphans a long agent run leaves behind.
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["sleep", "infinity"]

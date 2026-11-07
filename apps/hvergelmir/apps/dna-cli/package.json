@@ -1,0 +1,18 @@
+{
+  "name": "dna-cli",
+  "private": true,
+  "description": "The dna command: every capability plus device operations",
+  "bin": {
+    "dna": "./bin/dna.mjs"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "check": "tsc -p .",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@dna/sdk": "*",
+    "yaml": "2.9.1"
+  }
+}

@@ -50,7 +50,18 @@ bin/agents/eindri-start.sh <task-id>
   `utgard` with no image is a **loud refusal**, never a silent downgrade.
 - **One worktree per task.** Parallel workers never touch each other's files.
 - **A worker smells of trust.** Read the brief before you spawn; it is the contract.
-- **A worker never merges.** It ends with a PR; the seal is the Allfather's (Rule 08).
+- **A worker never merges.** It ends with a PR; the seat's own agent seals it (Rule 08, the 2026-11-05
+  amendment, `bin/agents/pr-seal.sh`) — never the worker, never a timer alone.
+- **A spawn is not a seat until the agent list shows it.** `bin/seat/seat-prove.sh` reads
+  `herdr agent list` after every launch; an unproven seat is recorded `failed: … pane <id> …`, never printed
+  as `spawned`.
+- **A status line is a claim; the pane is the evidence.** `bin/agents/eindri-liveness.sh` cross-checks every
+  live claim at the sweep, and corrects a seat whose pane holds a shell, an exit or a crash.
+- **A quiet pane is not a dead one.** herdr reports an agent as `done` when it is only *idle between turns*, so
+  for `YMIR_LIVENESS_GRACE_MIN` minutes after a launch (10 by default) the verdict is **SETTLING** — it corrects
+  nothing and wakes nobody. Past the window a quiet pane is `DEAD` again. Set the env var to `0` to disable the
+  grace. When a worker later writes its own terminal word, `eindri-acclaim.sh` heals the report shelf a sweep had
+  guessed at, and the correction travels as its own wake (`corrected`) so a spent `report` cannot mute it.
 
 ## If it does not work
 
@@ -60,3 +71,5 @@ bin/agents/eindri-start.sh <task-id>
 | `Delivery contract … disagrees` | The brief and `--mode` differ — fix the brief, or pass the matching `--mode`. The refusal is the guard, not a bug. |
 | No pane appeared | The backend is down — `bin/seat/herdr-ensure.sh status`, then re-spawn. |
 | The worker went quiet | `bin/agents/eindri-watch.sh` for heartbeats; `bin/agents/eindri-handoff.sh sweep` re-arms the failsafe. |
+| The status says `working` but nothing happens | `bin/agents/eindri-liveness.sh check` names the verdict and the pane; `sweep` corrects the record and wakes the seat. A fresh seat reads `SETTLING` for its first 10 minutes — that is the grace, not a stall. |
+| `seat=no` in `state/<id>.meta` | The launch produced no agent — read `state/<id>.status` (it says which pane), fix the cause, relaunch. |

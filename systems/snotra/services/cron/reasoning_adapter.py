@@ -251,7 +251,7 @@ class ReasoningAdapter:
             "'ambiguous: <name1>, <name2>'.\n"
             "- Handle nicknames and abbreviations from context.\n\n"
             "EXAMPLE:\n"
-            "Speaker: Reygan\nContext: Reygan Assareh (chair), Josef Lindbom (operator)\n"
+            "Speaker: Reygan\nContext: Reygan Assareh (chair), <the operator> <the operator> (operator)\n"
             "Output: Reygan Assareh"
         )
         return self._call_llm(system_prompt, f"Speaker: {speaker}\nContext: {context}", max_tokens=50)
@@ -319,3 +319,5 @@ if __name__ == "__main__":
         print(adapter.classify(args.input))
     elif args.task == "identity":
         print(adapter.identity(args.input, args.context))
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

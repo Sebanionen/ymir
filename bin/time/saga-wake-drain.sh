@@ -81,7 +81,7 @@ esac
 
 if [ -s "$FMQ" ]; then
   printf 'FM wake queue: %s pending (fm-queued wakes below)\n' "$(awk 'END{print NR}' "$FMQ")"
-  while IFS= read -r line; do
+  while IFS= read -r line || [ -n "$line" ]; do
     [ -n "$line" ] && printf 'WAKE %s\n' "$line"
   done <"$FMQ"
   printf 'FM_ACK_REQUIRED: acknowledge handled fm wakes to drop them from the fm queue\n'
@@ -97,7 +97,7 @@ else
   count=$(awk 'END{print NR}' "$QUEUE")
   printf 'wake queue: %s pending\n' "${count:-0}"
   dropped=0
-  while IFS= read -r line; do
+  while IFS= read -r line || [ -n "$line" ]; do
     [ -n "$line" ] || continue
     # A wake is presented until Brokk acks it. The errand's status (done/failed)
     # does NOT make it an echo: a self-finishing worker's terminal wake is the
@@ -108,6 +108,20 @@ else
   done <"$QUEUE"
   [ "${dropped:-0}" -gt 0 ] && printf 'wake_echo[1]{dropped,why}:\n  %s,"errands already closed — ack clears them, they are not presented as news"\n' "$dropped"
   printf 'WAKE_ACK_REQUIRED: acknowledge handled wakes to drop them from the queue\n'
+  # THE OPEN WORK, every wake — not only the morning brief. One line, so a wake says not
+  # just "something happened" but "and here is what still stands unmade".
+  OW="$SCRIPT_DIR/../records/open-work.sh"
+  if [ -x "$OW" ]; then
+    ow_json="$("$OW" --json 2>/dev/null)"
+    printf '%s' "$ow_json" | python3 -c 'import json,sys
+try: d=json.load(sys.stdin)
+except Exception: raise SystemExit(0)
+from collections import Counter
+items=d.get("items",[])
+if not items: raise SystemExit(0)
+c=Counter(i.get("state","open") for i in items)
+print(f"OPEN WORK: {len(items)} item(s) — " + " · ".join(f"{k} {v}" for k,v in sorted(c.items())) + " · bin/records/open-work.sh --md")' 2>/dev/null
+  fi
 fi
 
 # Snapshot exactly what this drain presented, so ack consumes these lines and

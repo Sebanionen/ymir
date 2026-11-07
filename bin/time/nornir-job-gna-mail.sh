@@ -20,7 +20,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ymir_home_root HOME_R 2>/dev/null || true
 MAIL_DIR="$HOME_R/hodd/memory/mail"
 STATE="${BROKK_MACHINE_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/ymir}"
-DESK_URL="${GNA_DESK_URL:-http://127.0.0.1:8490}"
+DESK_URL="${GNA_DESK_URL:-http://127.0.0.1:8494}"
 TOKEN_FILE="$HOME_R/hodd/state/gna-desk.token"
 RUNES="$ROOT/bin/records/runes-append.sh"
 
@@ -129,6 +129,19 @@ fi
 
 if [ -x "$RUNES" ]; then
   "$RUNES" gna gna-mail-import --message "mail desk import: rc=$rc_total · accounts=$(printf '%s' "$ACCOUNTS" | wc -l)" >/dev/null 2>&1 || true
+
+# AS THEY COME (2026-11-05, plan 193): a successful import tells the arm about arrivals it has
+# not spoken about before. gna_notify marks each message `notified_at` by appending a version,
+# batches the line (the arm has a flood brake), and refuses silently when it cannot speak.
+if [ "$rc_total" -eq 0 ] && [ "$MODE" != "import" ]; then :; fi
+if [ "$rc_total" -eq 0 ] && [ -x "$ROOT/bin/mail/gna_notify.py" ]; then
+  if out="$("$ROOT/bin/mail/gna_notify.py" --nudge 2>&1)"; then
+    printf '%s\n' "$out" | sed 's/^/gna-mail[notify] /'
+  else
+    say "WARN the arm could not be told about new mail: $(printf '%s' "$out" | head -1)"
+    "$RUNES" gna gna-mail-notify --message "notify failed: $(printf '%s' "$out" | head -1 | cut -c1-160)" >/dev/null 2>&1 || true
+  fi
+fi
 fi
 
 addresses

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:News="https://www.bing.com:443/news/search?q=agents&amp;format=rss" version="2.0">
+<channel>
+<title>agents - BingNews</title>
+<link>https://www.bing.com:443/news/search?q=agents&amp;format=rss</link>
+<item><title>Durable agents survive restarts in a new runtime release</title><link>http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;aid=&amp;tid=1&amp;url=https%3a%2f%2fexample.com%2fdurable-agents-runtime&amp;c=1&amp;mkt=en-us</link><description>A runtime release checkpoints every agent task so a crash resumes where it left off.</description><pubDate>__NOW_RFC822__</pubDate><News:Source>Example News</News:Source></item>
+<item><title>Ten tips for better prompts</title><link>http://www.bing.com/news/apiclick.aspx?ref=FexRss&amp;aid=&amp;tid=1&amp;url=https%3a%2f%2fexample.org%2fprompt-tips&amp;c=2&amp;mkt=en-us</link><description>A listicle.</description><pubDate>__NOW_RFC822__</pubDate><News:Source>Example Org</News:Source></item>
+</channel>
+</rss>

@@ -61,16 +61,17 @@ for a in "$@"; do
   esac
 done
 
-MODE_OPENCODE=0; MODE_PI=0; MODE_GLOBAL=0; MODE_INSTALL=0; MODE_STATUS=0; MODE_CHECK=0; MODE_EXT_HOME=0
+MODE_OPENCODE=0; MODE_PI=0; MODE_HERMES=0; MODE_GLOBAL=0; MODE_INSTALL=0; MODE_STATUS=0; MODE_CHECK=0; MODE_EXT_HOME=0
 for a in "$@"; do
   case "$a" in
     --opencode) MODE_OPENCODE=1 ;;
     --pi|--agents) MODE_PI=1 ;;
+    --hermes) MODE_HERMES=1 ;;
     --global) MODE_GLOBAL=1 ;;
     --status) MODE_STATUS=1 ;;
     --check) MODE_CHECK=1 ;;
     --ext-home) MODE_EXT_HOME=1 ;;
-    --all) MODE_OPENCODE=1; MODE_PI=1 ;;
+    --all) MODE_OPENCODE=1; MODE_PI=1; MODE_HERMES=1 ;;
     --install) MODE_INSTALL=1 ;;
     *) printf 'error: unknown flag %s\nhelp: bin/seat/valknut-load.sh [--opencode|--pi|--global|--status|--check|--ext-home|--all]\n' "$a" >&2; exit 2 ;;
   esac
@@ -356,7 +357,7 @@ HOOK
   exit 0
 fi
 
-[ $((MODE_OPENCODE + MODE_PI + MODE_STATUS)) -eq 0 ] && { MODE_OPENCODE=1; MODE_PI=1; }
+[ $((MODE_OPENCODE + MODE_PI + MODE_HERMES + MODE_STATUS)) -eq 0 ] && { MODE_OPENCODE=1; MODE_PI=1; }
 
 if [ ! -d "$AGENTS" ]; then
   printf 'error: agents dir not found: %s\nhelp: expected .agents/agents/ inside %s\n' "$AGENTS" "$ROOT"
@@ -558,6 +559,13 @@ if [ "$MODE_OPENCODE" = 1 ]; then
     add opencode-skills "$SKILLS" "via skills.paths"
   else
     add opencode-skills "$SKILLS" "ERROR not in opencode.json"
+  fi
+fi
+
+if [ "$MODE_HERMES" = 1 ]; then
+  # Hermes is a first-class harness (2026-11-03): it wears the same packets and skills.
+  if [ -x "$ROOT/bin/seat/hermes-seat.sh" ]; then
+    "$ROOT/bin/seat/hermes-seat.sh" >/dev/null 2>&1 && printf 'hermes: packets seated, skills trusted\n' || printf 'hermes: not installed on this seat — skipped\n'
   fi
 fi
 

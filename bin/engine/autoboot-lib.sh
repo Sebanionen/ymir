@@ -63,13 +63,13 @@ if [ -z "$AUTOBOOT_STATE_DIR" ]; then
 fi
 
 # --- the one table --------------------------------------------------------
-AUTOBOOT_PROGRAMS="a2abridge-directory well-mcp mcp-gateway ratatoskr mill-worker cards skills-mcp skuld snotra snotra-detect embed hlidskjalf-spa hlidskjalf-gate mimir bifrost smidja nornir syn-watch"
+AUTOBOOT_PROGRAMS="a2abridge-directory well-mcp mcp-gateway ratatoskr mill-worker cards skills-mcp skuld snotra snotra-detect gna-desk embed hlidskjalf-spa hlidskjalf-gate mimir bifrost smidja nornir syn-watch"
 
 autoboot_role_programs() {  # <role> → prints the program ids the role owes
   case "${1-}" in
-    heart) printf '%s\n' "a2abridge-directory well-mcp mcp-gateway ratatoskr mill-worker cards skills-mcp skuld snotra embed nornir syn-watch" ;;
-    forge) printf '%s\n' "embed mcp-gateway" ;;
-    dev)   printf '%s\n' "a2abridge-directory well-mcp mcp-gateway hlidskjalf-spa hlidskjalf-gate mimir bifrost smidja nornir syn-watch" ;;
+    heart) printf '%s\n' "a2abridge-directory well-mcp mcp-gateway ratatoskr mill-worker cards skills-mcp skuld snotra gna-desk embed nornir syn-watch" ;;
+    forge) printf '%s\n' "embed mcp-gateway gna-desk" ;;
+    dev)   printf '%s\n' "a2abridge-directory well-mcp mcp-gateway hlidskjalf-spa hlidskjalf-gate mimir bifrost smidja nornir gna-desk syn-watch" ;;
     hand|*) printf '%s\n' "" ;;
   esac
 }
@@ -88,6 +88,7 @@ autoboot_program_desc() {  # <program> → one human line
     cards)          printf '%s\n' "the cards root (:8318)" ;;
     skills-mcp)     printf '%s\n' "the skills well door (:8319)" ;;
     skuld)          printf '%s\n' "the ticket hall (:8320)" ;;
+    gna-desk)       printf '%s\n' "the mail desk (:8494) — the inbox the arm is told about, as it arrives" ;;
     embed)          printf '%s\n' "the embedding stone (:8500)" ;;
     hlidskjalf-spa) printf '%s\n' "Hlidskjalf SPA (:3888)" ;;
     hlidskjalf-gate) printf '%s\n' "the gate API (:3889)" ;;

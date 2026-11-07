@@ -1,0 +1,8 @@
+name: word-weaving
+kind: craft
+owner: house
+description: Write a plan as prose another person can act on, not as a datasheet.
+visibility: public
+version: 1.1.0
+templates:
+  - plan.md

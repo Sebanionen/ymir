@@ -107,8 +107,15 @@ export function Stats() {
           <MetricTile label="Cache read" value={M(usage.cache_read)} tone="var(--ymir-ok)" />
           <MetricTile label="Cache write" value={M(usage.cache_write)} />
           <MetricTile label="Total tokens" value={M(usage.total)} />
-          <MetricTile label="Cache-hit ratio" value={pct(stats?.cache_hit_ratio ?? 0)} tone="var(--ymir-ok)" />
-          <MetricTile label="Avg CHR / run" value={pct(stats?.avg_cache_hit_per_run ?? 0)} />
+          {/* ONE formula for the cache ratio: the harness aggregate when it is present,
+              the smithy's own when it is not. Two formulas gave 98.3% and 0.0% in the
+              same panel (2026-11-05). */}
+          <MetricTile
+            label="Cache-hit ratio"
+            value={pct(harnessUsage?.totals?.cache_hit_ratio ?? stats?.cache_hit_ratio ?? 0)}
+            tone="var(--ymir-ok)"
+          />
+          <MetricTile label="Avg CHR / run" value={pct(stats?.avg_cache_hit_per_run ?? harnessUsage?.totals?.cache_hit_ratio ?? 0)} />
         </div>
       </section>
 

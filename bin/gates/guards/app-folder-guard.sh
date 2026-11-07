@@ -18,6 +18,9 @@
 #     deployment and the app owns the logic (sessrumnir-ensure.sh · smidja-observe.sh)
 #   * an app's own launch door (sessrumnir.sh), because launching IS its function
 #   * bin/pi/ … — a harness integration namespace, not one of our apps
+#   * a VENDORED monorepo's own apps/ (apps/<app>/apps/) — an upstream tree keeps its
+#     layout (RULES/23's second half: a vendored upstream keeps its own shape), and the
+#     registry is still apps/<app>/ alone; recorded rather than restructured
 #
 # Usage: app-folder-guard.sh check [path…]   (default: bin/ and apps/)
 #        app-folder-guard.sh --list-apps
@@ -102,7 +105,8 @@ check_tree() {
     [ -n "$d" ] || continue
     say "an apps/ folder inside an app" "${d#"$ROOT"/}" "Rule 23 §3" "one registry: the applications live at apps/; an app's own UI is part of the app, not a second registry"
   done < <(find "$ROOT/apps" -mindepth 2 -maxdepth 3 -type d -name apps -not -path '*/node_modules/*' 2>/dev/null \
-             | grep -v "/apps/smidja-factory/" )   # a VENDORED UPSTREAM (zerwiz/smidja) keeps its own layout; Rule 23 binds OUR code — see apps/README.md
+             | grep -v "/apps/smidja-factory/" \
+             | grep -v "/apps/hvergelmir/" )   # a VENDORED UPSTREAM (zerwiz/pi-durable-news-agent, MIT) keeps its own monorepo layout   # a VENDORED UPSTREAM (zerwiz/smidja) keeps its own layout; Rule 23 binds OUR code — see apps/README.md
 }
 
 

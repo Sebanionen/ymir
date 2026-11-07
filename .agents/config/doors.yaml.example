@@ -1,0 +1,10 @@
+# doors — the register a collaborator is offered (home: hodd/docs/collaboration/the-doors-for-collaborators.md).
+# Copy to $YMIR_HOME/hodd/identity/doors.yaml when the register becomes machine-read.
+version: 1
+doors: []
+#  - id: gimle-suite
+#    host: https://gimle.example.org        # a tunnel host or a tailnet name; NEVER a LAN address (RULES/network N1)
+#    transport: cloudflare                  # tailscale | cloudflare | funnel | public (N6)
+#    auth: gate-login                       # gate-login | bearer-jwt | none
+#    tenants: [<realm>]
+#    revocation: delete the account at the gate and restart

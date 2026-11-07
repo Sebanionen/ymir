@@ -5,7 +5,7 @@ StartLimitBurst=10
 
 [Service]
 Type=simple
-ExecStart=%h/.fleet/well-venv/bin/mcp-proxy --host 127.0.0.1 --port 8317 -- %h/.fleet/well-venv/bin/engram-mcp --db %h/Documents/ymirhome/hodd/memory/kaia.engram
+ExecStart=%h/.fleet/well-venv/bin/mcp-proxy --host 127.0.0.1 --port 8317 -- %h/.local/bin/engram-mcp --db %h/Documents/ymirhome/hodd/memory/kaia.engram
 Restart=on-failure
 RestartSec=3
 [Install]

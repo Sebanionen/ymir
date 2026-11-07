@@ -71,6 +71,9 @@ unset _seat
 
 # surface_skip <surface> — 0 when this substrate/role cannot owe the surface.
 surface_skip() {
+  # The mail desk is a systemd user unit; a substrate without systemd cannot owe it
+  # (a hand). A clean skip with its reason is a pass (RULES/25).
+  if [ "$1" = mail ] && [ "$PLATFORM" = termux ]; then return 0; fi
   [ "$ROLE" = "hand" ] || return 1
   case "$1" in
     # Hnitbjörg needs cryptsetup + loop devices; a hand has neither, and by law the
@@ -81,6 +84,9 @@ surface_skip() {
     # No systemd on Android: there is no boot unit to enable. The Pi watcher owns
     # supervision here, and `ymir-autoboot.sh verify` already names the gap.
     autoboot)   return 0 ;;
+    # The desk is a systemd user unit: a substrate without systemd (a hand) cannot
+    # owe it — and the arm's own door already names that gap.
+    mail)       return 0 ;;
   esac
   return 1
 }
@@ -99,12 +105,13 @@ surface_detail_skip() {
     vault)      printf '%s\n' 'not this seat (no cryptsetup/loop devices on Android)' ;;
     shells|sessrumnir) printf '%s\n' 'not this seat (desktop shells are not built for bionic)' ;;
     autoboot)   printf '%s\n' 'not this seat (no systemd; the Pi watcher owns supervision)' ;;
+    mail)       printf '%s\n' 'not this seat (no systemd: the desk is a user unit)' ;;
     *)          printf '%s\n' 'skip' ;;
   esac
 }
 
 # Each surface: `s_<name>` = healthy? (exit 0), `f_<name>` = the repair.
-SURFACES=(floors seatpaths hooks packaging herdr a2abridge hermes snotra voice council sessrumnir shells graphics well memory mcp harness arm lock gates migrations hoard autoboot vault ward)
+SURFACES=(floors seatpaths hooks packaging herdr a2abridge hermes snotra voice council sessrumnir shells graphics well memory mail mcp harness arm lock gates migrations hoard autoboot vault ward)
 
 # ── the three surfaces the 2026-11-03 Windows audit found, and the rule they read ──────────
 # A SEAT IS NOT UPDATED BY A PULL. The checkout moves; the installed hooks, the PATH a later
@@ -174,6 +181,72 @@ s_vault()     { [ -x "$SCRIPT_DIR/../vault/hnitbjorg-ensure.sh" ] && "$SCRIPT_DI
 s_ward()      { [ -x "$SCRIPT_DIR/../ward/security-audit.sh" ] && "$SCRIPT_DIR/../ward/security-audit.sh" check --quiet >/dev/null 2>&1; }
 f_ward()      { "$SCRIPT_DIR/../ward/harden.sh" apply --ssh-keys-perm >/dev/null 2>&1; }
 f_vault()     { "$SCRIPT_DIR/../vault/hnitbjorg-ensure.sh" ensure --install >/dev/null 2>&1; }
+# ── Gná — the mail desk (:8494, plan 193 §14) ────────────────────────────────
+# Three named truths, and none of them may masquerade as another:
+#   ok            the desk answers /health AND declares an account
+#   unconfigured  the desk answers but has no account row — a NAMED, non-green
+#                 state, because "no mail" is a claim such a desk cannot make
+#   broken        the desk does not answer at all
+# The fix is the installer; the ACCOUNT itself is the operator's word, never a mend.
+GNA_DESK_PORT="${GNA_DESK_PORT:-8490}"
+GNA_DESK_URL="${GNA_DESK_URL:-http://127.0.0.1:$GNA_DESK_PORT}"
+mail_accounts_file() {  # the ONE resolver (Rule 04/07) — this file never guesses a home
+  local h="${YMIR_HOME:-}"
+  [ -n "$h" ] || ymir_home_root h 2>/dev/null || true
+  printf '%s\n' "${h:+$h/hodd/memory/mail/accounts.yaml}"
+}
+mail_state() {  # prints ok | unconfigured | broken — the desk's own answer, never a guess
+  local h
+  h="$(curl -fsS -m 3 "$GNA_DESK_URL/health" 2>/dev/null)" || { printf 'broken'; return 0; }
+  printf '%s' "$h" | python3 -c 'import json,sys
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    print("broken"); raise SystemExit
+print("ok" if d.get("ok") and d.get("accounts") else "unconfigured")' 2>/dev/null || printf 'broken'
+}
+mail_grant_keys() {  # the vault KEY NAMES the declared account grants — never a value
+  python3 - "$(mail_accounts_file)" <<'PY' 2>/dev/null
+import sys, yaml
+try:
+    rows = (yaml.safe_load(open(sys.argv[1])) or {}).get("accounts") or []
+except Exception:
+    raise SystemExit(0)
+for row in rows:
+    if not (isinstance(row, dict) and row.get("id")):
+        continue
+    for k in ("grant", "client", "client_secret"):
+        if row.get(k):
+            print(row[k])
+    break
+PY
+}
+vault_has_key() {  # <KEY> — the NAME is asked, the value never leaves the vault
+  "$ROOT/bin/vault/hodd.sh" emit secrets/platform.env 2>/dev/null | grep -q "^export $1="
+}
+mail_detail() {
+  local st; st="$(mail_state)"
+  case "$st" in
+    broken)       printf 'no answer at %s/health — bash bin/mail/install.sh' "$GNA_DESK_URL" ;;
+    unconfigured) printf 'the desk answers, but no account row in %s — nothing to read, and "no mail" cannot be said' "$(mail_accounts_file)" ;;
+    *)            local k missing="" acc
+                  acc="$(curl -fsS -m 3 "$GNA_DESK_URL/health" 2>/dev/null | python3 -c 'import json,sys
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    raise SystemExit
+print(",".join(d.get("accounts") or []))' 2>/dev/null)"
+                  for k in $(mail_grant_keys); do vault_has_key "$k" || missing="$missing $k"; done
+                  if [ -n "$missing" ]; then
+                    printf 'desk answers for %s at %s, but the declared grant names vault keys that are ABSENT:%s' \
+                      "${acc:-no account}" "$GNA_DESK_URL" "$missing"
+                  else
+                    printf 'desk answers for %s at %s' "${acc:-no account}" "$GNA_DESK_URL"
+                  fi ;;
+  esac
+}
+s_mail()      { [ "$(mail_state)" = ok ]; }
+f_mail()      { [ -x "$ROOT/bin/mail/install.sh" ] && "$ROOT/bin/mail/install.sh" >/dev/null 2>&1; }
 # The desktop shells (P8, 2026-09-24): the RESOLVER answers — app-local,
 # workspace-hoisted, or the sibling package (bin/desktop/electron-lib.sh). ABSENT for
 # an app the operator has installed is a FAILURE, never healthy: a desktop
@@ -479,6 +552,7 @@ detail() { # <name> -> the command that prints one short fact
     sessrumnir)printf '%s\n' "[ -d $APP_SESSRUMNIR/out ] && echo built || echo 'not built'" ;;
     well)      printf '%s\n' well_detail ;;
     memory)    printf '%s\n' memory_detail ;;
+    mail)      printf '%s\n' mail_detail ;;
     mcp)       printf '%s\n' "echo 'a2abridge + engram'" ;;
     graphics)  printf '%s\n' "if [ -z \"\${DISPLAY:-}\${WAYLAND_DISPLAY:-}\" ]; then echo headless; else echo \"\$(graphics_block 2>/dev/null | sed -n '1p' | sed 's/.*{//;s/}//') · \$(graphics_policy 2>/dev/null)\"; fi" ;;
     harness)   printf '%s\n' "s_harness && echo 'deployed extensions resolve their bin/' || echo 'no live root recorded'" ;;
@@ -496,6 +570,7 @@ detail() { # <name> -> the command that prints one short fact
 }
 
 broken=0
+unconfigured=0
 if [ "$ACTION" = "fix" ]; then
   for s in "${SURFACES[@]}"; do
     surface_skip "$s" && continue
@@ -515,7 +590,17 @@ for s in "${SURFACES[@]}"; do
     count=$((count+1))
     continue
   fi
-  if "s_$s" >/dev/null 2>&1; then state=ok
+  # A surface may NAME its own state where a yes/no would be a lie (the mail desk:
+  # answering with no account is not healthy, and it is not broken either).
+  named=""
+  case "$s" in mail) named="$(mail_state)" ;; esac
+  if [ -n "$named" ]; then
+    state="$named"
+    case "$state" in
+      unconfigured) unconfigured=$((unconfigured+1)) ;;
+      *)            broken=$((broken+1)) ;;
+    esac
+  elif "s_$s" >/dev/null 2>&1; then state=ok
   elif surface_ok "$s"; then state=ok; d_override="tmux fallback"
   else state=broken; broken=$((broken+1)); fi
   d="$(eval "$("detail" "$s" 2>/dev/null)" 2>/dev/null | head -1)"
@@ -535,8 +620,9 @@ if [ -t 2 ]; then
     style_line "$state" "$surface" "$detail"
   done <<<"$(printf '%b' "$rows" | sed 's/^  //; s/"//g; s/,/|/; s/,/|/')"
 fi
-if [ "$broken" != 0 ]; then
-  printf 'eir: %s surface(s) need mending — run: bin/agents/eir-doctor.sh fix\n' "$broken"
+if [ "$broken" != 0 ] || [ "$unconfigured" != 0 ]; then
+  [ "$broken" != 0 ] && printf 'eir: %s surface(s) need mending — run: bin/agents/eir-doctor.sh fix\n' "$broken"
+  [ "$unconfigured" != 0 ] && printf 'eir: %s surface(s) are unconfigured — a name must be DECLARED, never mended\n' "$unconfigured"
   exit 1
 fi
 exit 0

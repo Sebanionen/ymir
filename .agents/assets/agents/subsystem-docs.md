@@ -9,7 +9,9 @@
 **Ask the door, do not remember:** `bin/records/where.sh <path or topic>`.
 
 ```
-subsystems[12]{path,entry,canonical,books,doors,missing}:
+subsystems[13]{path,entry,canonical,books,doors,missing}:
+  "bin/gates/**","docs/features/the-wards-the-delivery-gate.md","RULES/08-delivery-gate.md","docs/features/the-wards-the-delivery-gate.md · docs/fixes/gates/ (one file per fix) · plan 203 §14 (the ship door)","bin/gates/guards.sh --list · bin/gates/guards.sh · bin/gates/tests/","a per-ward ledger: which law each ward enforces, and where its own test lives"
+  "hodd/docs/collaboration/** (home)","docs/features/fleet-wire.md","docs/features/collaborator-door.md","# the home shelf: the doors register, the fleet-wire runbook, the onboarding sheet (in $YMIR_HOME)","plans 154 · 158 · 184 · 192","the public MCP face for a collaborator tenant (plan 192 §9)"
   "apps/smidja/** | apps/smidja-factory/** | .agents/skills/smidja-factory/**","apps/smidja-factory/SKILL.md","apps/smidja-factory/AGENTS.md","apps/smidja-factory/cookbooks/ · apps/smidja-factory/skills/ · apps/smidja-factory/docs/ · apps/smidja-factory/references/","bin/desktop/smidja-{board,bootstrap,observe}.sh · scripts/electron.sh smidja","scripts/smidja (launcher: rosters/team/doctor) · roster.yaml (stacks:) · justfile · tests/local-models/"
   "apps/hlidskjalf/**","docs/features/the-thread.md",".agents/skills/galdr-ymirsystem/assets/hlidskjalf-ui.md","docs/features/ · docs/design.md",".pi/extensions/ymirhome.ts · bin/desktop/app-build.sh","—"
   "apps/odrerir/**","docs/features/the-rooms.md",".agents/skills/galdr-ymirsystem/assets/odrerir-hall.md","docs/features/","bin/desktop/app-build.sh","—"

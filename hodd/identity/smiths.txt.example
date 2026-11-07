@@ -1,0 +1,15 @@
+# smiths.txt.example — who is a smith, and therefore who may not open a pull request.
+#
+# Copy to $YMIR_HOME/hodd/identity/smiths.txt and fill in the GitHub logins your workers
+# commit as. One login per line; `#` starts a comment; blank lines are ignored.
+#
+# The law this file serves (plan 203 §14, 2026-11-06): a smith PUSHES its branch — that is
+# how the code reaches the fleet — and may NEVER open a pull request or merge. A PR whose
+# author appears here is refused by bin/gates/guards/pr-ship-guard.sh, which is the door
+# that decides what ships. The branch is fine; the PR is not.
+#
+# An empty or absent file is not a silent pass: the ward skips and says why, because a door
+# nobody has decided about must say so out loud (RULES/25).
+#
+# smithbot
+# smithey

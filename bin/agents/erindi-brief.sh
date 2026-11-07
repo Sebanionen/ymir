@@ -200,6 +200,10 @@ Report status by appending one line:
    would act on and the needs-decision/blocked/$PAUSED_VERB/done/failed states.
    A TERMINAL state (done:, failed:, needs-decision:) is ALSO a report. Make the
    terminal act ONE command — it writes the status line, files the report shelf the
+
+**Checkpoint at every boundary.** Before you move from one phase to the next, and before any long step:
+`bin/agents/eindri-checkpoint.sh save $ID --step "<what just finished>" --next "<what is next>"`.
+The pane is a view; the checkpoint is the record. A restart reads the checkpoint, never your scrollback.
    handoff failsafe sweeps (bin/agents/eindri-handoff.sh), and appends the DURABLE wake
    (state/.wake-queue) so Brokk is woken even with no arm and no sweep running:
       \`bin/agents/eindri-acclaim.sh $ID --terminal done --line "<what shipped and where: PR, path, proof>"\`

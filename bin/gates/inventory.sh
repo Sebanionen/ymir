@@ -83,7 +83,19 @@ def first_sentence(text, limit=140):
 # So the corpus is now `git ls-files`: TRACKED files only. A generated index must be
 # reproducible from a clean checkout by construction, or its `--check` is a lottery.
 TEXTY = (".sh", ".md", ".ts", ".tsx", ".py", ".yaml", ".yml", ".json", ".toml", ".mjs", ".js")
-tracked = subprocess.run(["git", "ls-files"], cwd=ROOT, capture_output=True, text=True).stdout.split()
+# Index modes are portable; os.access(X_OK) reports ordinary files executable on
+# Windows/DrvFS. NUL-delimited stage records preserve whitespace in tracked paths.
+index = subprocess.run(["git", "ls-files", "--stage", "-z"], cwd=ROOT,
+                       capture_output=True, check=True).stdout
+tracked_modes = {}
+for record in index.split(b"\0"):
+    if not record:
+        continue
+    metadata, filename = record.split(b"\t", 1)
+    mode, _object, stage = metadata.split()
+    if stage == b"0":
+        tracked_modes[os.fsdecode(filename)] = mode
+tracked = list(tracked_modes)
 tracked_set = set(tracked)
 corpus_paths = [ROOT / p for p in tracked if p.endswith(TEXTY)]
 corpus = []
@@ -128,7 +140,7 @@ def counterpart(stem):
 # README.md is a caller: the register stays derived AND reproducible, and `--check` stops
 # being the lottery this file warns about (`bin/gates/guards/inventory-guard.sh` proves it).
 BIN_TRACKED = (
-    [p for p in sorted(BIN.rglob("*"))
+    [p for p in sorted(BIN.rglob("*"), key=lambda p: p.relative_to(ROOT).as_posix())
      if p.is_file() and p.name != "README.md" and p.relative_to(ROOT).as_posix() in tracked_set]
     if BIN.exists() else []
 )
@@ -142,7 +154,7 @@ def analyse(path: Path, shelf: str):
     self_indexed = name in ('README.md',)
     stem = re.sub(r"\.(sh|py|bash)$", "", name)
     text = read(path)
-    is_exec = os.access(path, os.X_OK)
+    is_exec = tracked_modes.get(path.relative_to(ROOT).as_posix()) == b"100755"
 
     # callers: which other doors invoke it
     called_by = []
@@ -215,7 +227,7 @@ for shelf, d in (("bin", BIN), (".agents/backend", BACKEND)):
     if d.exists():
         shelves[shelf] = [
             analyse(p, shelf)
-            for p in sorted(d.rglob("*"))
+            for p in sorted(d.rglob("*"), key=lambda p: p.relative_to(ROOT).as_posix())
             if p.is_file() and p.relative_to(ROOT).as_posix() in tracked_set
         ]
 
@@ -263,7 +275,7 @@ for shelf, rows in shelves.items():
         else:
             print(f"inventory --check: {target.relative_to(ROOT)} is current ({len(rows)} files)")
     else:
-        target.write_text(body)
+        target.write_text(body, encoding="utf-8", newline="\n")
         print(f"wrote {target.relative_to(ROOT)} — {len(rows)} files · verdict: {tally(rows,'verdict')} · disposition: {tally(rows,'disposition')}")
 
 sys.exit(1 if fail else 0)

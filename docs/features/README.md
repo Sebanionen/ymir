@@ -16,6 +16,17 @@ its page here in the same change (see `AGENTS.md` → *Feature how-tos*).
 | The outbound gate (nothing leaves until you have read it) | [the-outbound-gate.md](the-outbound-gate.md) |
 | The collaboration doors (who is with us, and how far) | [the-collaboration-doors.md](the-collaboration-doors.md) |
 
+**Newest doors** — built 2026-11-04, catalogued the same day:
+
+- The records shelf — plans, notes, headers, grades, placement, and the weaver:
+  [the-records-shelf.md](the-records-shelf.md)
+- The seats and the arm — where the work is, the hall in one read, who can be woken:
+  [the-seats-and-the-arm.md](the-seats-and-the-arm.md)
+- Telegram across the fleet — a bot per machine, and the road between them:
+  [telegram-across-the-fleet.md](telegram-across-the-fleet.md)
+- The home push door — named paths only, never `-A`:
+  [the-home-push-door.md](the-home-push-door.md)
+
 ## The shape of a page
 
 - **What it is** — one paragraph, no jargon.
@@ -23,3 +34,7 @@ its page here in the same change (see `AGENTS.md` → *Feature how-tos*).
 - **Do it** — the exact commands, in order, each with what you should see.
 - **Notes & limits** — the honest caveats.
 - **If it does not work** — the common failures and their fix.
+
+Voice files on Windows and WSL: [voice-files-on-windows.md](voice-files-on-windows.md).
+
+Talk to Skírnir in Hlidskjalf: [talk-to-skirnir.md](talk-to-skirnir.md).

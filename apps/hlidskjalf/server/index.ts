@@ -15,6 +15,7 @@ import { Database } from 'bun:sqlite';
 import { dirname, extname, join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { homedir } from 'node:os';
+import { createVoiceHandler, voiceAccess } from './voice.ts';
 import {
   findAccount,
   invitesOpen,
@@ -48,6 +49,8 @@ const HOME_DIR = process.env.YMIR_HOME ?? (() => {
 })();
 const HOARD = process.env.YMIR_HOARD ?? join(process.env.YMIR_HOME ?? join(homedir(), 'Documents', 'ymirhome'), 'hodd');
 const RUNES = join(HOARD, 'memory/runes_audit.md');
+const voice = createVoiceHandler({ root: ROOT, home: process.env.SKIRNIR_HOME ?? HOME_DIR,
+  temp: process.env.SKIRNIR_VOICE_TMP ?? join(HOARD, 'state/runtime/skirnir-voice') });
 const WELL = join(ROOT, '.agents/memory/well/episodes.jsonl');
 // The engram store lives in the hoard (never the tree); the well lane reads its
 // supersede TIMESTAMPS only — never a fact's text (plan 60 Part 9's ward).
@@ -2412,7 +2415,7 @@ const server = Bun.serve({
         const local = reqHost === 'localhost' || reqHost === '127.0.0.1' || reqHost === '::1' || reqHost === '';
         return json({
           authed: (GATE_AUTH && !local) ? isAuthed(req) : true,
-          login: seatOf(req),
+          login: seatOf(req) ?? (voiceAccess(req, REQUEST_IP.get(req) ?? '', true) === null ? 'operator' : null),
           // The login surface shows "create an account" only while a live invite
           // exists — a newcomer with a code can enter, and nobody else can.
           registration: invitesOpen(),
@@ -2449,6 +2452,13 @@ const server = Bun.serve({
       const reqHost = (req.headers.get('host') ?? '').toLowerCase().split(':')[0];
       const local = reqHost === 'localhost' || reqHost === '127.0.0.1' || reqHost === '::1' || reqHost === '';
       if (GATE_AUTH && !local && p.startsWith('/api/') && !isAuthed(req)) return json({ error: 'unauthorized' }, 401);
+      if (p.startsWith('/api/skirnir/voice/')) {
+        const login = loginOf(req);
+        const owner = isDesktopSeat(req) || !login || login === ((GATE_AUTH || '').split(':')[0] || 'operator');
+        const refusal = voiceAccess(req, REQUEST_IP.get(req) ?? '', owner);
+        if (refusal) return refusal;
+        return voice(req, seatOf(req) ?? 'local-operator');
+      }
       if (p === '/api/health') return json({ ok: true, root: ROOT, sessions: orders().length });
       if (p === '/api/mail/accounts') {
         if (req.method !== 'GET') return json({ error: 'method not allowed' }, 405);
@@ -2497,6 +2507,59 @@ const server = Bun.serve({
           } catch (e) {
             return { error: String(e).slice(0, 120) };
           }
+        }));
+      }
+      if (p === '/api/core-four') {
+        // THE FOUR DIALS, one read (plan 199). The door does the reading; this only carries it.
+        return json(await memoAsync('core-four', 30_000, async () => {
+          try {
+            const { execFileSync } = await import('node:child_process');
+            const script = new URL('../../../bin/seat/core-four.sh', import.meta.url).pathname;
+            return JSON.parse(execFileSync('bash', [script, '--json'], { timeout: 30_000 }).toString().trim());
+          } catch (e) {
+            return { error: String(e).slice(0, 160) };
+          }
+        }));
+      }
+      if (p === '/api/pending') {
+        // WHAT WAITS ON THE OPERATOR, one list (plan 199). Never cached long: it is a live question.
+        return json(await memoAsync('pending', 15_000, async () => {
+          try {
+            const { execFileSync } = await import('node:child_process');
+            const script = new URL('../../../bin/seat/pending.sh', import.meta.url).pathname;
+            return JSON.parse(execFileSync('bash', [script, '--json'], { timeout: 30_000 }).toString().trim());
+          } catch (e) {
+            return { error: String(e).slice(0, 160), items: [] };
+          }
+        }));
+      }
+      if (p === '/api/plans') {
+        // THE PLAN LEDGER, read from the record itself. Skuld's plans table has been empty
+        // while the ledger carries every plan as a file (2026-11-05) — so the hall reads the
+        // ledger, and Skuld stays the write door for tickets.
+        return json(await memoAsync('plans', 30_000, async () => {
+          const { readdirSync, readFileSync } = await import('node:fs');
+          const { join } = await import('node:path');
+          const home = (await import('node:os')).homedir();
+          const dir = process.env.YMIR_PLANS_DIR ??
+            join(home, 'Documents/ymirhome/svartalfaheim/whynotproductions/projects/ymir/plans');
+          const rows: Array<{ n: number; slug: string; state: string; title: string }> = [];
+          try {
+            for (const f of readdirSync(dir)) {
+              const m = /^(\d+)-(.+)\.md$/.exec(f);
+              if (!m) continue;
+              const body = readFileSync(join(dir, f), 'utf8').slice(0, 4000);
+              const title = (body.split('\n').find((l) => l.startsWith('# ')) ?? '').replace(/^#\s*/, '') ||
+                m[2].replace(/-/g, ' ');
+              const state = /status:\s*`?([a-z -]+)/i.exec(body)?.[1]?.trim() ??
+                (/#?\bopen(ed)?\b/i.test(body.slice(0, 600)) ? 'opened' : 'in progress');
+              rows.push({ n: Number(m[1]), slug: m[2], state, title });
+            }
+          } catch {
+            /* an absent ledger is an empty list, and the panel says so */
+          }
+          rows.sort((a, b) => b.n - a.n);
+          return { count: rows.length, plans: rows.slice(0, 200) };
         }));
       }
       if (p === '/api/worktrees') return json(await worktrees());

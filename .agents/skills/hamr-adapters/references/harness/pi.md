@@ -54,3 +54,22 @@ The tool result and clean-exit fallback are owned by `../../../docs/supervision-
 When a Eindri-home is launched on Pi or Pi-signed, `../../../bin/agents/einherjar-spawn.sh --Eindri-home` launches the selected executable with both `-e .pi/extensions/brokk-primary-turnend-guard.ts` and `-e .pi/extensions/brokk-primary-pi-watch.ts`.
 Both files already exist in the Eindri-home home's git worktree.
 The PreToolUse-equivalent watcher-arm seatbelt returns `{block: true}` from the `tool_call` event.
+
+## A worker session loads one extension tree (measured 2026-11-04)
+
+The seat's `~/.pi/agent/settings.json` names the primary checkout's extensions directory **absolutely**, and
+Pi also discovers `<cwd>/.pi/extensions`. In the primary those are one canonical path and Pi dedupes them; in
+a Yggdrasil worktree they are two different paths, every tool is registered twice, and Pi refuses to load
+**any** extension (`Tool "<name>" conflicts with …`). Four spawned workers were born dead this way while the
+dispatcher printed `spawned`.
+
+`bin/agents/einherjar-spawn.sh` therefore launches a Pi worker as:
+
+```
+pi --model <m> -ne -e <worktree>/.pi/extensions/<entry> [ … one -e per entry … ] -e npm:<pkg> "…brief…"
+```
+
+- `-ne` turns discovery off; every extension is named **once**, from the worker's own worktree.
+- The npm packages the seat settings declare are re-stated as `-e npm:<pkg>`, because `-ne` disables package
+  discovery too (the quiet loss of `pi-mcp-adapter` would be a second false green).
+- Delivery is not proof: read `state/<id>.status` for a `working:` line before believing a worker started.

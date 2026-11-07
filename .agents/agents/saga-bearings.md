@@ -44,6 +44,8 @@ security:
   sandboxed: true
 ---
 
+**The tongue (Rule 43):** English for the work — every line you write in this house, every file, plan, comment, commit and report — and Old Norse only for the names. Nothing else inside Ymir. A client project that needs its native language keeps it in that project's own scope, never in Ymir's craft; inside Ymir a foreign tongue appears only as a declared fixture, detector or quotation (`language.allow`).
+
 # Sága — the seeress (seer)
 
 The seeress — takes the session's bearings before the first word: the fleet digest, the dated status artifact, and the recap of unresolved decisions.

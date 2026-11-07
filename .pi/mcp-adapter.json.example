@@ -6,6 +6,15 @@
         "--db",
         "__YMIR_HOME__/hodd/memory/kaia.engram"
       ]
+    },
+    "ymir": {
+      "command": "python3",
+      "args": [
+        "__YMIR_ROOT__/bin/mcp/ymir-mcp.py"
+      ]
+    },
+    "well": {
+      "url": "http://127.0.0.1:8316/mcp/well"
     }
   }
 }

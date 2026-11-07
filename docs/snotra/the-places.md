@@ -44,7 +44,7 @@ meeting_card:              # one card per meeting on the company's meetings boar
 
 roles:
   chair: "Reygan Assareh"  # sends the agenda 1–2 days ahead (DEC-04); holds the register
-  operator: "Lars-Josef Lindbom"
+  operator: "Lars-<the operator> <the operator>"
 
 cadence:
   agenda_lead_days: 2
@@ -135,3 +135,5 @@ a Gimlé or Jira board is never polluted with Trello-shaped cards.
 - **Rename a list silently.** The profile quotes the real name (the Documentation board's `Backlist` is the
   board's own spelling) — a door that "fixes" a name files cards nowhere.
 - **Cross a restricted place.** `never:` is quoted by the doors; a crossing needs a decision, not a config.
+
+**2026-11-03 (correction, appended):** the operator's name was redacted — it is personal data and belongs in the home, not in a public repository (RULES/04, RULES/06).

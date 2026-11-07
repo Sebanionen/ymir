@@ -31,8 +31,29 @@ SYSTEM_PROMPT = (
     "you about the whiteboard they are working on. When a scene is shared, you can see its elements and "
     "may describe, critique, or propose additions. Reply with Mermaid (flowchart TD) when asked to draw; "
     "otherwise answer in plain words. Never invent elements that are not on the board. Propose, never "
-    "apply — the person accepts or refuses each change."
+    "apply — the person accepts or refuses each change. When you propose a change, use the scene.add tool "
+    "to describe the element you would add; the person will accept or refuse it."
 )
+
+TOOLS = [{
+    "type": "function",
+    "function": {
+        "name": "scene_add",
+        "description": "Propose adding one new element to the board. The person must accept before it is applied.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "type": {"type": "string", "enum": ["rectangle", "ellipse", "diamond", "text"], "description": "element type"},
+                "label": {"type": "string", "description": "text label for the element"},
+                "x": {"type": "number", "description": "x position"},
+                "y": {"type": "number", "description": "y position"},
+                "width": {"type": "number", "description": "width"},
+                "height": {"type": "number", "description": "height"},
+            },
+            "required": ["type", "label"],
+        },
+    },
+}]
 
 
 class State:
@@ -52,7 +73,7 @@ class State:
         return None
 
 
-def stream_upstream(messages, scene_doc):
+def stream_upstream(messages, scene_doc, tools=None):
     """Yield SSE frames in the TTD contract."""
     enriched = list(messages)
     # prepend scene context as a system note on the last user turn
@@ -69,6 +90,9 @@ def stream_upstream(messages, scene_doc):
     # system prompt first
     payload = {"model": MODEL, "messages": [{"role": "system", "content": SYSTEM_PROMPT}] + enriched,
                "stream": True}
+    if tools:
+        payload["tools"] = tools
+        payload["tool_choice"] = "auto"
     data = json.dumps(payload).encode()
     req = urllib.request.Request(UPSTREAM + "/chat/completions", data=data, method="POST")
     req.add_header("Content-Type", "application/json")
@@ -101,6 +125,9 @@ def stream_upstream(messages, scene_doc):
                     delta = choice.get("delta", {}).get("content")
                     if isinstance(delta, str) and delta:
                         yield "data: " + json.dumps({"type": "content", "delta": delta}) + "\n\n"
+                    tc = choice.get("delta", {}).get("tool_calls")
+                    if isinstance(tc, list) and tc:
+                        yield "data: " + json.dumps({"type": "tool_call", "delta": tc}) + "\n\n"
                     fr = choice.get("finish_reason")
                     if fr:
                         yield "data: " + json.dumps({"type": "done", "finishReason": fr}) + "\n\n"
@@ -166,7 +193,7 @@ class Handler(BaseHTTPRequestHandler):
         # identity from Remote-User or token (best-effort; Brokk is house-side)
         subject = self.headers.get("Remote-User", "").strip() or "anonymous"
         scene_doc = self.state.read_scene(subject, scene_id) if scene_id else None
-        gen = stream_upstream(messages, scene_doc)
+        gen = stream_upstream(messages, scene_doc, TOOLS)
         self._sse(gen)
 
     def log_message(self, fmt, *args):

@@ -108,12 +108,42 @@ contract:
     door: bin/engine/home-seed.sh
     required: true
     why: "the roster: which figure stands on which machine. Empty is honest; absent is a refusal"
+  - path: hodd/identity/machines.yaml
+    kind: stub
+    template: hodd/identity/machines.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "the fleet's Telegram registry: each machine's bot id, chat and vault path. Absent, the fleet door is loud and names this shape rather than listing nothing"
   - path: hodd/identity/grants.yaml
     kind: seeded
     template: .agents/config/grants.yaml.example
     door: bin/engine/home-seed.sh
     required: false
     why: "the mesh's skill grants; absent, a peer call is refused by name (the right refusal)"
+  - path: hodd/identity/smiths.txt
+    kind: seeded
+    template: hodd/identity/smiths.txt.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "who is a smith: the logins that may push a branch and may never open a PR. Absent, pr-ship-guard skips and names this file rather than passing silently (plan 203 §14)"
+  - path: hodd/identity/skills-grants.yaml
+    kind: seeded
+    template: .agents/config/skills-grants.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "who may call which skill through the skills door, per person and per tenant; absent, the door grants nothing (plan 184 §10, plan 192)"
+  - path: config/jev-doors.yaml
+    kind: seeded
+    template: .agents/config/jev-doors.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "where the decision models answer: id, model, port, licence, role. Absent, the intake gate refuses by name (plan 201)"
+  - path: hodd/identity/doors.yaml
+    kind: seeded
+    template: .agents/config/doors.yaml.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "the register of doors a collaborator is offered; absent, no door is offered (RULES/47)"
   - path: hodd/identity/collaborators.yaml
     kind: seeded
     template: .agents/config/collaborators.yaml.example
@@ -122,6 +152,12 @@ contract:
     why: "who may appear on a record; absent, no collaborator is resolvable"
 
   # ── configuration: read from the home, else the shipped default, and it says which ──
+  - path: config/a2a-front.env
+    kind: seeded
+    template: .agents/config/a2a-front.env.example
+    door: bin/engine/home-seed.sh
+    required: false
+    why: "the token ward's upstream, listen address and audience; absent, the ward is not raised (plan 192)"
   - path: config/agents.yaml
     kind: seeded
     template: .agents/config/agents.yaml.example

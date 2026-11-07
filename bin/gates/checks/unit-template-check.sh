@@ -43,7 +43,8 @@ fi
 
 files=()
 for f in tools/mill/systemd/*.service tools/mill/systemd/*.target \
-         tools/web/systemd/*.service  tools/web/systemd/*.target; do
+         tools/web/systemd/*.service  tools/web/systemd/*.target \
+         tools/skills-mcp/systemd/*.service; do
   [ -f "$f" ] && files+=("$f")
 done
 if [ "${#files[@]}" -eq 0 ]; then
@@ -60,6 +61,8 @@ render() {  # <template> → stdout, the template with its placeholders filled
       -e "s|__YMIR_HLIDSKJALF_PORT__|3888|g" \
       -e "s|__YMIR_OPERATOR_CONFIG__|/tmp/ymir-check/config|g" \
       -e "s|__YMIR_OPERATOR_STATE__|/tmp/ymir-check/state|g" \
+      -e "s|__YMIR_HOME__|/tmp/ymir-check/home|g" \
+      -e "s|__YMIR_SKILLS_MCP_PORT__|8791|g" \
       -e "s|__YMIR_SMIDJA_PORT__|8437|g" \
       -e "s|__YMIR_VIZ_DB__|/tmp/ymir-check/viz.db|g" \
       -e "s|__YMIR_VIZ_DIR__|/tmp/ymir-check/viz|g" \

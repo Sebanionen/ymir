@@ -1,0 +1,11 @@
+# skills-grants — who may call which skill through the skills door (plan 184 §10, plan 192).
+# Copy to $YMIR_HOME/hodd/identity/skills-grants.yaml and fill it in. The Allfather seals every row.
+version: 1
+grants: []
+#  - person: <gate identity>          # the identity the gate already knows
+#    tenant: <realm>                  # the realm whose material the call may touch
+#    skills: [skills_list, skills_get]
+#    token_ref: secrets/skills/<person>.token   # a REFERENCE, never a value (Rule 24)
+#    issued: '<YYYY-MM-DD>'
+#    expires: '<YYYY-MM-DD>'
+#    note: 'read-only; revoked by deleting this row and restarting the door'

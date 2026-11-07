@@ -176,7 +176,21 @@ ensure_engram() {
   if "$py" -c 'import engram' >/dev/null 2>&1; then
     mkdir -p "$(dirname "$ENGRAM_PY_FILE")" 2>/dev/null
     printf '%s\n' "$py" >"$ENGRAM_PY_FILE" 2>/dev/null
-    say engram present "importable under $(engram_v "$py")"
+    # The LIBRARY is enough for the bridge; the MCP server is not. `engdbram`
+    # without its [mcp] extra imports fine and then dies at startup with
+    # `ModuleNotFoundError: No module named 'mcp'` — which the harness reports as
+    # "Connection closed", not as a missing extra (found 2026-11-04). Mend it.
+    if ! "$py" -c 'from mcp.server.fastmcp import FastMCP' >/dev/null 2>&1; then
+      engram_ensure_pip "$py" >/dev/null 2>&1 || true
+      if "$py" -m pip install --user --break-system-packages -q 'engdbram[mcp]' 'mcp<2' >/dev/null 2>&1 \
+         && "$py" -c 'from mcp.server.fastmcp import FastMCP' >/dev/null 2>&1; then
+        say engram mended "the [mcp] extra was missing — the MCP server can start under $(engram_v "$py")"
+      else
+        say engram partial "the library imports but the MCP server cannot: pip install 'engdbram[mcp]' 'mcp<2' under $(engram_v "$py")"
+      fi
+    else
+      say engram present "importable + MCP server under $(engram_v "$py")"
+    fi
     return 0
   fi
 
@@ -203,7 +217,7 @@ ensure_engram() {
   fi
 
   if [ -z "$why" ]; then
-    if "$py" -m pip install --user --break-system-packages -q engdbram >/dev/null 2>&1 \
+    if "$py" -m pip install --user --break-system-packages -q 'engdbram[mcp]' 'mcp<2' >/dev/null 2>&1 \
        && "$py" -c 'import engram' >/dev/null 2>&1; then
       mkdir -p "$(dirname "$ENGRAM_PY_FILE")" 2>/dev/null
       printf '%s\n' "$(command -v "$py" 2>/dev/null || printf '%s' "$py")" >"$ENGRAM_PY_FILE" 2>/dev/null

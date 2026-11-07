@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "creditsUsed": 2,
+  "data": {
+    "news": [
+      {
+        "title": "Agent sandboxes on exe.dev get persistent disks and HTTPS",
+        "url": "https://exe.dev/blog/persistent-sandboxes",
+        "snippet": "exe.dev VMs now keep their disks and expose HTTPS ports, available now for agent sandboxes.",
+        "date": "__NOW_ISO__"
+      }
+    ],
+    "web": [
+      {
+        "title": "pi-durable 1.1.0 adds task timings for agent monitoring",
+        "url": "https://simonwillison.net/2026/Oct/8/pi-durable-1-1/",
+        "description": "Duplicate of a feed item"
+      }
+    ]
+  }
+}

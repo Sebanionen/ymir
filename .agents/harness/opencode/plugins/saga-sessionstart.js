@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { realpathSync } from "node:fs";
 import { resolve } from "node:path";
+import { Plugin } from "@opencode/plugin";
 import { encodeRoddOperationalInput } from "./lib/rodd-operational-input.js";
 
 // Sága — Brokk primary session-start nudge for OpenCode.
@@ -41,37 +42,40 @@ async function resolveRoot(anchor) {
   return resolvePath(anchor);
 }
 
-export const SagaSessionstart = async ({ client, directory, worktree }) => {
-  const root = worktree ? resolvePath(worktree) : await resolveRoot(directory);
+export default Plugin.define({
+  id: "ymir.saga.sessionstart",
+  async setup(ctx) {
+    const root = await resolveRoot(ctx.location?.directory);
 
-  return {
-    event: async ({ event }) => {
-      if (event.type !== "session.created") return;
-      const sessionID = event.properties?.info?.id ?? event.properties?.sessionID;
-      if (!sessionID || handledSessions.has(sessionID) || !root) return;
-      handledSessions.add(sessionID);
+    const controller = new AbortController();
+    void (async () => {
+      for await (const event of ctx.event.subscribe({
+        types: ["session.created"],
+        signal: controller.signal,
+      })) {
+        const sessionID = event.data?.sessionID;
+        if (!sessionID || handledSessions.has(sessionID) || !root) continue;
+        handledSessions.add(sessionID);
 
-      const result = await runProcess(`${root}/bin/saga-sessionstart-run.sh`, []);
-      if (result.code !== 0) return;
-      const digest = result.stdout.trim();
-      if (!digest) return;
+        const result = await runProcess(`${root}/bin/saga-sessionstart-run.sh`, []);
+        if (result.code !== 0) continue;
+        const digest = result.stdout.trim();
+        if (!digest) continue;
 
-      let text = digest;
-      try {
-        text = await encodeRoddOperationalInput(root, "session-start", digest);
-      } catch {
-        text = digest;
+        let text = digest;
+        try {
+          text = await encodeRoddOperationalInput(root, "session-start", digest);
+        } catch {
+          text = digest;
+        }
+
+        try {
+          await ctx.session.prompt({ sessionID, text });
+        } catch {
+        }
       }
+    })().catch(() => {});
 
-      try {
-        await client.session.promptAsync({
-          path: { id: sessionID },
-          body: {
-            parts: [{ type: "text", text }],
-          },
-        });
-      } catch {
-      }
-    },
-  };
-};
+    return () => controller.abort();
+  },
+});

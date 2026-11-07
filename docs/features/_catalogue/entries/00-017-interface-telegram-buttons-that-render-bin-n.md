@@ -1,0 +1,4 @@
+---
+section: core-install-run-operate
+---
+| Interface | **Telegram buttons that render** (`bin/notify/telegram-buttons.sh` · `telegram-buttons.mjs`) | The bridge parses two wrappers and **silently drops** everything else, so an almost-right control arrives as prose with no error anywhere. `emit` writes the canonical wrapper (footer comment or column-zero `telegram_button` fence) from `label|prompt` pairs, refusing a button that could not work: no prompt, an unknown style, a label past Telegram's 64, more than eight in a row, more than six in a reply. `check` reads a draft reply and names every wrapper with its line, including the mistake that looks right — the legacy colon form `<!--telegram_button: …-->`, which activates nothing. 17 assertions in `bin/notify/tests/` | [Telegram buttons](docs/features/telegram-buttons.md) |

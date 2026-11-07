@@ -239,3 +239,34 @@ and the installed `codex plugin add --help` / `codex plugin marketplace add --he
 ## 2026-11-02 — bounded Gná arm
 
 gna_watch_arm now uses bounded canonical start/status commands with an actual Codex thread ID. Windows routes through WSL Linux Python, never native process liveness. Native Codex thread heartbeat owns automatic wake delivery; status alone does not prove it. Poll leaves events pending until the processing turn acknowledges handled work. See docs/features/gna-in-codex.md and tests/test_gna_codex.mjs.
+
+### Well command contract
+
+The Codex well tools call the same `mimir.sh` door as the other harnesses.
+Recall passes `--k <limit>`; `ymir_well(search)` is an alias for hybrid
+recall, and `ymir_well(stats)` calls health. These aliases do not imply
+additional native `mimir.sh` commands. OpenCode uses the same mapping.
+
+
+### Explicit WSL well route
+
+Codex can select a Linux WSL well through the private home file
+`hodd/data/codex-well.json`. It is an object of strings: `route` is `wsl`,
+`distro` is the WSL distribution name, and `root`, `home`, and `store` are
+absolute Linux paths naming its Ymir checkout, private home, and exact selected
+database. `service` (default `mimir.service`) and `url` (default the well's
+loopback origin) are optional. No private values belong in the repository.
+The corresponding environment overrides are `YMIR_CODEX_WELL_ROUTE`,
+`YMIR_WSL_DISTRO`, `YMIR_WSL_WELL_ROOT`, `YMIR_WSL_WELL_HOME`,
+`YMIR_WSL_WELL_STORE`, `YMIR_WSL_WELL_SERVICE`, and `MIMIRSBRUNN_URL`.
+
+Each well call starts the named user service through the selected distribution,
+checks its health from inside that distribution, refuses a store mismatch, and
+runs the CLI there with `MIMIR_REQUIRE_BRIDGE=1`. A bridge failure never writes
+to a local offline log. Invalid or incomplete WSL configuration fails closed.
+The file is read at each well call. To require this selection, an empty marker
+`hodd/data/codex-well.required` is created before the JSON file. When the
+marker exists, a missing or invalid file or a non-WSL route is refused. With
+neither file, the existing local route applies. The store must be inside the
+selected Linux home. Windows and Linux stores are not copied or merged.
+The user must restart Codex after installing the updated plugin code.

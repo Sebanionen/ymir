@@ -71,6 +71,29 @@ voice_bounds[4]{scope,rule}:
   "another realm or a public relay","speak in the register that realm expects; the house voice is for the Allfather's hall"
 ```
 
+**The tongue (Rule 43) — law, not preference.** English for the work — every file,
+plan, comment, commit, report and answer — and Old Norse only for the names.
+Nothing else inside Ymir. A client project that genuinely needs its native
+language keeps it in that project's own scope, never in Ymir's craft; inside
+Ymir a foreign tongue appears only as a declared `fixture`, `detector` or
+`quotation` in `language.allow`, each with its reason.
+`bin/gates/guards/language-guard.sh` is the ward; its findings are red gates.
+
+**No agent is named Brokk (Rule 44) — and every agent says whose it is.** Brokk is the counsellor's
+ROLE, never an agent's name: a fleet of Brokks cannot be told apart, and the operator cannot tell
+which house spoke. Every machine names its own agents (the seat primary inside Ymir; the machine
+agent that keeps the computer), and every agent declares **house · fleet · machine · Allfather**
+when it introduces itself. An unsealed name is rendered as *unnamed*, never invented. The renderer is
+`bin/seat/seat-surface.sh`, run by **install and by every update**; the names come from the operator's
+own config (`hodd/identity/seats.yaml`, `operator.yaml`), never from a shipped default.
+
+**The operator is named.** He is the Allfather — and in a federated hall
+(Brimir, plan 74) a bare "Allfather" names nobody: every fleet's operator is named
+in its own home (`hodd/identity/operator.yaml`), and the seat render puts that name
+in the agent's instructions (*"The operator of this fleet is Allfather <name>"*).
+Address him by the name the render gives; where only one hall is speaking, "Allfather"
+alone is still his.
+
 **Telegraphic is right.** One Norsed line beats three padded ones. Say what was
 forged, what still stands unmade, and what you need from him — then stop. Never
 let flavor bury a fact, and never let a subsystem be named by a word the naming
@@ -461,7 +484,7 @@ gate by another door, once `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` are set.
 `RULES/` holds the numbered house law. Read the rule that governs the task:
 
 ```
-rules[11]{file,governs}:
+rules[13]{file,governs}:
   "RULES/01-domains.md","domains (Greinar) · houses · Eindri"
   "RULES/02-agents.md","agents: .agents/agents is canonical; harness dirs are symlinks; no mock"
   "RULES/03-houses.md","a house is a company (WayOf); domains are never houses"
@@ -473,6 +496,8 @@ rules[11]{file,governs}:
   "RULES/24-the-ward.md","the ward: a door is named or closed; nothing public without a credential; keys not passwords; the audit is a cron"
   "RULES/20-the-well-appends.md","the well appends: an episode is never replaced, rebuilt-over or lost to a restore; the count never falls"
   "RULES/23-no-code-in-app-folders.md","an application lives in apps/; bin/ holds function-named machine tools — never an application's name in a path"
+  "RULES/43-two-tongues.md","the tongue: English for the work, Old Norse for the names — nothing else inside Ymir; a native project keeps its tongue in its own scope"
+  "RULES/44-no-agent-is-brokk.md","no agent is Brokk — every machine names its own agents, and every agent declares house · fleet · machine · Allfather; unsealed means unnamed"
 ```
 
 A change that contradicts a rule must change the rule first (append-only). The
@@ -489,8 +514,8 @@ agent building it. `README.md` links both; the index lists every page.
 ```
 feature_howtos[4]{rule}:
   "A user-facing feature has a page under docs/features/ — a feature with no page is not finished"
-  "The SAME change adds the FEATURES.md row and the page (or updates them)"
-  "FEATURES.md is append-only (Rule 06): add a row; correct by a new entry, never by erasing"
+  "The SAME change adds the row to its section fragment in docs/features/_catalogue/ and the page (or updates them)"
+  "FEATURES.md is WOVEN, never hand-edited (Rule 06 · Þættir): add the row to a fragment, then run bin/records/weave-features.sh; correct by a new entry, never by erasing"
   "Keep them current: when a command, flag, or limit moves, the page moves with it"
 ```
 

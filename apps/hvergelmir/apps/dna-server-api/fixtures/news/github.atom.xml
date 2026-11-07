@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Release notes from pi</title>
+  <entry>
+    <title>v1.1.0</title>
+    <link rel="alternate" type="text/html" href="https://github.com/earendil-works/pi/releases/tag/v1.1.0"/>
+    <updated>__NOW_ISO__</updated>
+    <content type="html">&lt;h2&gt;Release notes&lt;/h2&gt;&lt;p&gt;Version 1.1.0 changelog: task records carry startedAt and endedAt. Breaking change: storage implementations must honor scan order.&lt;/p&gt;</content>
+  </entry>
+</feed>

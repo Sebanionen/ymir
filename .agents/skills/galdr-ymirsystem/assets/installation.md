@@ -467,7 +467,7 @@ and the fix, never a shrug.
 ## The steps
 
 ```
-install[35]{step,what,self-heals}:
+install[36]{step,what,self-heals}:
   "panes","the run shown in a herdr pane","bin/seat/herdr-run.sh sits a pane beside the caller when inside herdr; inline otherwise — a pane that cannot be raised never loses the work"
   "prereqs","git python3 bun docker|podman gh · mcp<2","bin/engine/prereq-ensure.sh installs bun+uv+mcp in user space; engram is an honest optional SKIP"
   "memory-well","the engram engine (Mimirsbrunn)","optional; reported with the exact next command, never a fake fix"
@@ -485,7 +485,8 @@ install[35]{step,what,self-heals}:
   "backend","Þjazi — herdr (protocol 14+) or tmux","bin/seat/herdr-ensure.sh detects/tests version, installs via the pinned installer or falls back to tmux"
   "host","this machine — sensed on EVERY host","bin/host/host-sense.sh senses the setup on ANY host (Rule 05); the Omarchy layer then RECORDS it (bin/host/omarchy-sense.sh observe), places the apps (bin/desktop/desktop-place.sh), installs the post-update hook and the wedge-alarm channel, and (on Omarchy) offers the suggested shell plugins — listed, never installed unbidden; seeds the private config/agents.yaml from its example and DERIVES the Eindri dispatch profile from the machine into $YMIR_HOME/hodd/config/eindri-dispatch.json (bin/fleet/dispatch-profile.sh derive — the shipped template with unfilled model tokens is never left to look active; the private override wins over the repo file)"
   "role","what this machine IS — resolved BEFORE the chain, so the whole step set is role-selected","bin/skuld/role-lib.sh establish_roles: --role/$YMIR_ROLE → the fleet registry (bin/skuld/role.sh) → the machine card in hodd/data/machines.md → ask (interactive) → the safe body dev; step_role reports the role + components + live link, records it with bin/skuld/role.sh set, and folds a Machine Card into the ONE registry hodd/data/machines.md (plan 39). An unknown --role is refused (exit 2); --check writes nothing"
-  "fleet","the role-gated fleet services: the heart's offices (well-mcp · ratatoskr A2A node · the mill worker · the embedding stone · the cards root · snotra, the meeting ear's MCP face) on heart seats, the stone on forge seats, the well door, the MCP gateway and the a2abridge mesh directory on dev seats","bin/fleet/fleet-ensure.sh copies tools/ and packages/ to the seat (a DIRECTORY row keeps its relative path, so a cross-package import resolves in the deployed copy as in the repo), plus the snotra operator commands — WITH hoard-lib.sh beside them, because each resolves the operator's home through it and a command without its resolver dies on an unbound YMIR_HOME — to ~/.fleet; materializes ONLY what the roles owe (a2abridge-directory is engine-owned: patched by bin/bridge/a2abridge-ensure.sh and materialized from its house template when owed; the arm is seated as the standing unit ymir-syn-watch.service from tools/mill/systemd/), purges stale units, points the seat's pi mcp-adapter.json at THIS body's MCP gateway (bin/bridge/mcp-gateway.sh, :8316, which fronts well/bolthorn/skuld and resolves the heart at request time; --well-url still forces an explicit well door), and carries the model rail the same way — bin/bridge/mcp-config.sh writes the serving box under the config's `ymir` block, read from the ONE resolver bin/model/rail-resolve.sh (plan 51 Part 9c: models come from whichever strong box is CONNECTED), enables the ONE target (ymir.target), raises them, and VERIFIES — a program that cannot rise is a FAILURE with its reason, never a warn"
+  "fleet","the role-gated fleet services: the heart's offices (well-mcp · ratatoskr A2A node · the mill worker · the embedding stone · the cards root · snotra, the meeting ear's MCP face) on heart seats, the stone on forge seats, the well door, the MCP gateway and the a2abridge mesh directory on dev seats","bin/fleet/fleet-ensure.sh copies tools/ and packages/ to the seat (a DIRECTORY row keeps its relative path, so a cross-package import resolves in the deployed copy as in the repo), plus the snotra operator commands — WITH hoard-lib.sh beside them, because each resolves the operator's home through it and a command without its resolver dies on an unbound YMIR_HOME — to ~/.fleet; materializes ONLY what the roles owe (a2abridge-directory is engine-owned: patched by bin/bridge/a2abridge-ensure.sh and materialized from its house template when owed; the arm is seated as the standing unit ymir-syn-watch.service from tools/mill/systemd/), purges stale units, points the seat's pi mcp-adapter.json at THIS body's MCP gateway (bin/bridge/mcp-gateway.sh, :8316, which fronts well/bolthorn/skuld and resolves the heart at request time; --well-url still forces an explicit well door), and carries the model rail the same way — bin/bridge/mcp-config.sh writes the serving box under the config's `ymir` block, read from the ONE resolver bin/model/rail-resolve.sh (plan 51 Part 9c: models come from whichever strong box is CONNECTED), enables the ONE target (ymir.target), raises them, and VERIFIES — a program that cannot rise is a FAILURE with its reason, never a warn; the mail desk (gna-desk) rides the same table and is ARMED ONLY WHERE AN ACCOUNT IS DECLARED (see the mail step)"
+  "mail","Gná — the one mail desk (read-only, loopback :8490): the inbox the arm is told about, as it arrives","a role-owed program (heart · forge · dev) in the autoboot ONE table, materialized by bin/fleet/fleet-ensure.sh from tools/mill/systemd/gna-desk.service — a TEMPLATE rendered against the PINNED runtime (__YMIR_BIN_DIR__ resolves from $YMIR_HOME/config/runtime.env: YMIR_RUNTIME_DIR, default ~/ymir-runtime, never the working tree) — and ARMED ONLY WHERE AN ACCOUNT IS DECLARED: with no row in $YMIR_HOME/hodd/memory/mail/accounts.yaml the ensure names that file and arms nothing, because a desk with nothing to read must never read as an empty inbox. bin/agents/eir-doctor.sh's mail surface reports ok · unconfigured · broken, and its mend is bin/mail/install.sh"
   "mesh","the A2A mesh (Ratatoskr): the local discovery directory (:7777) + the engine","bin/bridge/a2abridge-ensure.sh installs the a2abridge engine (A2A_NO_IDE=1), patches its user unit (journal output + the boot hook WantedBy=default.target), and raises the directory; the directory is a role-owed program (heart · dev) in the autoboot ONE table, materialized from tools/mill/systemd/a2abridge-directory.service and verified beside the well/tickets/skills doors"
   "autoboot","the boot law: Linger asserted on headless seats, ymir.target enabled once, the boot proof run","checks loginctl show-user $USER -p Linger (enables it headless or fails with the remedy), reports the value on every seat, and calls bin/engine/ymir-autoboot.sh verify — every role-owed program enabled and standing"
   "heimdall","the ssh-key ward (Heimdall) — entry by the rune carried on GitHub","bin/host/heimdall-ensure.sh arms it: ward script to ~/.local/bin (stable path, not the repo tree), the operator's GitHub user recorded, keys fetched/validated/merged into ~/.ssh/authorized_keys, 15-min user timer live (loginctl linger note for headless). --install may add openssh via pacman/apt (sudo, system package). Idempotent; a seat can stand warded or bare — reported honestly"
@@ -1360,3 +1361,38 @@ installs receive the same Codex plugin source and deployment helper. Linux and
 macOS use the same Node helper; Windows follows the existing WSL runtime layer.
 A successful local CLI test does not establish that the entire Windows/WSL fleet
 runtime is installed or working; its shell and service checks remain required.
+
+## 2026-11-04 — the install seats the ARM, and the seat render writes only on change
+
+Appended. Two changes to the install chain, both about the same fault: a capability that is committed
+and correct but never seated by the install is a capability the machine does not have (plan 66 §7).
+
+**`step_loaders` now arms the session side.** After `valknut-load.sh --all` (which seats the packets,
+the skills and the extensions on Pi, OpenCode and Hermes), the install runs
+`bin/pi/arm.sh hook hermes --install`: a stable shim at `~/.hermes/agent-hooks/`, two `hooks:` entries
+(`on_session_start`, `pre_llm_call`) in `~/.hermes/config.yaml`, and the `(event, command)` consent
+pairs in `~/.hermes/shell-hooks-allowlist.json`. The hook runs the Sága digest at session start and
+returns it as context on the session's first turn — the session side of the Gná arm for a harness that
+has no extension API. A host without Hermes is `SKIP "no Hermes on this host — no session hook to
+seat"`, never a silent pass (RULES/25), and a hook that cannot be seated is a `WARN` naming the door.
+
+```
+install_arm[4]{step,what,skip,note}
+  "step_loaders","bin/pi/arm.sh hook hermes --install","no hermes on this host","the arm's session side; the watch LOOP is the ymir-syn-watch unit and is untouched"
+  "bin/agents/groa-update.sh","re-seats the same hook on every update","no hermes on this host","an update that moves the code under a hook's feet must re-point it — the shim resolves the house at run time, so it survives a worktree"
+  "--check","writes nothing","-","a dry run that writes is not a dry run: the arm block sits in the APPLY path only"
+  "honest limit","Codex/Cursor have no session hook surface","-","named as unarmable by the door itself; never faked"
+```
+
+**The seat render is idempotent by CONTENT.** `bin/seat/seat-surface.sh` writes `~/.hermes/SOUL.md`'s
+marked block and the repo's `.hermes.md` only when the bytes differ, so the install's identity step
+(`step_identity` → `seat-surface.sh`) and every Gróa run can repeat without churn — and "the renderer
+delivered the seat" becomes provable by running it twice and watching the second run print
+*already current (nothing written)*. The SOUL block's **door list is read from
+`bin/mcp/ymir-mcp.py --selftest`**, not restated in the template: one list, so a seat file cannot name
+fifteen doors while the packet registers thirty. `bin/gates/tests/test_hermes_seat.sh` compares the two
+sets on every run.
+
+Both facts are asserted, not asserted-about: `install` and `groa-update` are the two doors that deliver
+the seat, the packet and `.hermes.md`, and the test renders from the tree it stands in — so a second
+checkout re-rendering the machine's SOUL.md from older code shows up as a red row, not as a mystery.

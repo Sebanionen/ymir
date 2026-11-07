@@ -47,17 +47,42 @@ class Recorder:
         if head == "git":
             return proc.run(argv, cwd=kwargs.get("cwd"), env=kwargs.get("env"))
 
+        # A scripted answer wins over every default below: a test that needs a
+        # refusal must be able to script the door it is refusing from.
+        joined = " ".join(argv)
+        bare = " ".join([Path(head).name, *argv[1:]])
+        for prefix, response in self.responses.items():
+            if joined.startswith(prefix) or bare.startswith(prefix):
+                return response
+
+        if Path(head).name == "pi-launcher.sh":
+            # The ONE launcher generator (bin/seat/pi-launcher.sh) is a shell door;
+            # the double answers the shape it composes for THIS seat, so the engine's
+            # test asserts the wiring (discovery off, every extension named, the brief
+            # carried) without a pane, and cannot pass on a hand-built line.
+            args = argv[1:]
+            cwd = args[1] if len(args) > 1 else "."
+            model = brief = ""
+            for index, part in enumerate(args):
+                if part == "--model" and index + 1 < len(args):
+                    model = args[index + 1]
+                if part == "--brief" and index + 1 < len(args):
+                    brief = args[index + 1]
+            model_flag = f" --model '{model}'" if model else ""
+            return completed(0, f"pi{model_flag} -ne -e {cwd}/.pi/extensions/a/index.ts \"$(cat '{brief}')\"" + "\n")
+
+        if Path(head).name == "seat-prove.sh":
+            # A healthy backend answers with the pane the agent stands in. A test
+            # that wants a DEAD seat scripts its own refusal (bin/seat/seat-prove.sh).
+            pane = argv[1] if len(argv) > 1 else "?"
+            return completed(0, f"{pane}\tworking\n")
+
         if head == "pi" and "--list-models" in argv:
             body = "\n".join(
                 f"{token.split('/', 1)[0]} {token.split('/', 1)[1]}" for token in self.catalog
             )
             return completed(0, body + "\n")
 
-        joined = " ".join(argv)
-        bare = " ".join([Path(head).name, *argv[1:]])
-        for prefix, response in self.responses.items():
-            if joined.startswith(prefix) or bare.startswith(prefix):
-                return response
         return self.default
 
     def saw(self, prefix: str) -> list[list[str]]:

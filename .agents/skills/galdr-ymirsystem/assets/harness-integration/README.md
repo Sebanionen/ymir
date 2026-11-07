@@ -17,6 +17,16 @@ This is the reference an agent reads to add a harness adapter or rebuild one fro
 | [`claude-code.md`](claude-code.md) | Claude Code |
 | [`cursor.md`](cursor.md) | Cursor |
 | [`codex.md`](codex.md) | Codex |
+| Hermes (`hermes`, `~/.hermes`) | Nous Research's worker runtime — seated **2026-11-03** |
+
+**Hermes is first-class (2026-11-03).** *"hermes should also be one of the harnesses we
+support like pi, claude, opencode etc … so hermes gets all the tools needed from ymir
+installed."* It wears the same packets from the one list: `bin/seat/hermes-seat.sh` reads
+`~/.pi/agent/mcp-adapter.json` and writes the same `mcp_servers` map into
+`~/.hermes/config.yaml` (merge-preserving, idempotent); `hermes skills trust` makes the one
+skills tree load; `bin/seat/seat-surface.sh` points `~/.hermes/AGENTS.md` at the seat file,
+so Hermes reads this seat's own name and the named operator; `bin/seat/valknut-load.sh
+--hermes` (and `--all`) seats it, and a machine without Hermes reports a clean skip.
 | *(none — not implemented)* | Grok |
 
 Runtime inventory that every adapter calls: [`../runtime-components.md`](../runtime-components.md).
@@ -408,15 +418,35 @@ Legend: ✅ implemented · ⚠️ partial/inert-by-design · ❌ not implemented
 | **Cursor** | ✅ `.cursor/hooks.json` `sessionStart` | ⚠️ interactive only | ✅ `stop` → `{"followup_message":...}` | ✅ `preToolUse` matcher `Shell` | ✅ `preToolUse` matcher `Shell` | ❌ |
 | **Grok** | ❌ no `.grok/` in Ymir | ❌ | ❌ | ❌ | ❌ | ❌ |
 
+### What a harness must own, and what is one door
+
+**Read `what-a-harness-must-own.md` (2026-11-04) before adding a tool to any harness.** It is the audit
+that measured the duplication — 39 MCP doors, 45 Pi tool names, 21 OpenCode tool names, **19 names in all
+three** — and the capability matrix per harness (Pi · OpenCode · Claude Code · Codex · Cursor · Gemini ·
+Kimi · Hermes · Muse · Zed): who has an MCP client, who has a lifecycle hook, and how a gap is closed.
+The law it earns: **a tool the model calls is one MCP door; a moment the harness decides (session start ·
+turn end · before a tool) is a five-file native seam; a spawner is ours.** Plan 183 carries the phases.
+
 ### Adapter files at a glance
+
+**OpenCode 2 uses the V2 plugin API.** A plugin default-exports `Plugin.define({ id, setup(ctx) })` and
+registers hooks on the domain that owns the operation (`ctx.tool.hook("execute.before", …)`,
+`ctx.event.subscribe({ types, signal })`, `ctx.session.prompt({ sessionID, text })`). The V1 shape
+(`export const Name = async ({ client, directory }) => ({ …hooks })`) **does not load at all** in V2 — the
+server answers `Plugin must export a default definition with an id and an effect or setup function`. The
+five plugins below were ported on 2026-11-04 (`docs/fixes/runtime/2026-11-04-twelve-plugins-loaded-none-ran.md`).
+They import `@opencode/plugin`, so `~/.config/opencode` must hold that dependency (`bin/seat/harness-extensions-install.sh`
+ensures it). There is exactly **one load path**: the deployed `~/.config/opencode/plugins` — never also a
+project `.opencode/plugins`.
 
 | Path | Exports / shape | Contract parts |
 |---|---|---|
-| `.agents/harness/opencode/plugins/saga-sessionstart.js` | `export const SagaSessionstart` | 1 |
-| `.agents/harness/opencode/plugins/syn-watch-arm.js` | `export const SynWatchArm` | 2 |
-| `.agents/harness/opencode/plugins/syn-turnend-guard.js` | `export const SynTurnendGuard` | 2 (consult coordinator), 3 |
-| `.agents/harness/opencode/plugins/syn-pretool-check.js` | `export const SynPretoolCheck` | 4 (arm) |
-| `.agents/harness/opencode/plugins/syn-cd-check.js` | `export const SynCdCheck` | 4 (cd) |
+| `.agents/harness/opencode/plugins/saga-sessionstart.js` | `default Plugin.define({ id: "ymir.saga.sessionstart" })` | 1 |
+| `.agents/harness/opencode/plugins/syn-watch-arm.js` | `default Plugin.define({ id: "ymir.syn.watch-arm" })` | 2 |
+| `.agents/harness/opencode/plugins/syn-turnend-guard.js` | `default Plugin.define({ id: "ymir.syn.turnend-guard" })` | 2 (consult coordinator), 3 |
+| `.agents/harness/opencode/plugins/syn-pretool-check.js` | `default Plugin.define({ id: "ymir.syn.pretool-check" })` | 4 (arm · guard · spawn · asset) |
+| `.agents/harness/opencode/plugins/syn-cd-check.js` | `default Plugin.define({ id: "ymir.syn.cd-check" })` | 4 (cd) |
+| `.agents/harness/opencode/plugins/ymir-tools.ts` | `default Plugin.define({ id: "ymir-tools" })` — the twenty tools | tools |
 | `.agents/harness/opencode/plugins/lib/rodd-operational-input.js` | `encodeRoddOperationalInput(root, kind, content)` | shared wire |
 | `.pi/extensions/syn-turnend-guard.ts` | `export default function (pi: ExtensionAPI)` | 1, 3, 4 |
 | `.pi/extensions/gna-pi-watch.ts` | `export default function (pi: ExtensionAPI)` | 2 |
@@ -1423,3 +1453,59 @@ plugin cache and enabled state; first setup and Gróa both call this one door.
 It serves the shared model tools via stdio MCP. Pi-specific UI callbacks stay in
 Pi. Existing Codex project hooks and canonical skill/agent bindings remain their
 own surfaces. See `codex.md` for the install/update contract and honest test limits.
+
+## 2026-11-04 — the doors the crash left: what each one is, its verbs, and its honest limit
+
+Appended. The sections above govern **how a harness is seated** (the contract, the loaders, the
+extension home, the worktree rule). This one names the **doors a seated agent then reaches** — eleven
+`bin/` doors built on the night of 2026-11-03 and the 30-door `ymir` MCP packet that carries them to
+every harness. It exists because a governed path changed without its asset is an incomplete change:
+the code was right and the law said nothing about it, so the next hand would have rebuilt it.
+
+**The rule that holds them together.** Behaviour lives ONCE, in `bin/`; a harness reaches it by the one
+protocol it speaks. Pi reaches it in-process (`.pi/extensions/`) *and* by MCP; OpenCode, Claude, Codex,
+Cursor and Hermes reach it by MCP only. No door here is a second implementation of a harness's own UI,
+and none of them prints a secret.
+
+```
+doors_appended_2026_11_04[12]{door,verbs,honest_limit}
+  "bin/seat/seats.sh","list · close <pane>","reads herdr first, tmux second; close REFUSES a pane holding a live agent, and refuses an unknown pane — it closes stranded shells, never running work"
+  "bin/pi/arm.sh","status · hook <harness> [--install|--check]","names what a harness must install; Hermes installs for real (a stable shim at ~/.hermes/agent-hooks/ that resolves the house at run time + consent per (event, command)); Codex and Cursor are named UNARMABLE — no session hook surface, never faked"
+  "bin/seat/hermes-session-hook.sh","(run by Hermes' hooks, never by hand)","the session side: on_session_start stashes the Sága digest; pre_llm_call returns {\"context\": …} on the first turn and only inside the house. It is NOT Pi's live wake relay — a shell hook outlives nothing, so a wake raised between turns waits in the durable queue"
+  "bin/seat/hermes-telegram.sh","status · check · instructions","the machine agent's ear; the setup is interactive by design, so this door POINTS at `hermes gateway setup` and proves it — it never pastes a token"
+  "bin/notify/telegram-machines.sh","list · token <m> · me <m> · count · relay <to> <text>","the fleet's bots from hodd/identity/machines.yaml; the token NEVER prints (it is emitted only into a child's environment) and a missing registry is loud, never empty"
+  "bin/records/weave.sh","(weave) · --check · --fix · --fix-count","weaves generated files (FEATURES.md, the registers) and CHECKS the hand-kept indexes; it cannot rewrite prose safely, so an incomplete index is NAMED, not silently patched"
+  "bin/records/plan.sh","new <slug> --title … · list · next","the plan ledger in the home; numbers after the index's highest and never reused; it does not invent a realm or a project"
+  "bin/records/header.sh","check [path] · apply [path]","the declared-truth header (kind · status · verified · verified_by · supersedes · superseded_by); apply never overwrites an existing header"
+  "bin/records/note.sh","<doc> <heading> <body>","APPENDS a dated section to an existing home document (Rule 06); it never rewrites and refuses a document that does not exist"
+  "bin/records/grade.sh","<doc|shelf> [--eldri N] [--forn N]","Dellingr's Norse grade from measurable signals only (nýr · eldri · forn · safn); it decides where a document belongs, never whether it survives (Rule 11)"
+  "bin/agents/hall.sh","[--runes N]","the house in one read (seat · doors · queue · last runes); it writes NOTHING and reports a door that cannot answer as unable, never as zero"
+  "bin/vault/push.sh","<message> <path> …","commits and pushes NAMED paths in the home — never `git add -A` — and refuses to delete a tracked file (retire by moving)"
+```
+
+**The `ymir` packet** — `bin/mcp/ymir-mcp.py`, seated in the ONE packet list
+(`${YMIR_MCP_ADAPTER:-~/.pi/agent/mcp-adapter.json}`) that `bin/seat/hermes-seat.sh` turns into
+`~/.hermes/config.yaml`, so a door added once is seated on every harness. It is not a second
+implementation: every tool is a thin call to the `bin/` door that owns the behaviour, and its own
+`--selftest` prints the door list without a model:
+
+```
+ymir_packet[3]{fact,value,note}
+  "doors","30 (Pi's 31, closed by name)","todo · ymir_arm · ymir_calendar · ymir_close_dead · ymir_daily · ymir_dellingr · ymir_errand · ymir_find · ymir_find_home · ymir_gates · ymir_hall · ymir_header · ymir_heal · ymir_import · ymir_index · ymir_layout · ymir_note · ymir_place · ymir_plan · ymir_push · ymir_recall · ymir_remember · ymir_rule · ymir_seats · ymir_secret_keys · ymir_structure · ymir_studio · ymir_telegram · ymir_update · ymir_where"
+  "proved by","python3 bin/mcp/ymir-mcp.py --selftest","prints `doors: 30 …` and the home, with no model and no network"
+  "honest limit","the packet carries DOORS, not harness UI","Pi's todo pane, its subagent renderer and its in-process arm stay Pi's; the door behind each is what every harness gets"
+```
+
+**Two rules learned building them, written here so they are not relearned:**
+
+- **A rendered seat file must not restate a list that lives in code.** The `SOUL.md` block used to name
+  fifteen doors in prose while the packet registered thirty. It now substitutes `__DOORS__` /
+  `__DOOR_COUNT__` from `--selftest`, and `bin/gates/tests/test_hermes_seat.sh` compares the two sets —
+  so the drift is a red gate, not a reader's job.
+- **A render must be idempotent by CONTENT, not by mtime.** `bin/seat/seat-surface.sh` writes
+  `.hermes.md` and the `SOUL.md` block only when the bytes differ, which is what makes "install and
+  every update deliver the seat" provable by running the renderer twice and watching the second run
+  write nothing.
+
+The per-harness matrix stays where it is measured (§4 and plan 177 §10 in the home); this section names
+the doors, so a code change and its asset agree.

@@ -26,6 +26,7 @@ import { Stats } from '../gates/Stats';
 import { Managandr } from '../gates/Managandr';
 import { Snotra } from '../gates/Snotra';
 import { Mail } from '../gates/Mail';
+import { Skirnir } from '../gates/Skirnir';
 
 function Stage() {
   const gate = useYmir((s) => s.gate);
@@ -46,6 +47,8 @@ function Stage() {
       return <Files />;
     case 'chat':
       return <OmniChat />;
+    case 'skirnir':
+      return <Skirnir />;
     case 'forge':
       return <Forge />;
     case 'profile':

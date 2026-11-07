@@ -1,0 +1,18 @@
+{
+  "name": "@ymir/jev",
+  "private": true,
+  "description": "Vendored jev decision client (upstream @dna/jev, MIT) with one added provider: local",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "upstream": {
+    "repo": "github.com/zerwiz/pi-durable-news-agent",
+    "path": "apps/shared/packages/jev",
+    "commit": "273b79bb8d3d8907cae9fbd6abd3da163ee2a343"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.ts",
+    "bench": "node bench/decision-bench.ts"
+  }
+}

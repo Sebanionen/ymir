@@ -1,0 +1,19 @@
+{
+  "name": "dna-client-tui",
+  "private": true,
+  "description": "Durable News Agent terminal client on pi-tui with slash commands",
+  "bin": {
+    "dna-tui": "./bin/dna-tui.mjs"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "check": "tsc -p .",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@dna/durable-agent": "*",
+    "@dna/sdk": "*",
+    "@earendil-works/pi-tui": "1.1.0"
+  }
+}

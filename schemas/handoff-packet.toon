@@ -1,0 +1,63 @@
+# handoff-packet.toon — the ONE artefact that crosses the boundary between a smith and
+# a reviewer (plan 203 §3). A smith writes it when it stops; a reviewer reads it before
+# anything else. No packet, no review. Written in the house's TOON face so a human reads
+# it and a script diffs it.
+#
+# RULES THIS SCHEMA ENFORCES ON ITS WRITER
+#   1. head  is the commit the packet SPEAKS FOR. The reviewer fetches `branch`, and if
+#      the fetched head sha differs from `head` here, the review is REFUSED. A packet that
+#      does not name the tree it describes is not a packet.
+#   2. gates and tests carry OUTPUT, never the name of a gate and never "all pass".
+#      An empty tail is a claim of silence, and silence is not evidence.
+#   3. claims[] is one line per thing the smith asserts it DID, so the reviewer can mark
+#      each `verified` or `unverified`. An unverified claim is not a fault; a claim with
+#      no evidence behind it is.
+#   4. not_done[] names what was deliberately left, and why. An empty list is a POSITIVE
+#      claim that nothing was left, and a reviewer may test it.
+#   5. needs[] names what the smith could not settle alone (a decision, a key, a licence).
+#      A need is not a failure; hiding one is.
+#   6. A smith never fills `review` — that block belongs to the reviewer and is appended
+#      only after the gates have been run on the machine that will hold the merge.
+#
+# FIELDS (see plan 203 §3 — this file is the plan, made writable)
+#   packet[1]{task,plan,branch,base,head,author,written_at,ruleset,floor}
+#     task        one sentence: what this was supposed to be
+#     plan        the document that says so (home plan path or repo docs path)
+#     branch      the smith's own branch — `eins/<id>` (the transport, never a PR)
+#     base        what it was cut from (usually origin/main)
+#     head        the 40-char sha the packet stands for — the reviewer compares it
+#     author      the agent that authored it (never `brokk` — Rule 44)
+#     written_at  ISO-8601 UTC
+#     ruleset     the ruleset hash the smith judged itself against, or `none`
+#     floor       `complete` | `partial` — a partial floor is a refusal waiting to happen
+#   changed[N]{path,added,removed,why}
+#   gates[N]{gate,cmd,exit,output_tail}      output_tail: last lines of real output
+#   tests[N]{cmd,exit,tail}
+#   claims[N]{claim,state,evidence}          state: verified | unverified (smith's own view)
+#   not_done[N]{item,why}
+#   needs[N]{need,who}                       who: allfather | operator | licence | key
+#   review[0..1]{reviewer,at,ruleset,gates,tests,verdict,pr,merge,commit}
+#     written ONLY by the reviewer; absent until a review has actually run
+#
+# A packet is a PROMISE, not a proof. The proof is the reviewer's, and it is written below
+# the line the smith may not cross.
+packet[1]{task,plan,branch,base,head,author,written_at,ruleset,floor}:
+  "<what this was supposed to be>","<plan path>","eins/<id>","origin/main","<40-hex sha>","<agent>","<ISO-8601Z>","<ruleset hash | none>","complete|partial"
+
+changed[N]{path,added,removed,why}:
+  "<path>",0,0,"<why this file is in the diff>"
+
+gates[N]{gate,cmd,exit,output_tail}:
+  "<docs|assets|csv|units|tables|baton|engine>","<the command actually run>",0,"<last lines of its output>"
+
+tests[N]{cmd,exit,tail}:
+  "<the test command actually run>",0,"<last lines>"
+
+claims[N]{claim,state,evidence}:
+  "<one line the smith asserts it did>","verified|unverified","<where the reviewer can look>"
+
+not_done[N]{item,why}:
+  "<what was left>","<why it was left, never silence>"
+
+needs[N]{need,who}:
+  "<what the smith could not settle>","allfather|operator|licence|key"

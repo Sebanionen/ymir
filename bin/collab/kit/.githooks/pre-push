@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# The kit goes into Node, Elixir and shell repositories, so the checks are asked of scripts/checks.sh rather than named
+# here — and every gate is reachable: a gate after an `exit` is a gate that never ran. That fault lived in this hook until
+# 2026-11-06 (docs/fixes/collab/); the order below is the repair.
+#
+# Six gates: never push a protected branch, never push work nobody can review, never push a behaviour change without its
+# note, never change the referee in silence, never add a module with no test, and never push a red tree.
+set -u
+
+protected="master main"
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  bash scripts/gates/pr-guard.sh "${1:-origin}" "$_local_ref" "$remote_ref" "$_remote_sha" || exit 1
+  case "$remote_ref" in
+    refs/heads/*)
+      branch="${remote_ref#refs/heads/}"
+      for p in $protected; do
+        if [ "$branch" = "$p" ]; then
+          printf 'pre-push refused: %s is protected — open a pull request; the operator seals merges\n' "$branch" >&2
+          exit 1
+        fi
+      done
+      ;;
+  esac
+done
+
+# The range this push carries: the upstream, or the base branch when the branch is new.
+range_base() {
+  git rev-parse @{u} 2>/dev/null && return 0
+  for candidate in origin/main origin/master main master; do
+    git rev-parse --verify --quiet "$candidate" >/dev/null && { printf '%s\n' "$candidate"; return 0; }
+  done
+  return 1
+}
+
+base="$(range_base || true)"
+head="$(git rev-parse HEAD 2>/dev/null || echo HEAD)"
+
+if [ -n "$base" ] && [ "$base" != "$head" ]; then
+  [ -x scripts/gates/fixes-guard.sh ] && { bash scripts/gates/fixes-guard.sh "$base" "$head" || exit 1; }
+  [ -x scripts/gates/referee-guard.sh ] && { bash scripts/gates/referee-guard.sh "$base" "$head" || exit 1; }
+  [ -x scripts/gates/new-module-test.sh ] && { bash scripts/gates/new-module-test.sh "$base" "$head" || exit 1; }
+fi
+
+if [ -f scripts/checks.sh ]; then
+  printf 'pre-push: the checks\n'
+  bash scripts/checks.sh test || {
+    printf '\npre-push refused: a check failed\nhelp: fix it, or push with --no-verify and say why in the commit\n' >&2
+    exit 1
+  }
+else
+  printf 'pre-push: scripts/checks.sh is missing — this repository carries an older kit; nothing was checked\n' >&2
+fi
+
+exit 0

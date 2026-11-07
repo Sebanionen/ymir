@@ -67,3 +67,26 @@
 # Rule B (Done + sign-off → To Sign-off), note-on-mis-move.
 # Gated @dev: the board belongs to the seat that holds the place profile.
 @dev 10:00 bin/time/snotra/snotra-card-moves.sh watch
+
+# — Gná: the mail desk reads, judges, and TELLS THE ARM as mail arrives (plan 193) —
+# Armed only on a seat that declares an account row in hodd/memory/mail/accounts.yaml:
+# bin/fleet/fleet-ensure.sh does not seat the desk without one, and this job exits 3
+# (a named FAIL, never an empty inbox) when the scope file is absent.
+# THE SHAPE IS RULED (plan 193 §15, 2026-11-05): every two hours through the working day,
+# 07:00–18:00, and INCREMENTAL — each run tells the arm what it has not told it before
+# (the notification ledger does that, not the window), so a run has nothing to re-read.
+# Copy the rows into YOUR home, in your own minute slot, and uncomment.
+#   @heart,forge,dev 07:20 bin/time/nornir-job-gna-mail.sh
+#   @heart,forge,dev 09:20 bin/time/nornir-job-gna-mail.sh
+#   @heart,forge,dev 11:20 bin/time/nornir-job-gna-mail.sh
+#   @heart,forge,dev 13:20 bin/time/nornir-job-gna-mail.sh
+#   @heart,forge,dev 15:20 bin/time/nornir-job-gna-mail.sh
+#   @heart,forge,dev 17:20 bin/time/nornir-job-gna-mail.sh
+
+# — A SMITHY STARTED BY THE CLOCK IS NOT WRITTEN HERE BY HAND —
+# Its own config declares it (`trigger:` in smidja/smidja_smidja_config/smidja.config.yaml),
+# and `bin/time/event-trigger.sh --install-cron` writes the row into this file, inside a
+# managed block at the end. Two places claiming one schedule is how a row keeps firing
+# after the trigger was turned off.
+#   bin/time/event-trigger.sh --list            # who may start each smithy
+#   bin/time/event-trigger.sh --install-cron    # write the rows it declares

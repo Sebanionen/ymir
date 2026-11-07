@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# The cheap checks, so a commit never carries a broken tree.
+#
+# The kit is installed in Node, Elixir and shell repositories, so this hook does not name a tool: it asks
+# scripts/checks.sh, which probes for the repository's own check. A repository with no check of its own is a
+# printed skip, never a silent pass — and never a refusal it cannot satisfy.
+set -u
+
+if [ ! -f scripts/checks.sh ]; then
+  printf 'pre-commit: scripts/checks.sh is missing — this repository carries an older kit; nothing was checked\n' >&2
+  exit 0
+fi
+
+bash scripts/checks.sh doctor || {
+  printf '\npre-commit refused: a check found a fault (see the line above)\nhelp: fix it, or commit with --no-verify and say why in the message\n' >&2
+  exit 1
+}
+
+exit 0

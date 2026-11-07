@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import inspect as _inspect
 import json
 import os
 import sqlite3
@@ -543,7 +544,12 @@ class Handler(BaseHTTPRequestHandler):
                 }})
             if u.path == "/recall":
                 query = (q.get("q") or [""])[0]
-                k = int((q.get("k") or ["5"])[0])
+                try:
+                    k = int((q.get("k") or ["5"])[0])
+                except ValueError:
+                    return self._json(400, {"error": "k must be an integer from 1 to 1000"})
+                if not 1 <= k <= 1000:
+                    return self._json(400, {"error": "k must be an integer from 1 to 1000"})
                 mode = (q.get("mode") or ["hybrid"])[0]
                 agent = (q.get("agent_id") or [None])[0]
                 cross = (q.get("cross_agent") or ["1"])[0] not in ("0", "false", "")
@@ -585,6 +591,8 @@ class Handler(BaseHTTPRequestHandler):
                         seen.add(ep["id"])
                         results.append({"score": h.score, "distance": h.distance,
                                         "importance": h.importance, "episode": ep})
+                        if len(results) >= k:
+                            break
                     # A recall is a fact about the memory too: record that the well
                     # was drunk from, so "never consulted" is visible in the health row.
                     flush_access(eng)
@@ -719,15 +727,23 @@ class Handler(BaseHTTPRequestHandler):
             tags += policy.correction_tags(original_id,
                                            "corrects" if kind == "correct" else "retracts")
         content = decision["content"]
-        eid = engine(agent).observe(
-            content,
-            actors=body.get("actors") or None,
-            tags=tags,
-            salience=decision["salience"],
-            timestamp=when,
-            provenance=decision["provenance"],
-            quarantined=decision["quarantined"],
-        )
+        eng = engine(agent)
+        accepted = set()
+        try:
+            accepted = set(_inspect.signature(eng.observe).parameters)
+        except (TypeError, ValueError):
+            accepted = set()
+        kwargs = {
+            "actors": body.get("actors") or None,
+            "tags": tags,
+            "salience": decision["salience"],
+            "timestamp": when,
+            "provenance": decision["provenance"],
+            "quarantined": decision["quarantined"],
+        }
+        if accepted:
+            kwargs = {k: v for k, v in kwargs.items() if k in accepted}
+        eid = eng.observe(content, **kwargs)
         # The chain, in the other direction: the ORIGINAL is annotated void by the
         # replacement's id. Annotation only — the original's words stay.
         chain = None

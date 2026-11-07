@@ -76,7 +76,7 @@ that were right were left alone.
 
 ## The address ward — appended the same evening
 
-The delivery notification that started this said a message to `craig@thegleemachine.com` could not arrive because
+The delivery notification that started this said a message to `<a personal address>` could not arrive because
 that domain's mail exchanger is `127.0.0.1`. The register could already measure an MX (`mx_state`), but the **send
 path never asked it**.
 
@@ -84,8 +84,8 @@ path never asked it**.
 - `mail-send.sh` gained `guard_recipients`: before a draft is created it asks the register about every recipient
   domain, and refuses with the measurement — *"a letter to a domain with no mail exchanger is lost, not sent"*.
 
-Measured: `craig@thegleemachine.com` → refused, naming *"thegleemachine.com publishes no MX record"*;
-`craig@way-of.com` → drafts normally.
+Measured: `<a personal address>` → refused, naming *"thegleemachine.com publishes no MX record"*;
+`<operator-mailbox>` → drafts normally.
 
 ## The memory index — appended the same evening
 

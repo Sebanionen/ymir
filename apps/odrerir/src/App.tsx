@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import EmberBackground from './components/EmberBackground';
 import LivehallBoard from './components/LivehallBoard';
+import NearBoard from './components/NearBoard';
 import TicketsBoard from './components/TicketsBoard';
 import PlansBoard from './components/PlansBoard';
 
@@ -41,16 +42,18 @@ function raiseHall(id: string) {
   }).catch(() => undefined); // a quiet gate never breaks the board
 }
 
-type View = 'hall' | 'tickets' | 'plans';
+type View = 'hall' | 'tickets' | 'plans' | 'near';
 function viewFromHash(): View {
   const h = window.location.hash.replace(/^#\/?/, '');
   if (h === 'tickets') return 'tickets';
   if (h === 'plans') return 'plans';
+  if (h === 'near') return 'near';
   return 'hall';
 }
 
 const DOORS: { id: View; label: string }[] = [
   { id: 'hall', label: 'the board' },
+  { id: 'near', label: 'the near loop' },
   { id: 'tickets', label: 'the tickets' },
   { id: 'plans', label: 'the plans' },
 ];
@@ -98,7 +101,15 @@ export default function App() {
         </span>
       </div>
       <main className={view === 'hall' ? 'hall-stage' : 'hall-wrap'}>
-        {view === 'hall' ? <LivehallBoard /> : view === 'tickets' ? <TicketsBoard /> : <PlansBoard />}
+        {view === 'hall' ? (
+          <LivehallBoard />
+        ) : view === 'tickets' ? (
+          <TicketsBoard />
+        ) : view === 'plans' ? (
+          <PlansBoard />
+        ) : (
+          <NearBoard />
+        )}
       </main>
     </>
   );

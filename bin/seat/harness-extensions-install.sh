@@ -82,12 +82,28 @@ else
 fi
 
 # ── opencode: the plugin set (guards + the recovered ymir-tools) ──────────────
+# ONE home. The source is .agents/harness/opencode/plugins; the deployed copy is
+# ~/.config/opencode/plugins. OpenCode also auto-loads <project>/.opencode/plugins,
+# so a symlink there registered every guard TWICE (6 plugins, 12 load failures,
+# 2026-11-04). Never link the source into a project — deploy it here.
+#
+# V2 plugins import `@opencode/plugin` (and ymir-tools imports `effect`), so the
+# deployed home must be able to resolve them. A missing node_modules is a plugin
+# that cannot load at all; install it once, here, rather than failing per file.
 if command -v opencode >/dev/null 2>&1; then
   if [ -d "$ROOT/.agents/harness/opencode/plugins" ]; then
     copy_tree "$ROOT/.agents/harness/opencode/plugins" "$HOME/.config/opencode/plugins" "opencode" || true
-    copy_tree "$ROOT/.opencode/plugins" "$HOME/.config/opencode/plugins" "opencode-guards" || true
+    if [ "$mode" != "check" ] && command -v npm >/dev/null 2>&1; then
+      if [ ! -d "$HOME/.config/opencode/node_modules/@opencode/plugin" ]; then
+        ( cd "$HOME/.config/opencode" \
+          && { [ -f package.json ] || printf '%s\n' '{"name":"ymir-opencode-plugins","private":true,"type":"module"}' >package.json; } \
+          && npm install --no-audit --no-fund --silent @opencode/plugin effect >/dev/null 2>&1 ) \
+          && say "  \"opencode-deps\",\"installed\",\"@opencode/plugin + effect in ~/.config/opencode\"" \
+          || say "  \"opencode-deps\",\"absent\",\"npm could not install @opencode/plugin (plugins import it and will not load)\""
+      fi
+    fi
   else
-    copy_tree "$ROOT/.opencode/plugins" "$HOME/.config/opencode/plugins" "opencode-guards" || true
+    say "  \"opencode\",\"absent\",\"no .agents/harness/opencode/plugins in this tree\""
   fi
   [ "$mode" = "install" ] && say "  \"opencode\",\"note\",\"the twenty tools come from ymir-tools.ts; loaded by opencode's own config\"" || true
 else

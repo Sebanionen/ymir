@@ -45,7 +45,28 @@ case "${BROKK_STATE_OVERRIDE:-}" in
     printf 'cron[1]{state,why}:\n  "refused","a seat does not schedule the house — %s is a seat state dir; the primary owns config/cron.yaml"\n' "$BROKK_STATE_OVERRIDE" >&2
     exit 0 ;;
 esac
-STATE="${BROKK_STATE_OVERRIDE:-$BROKK_HOME/state}"
+# ONE STATE DIR (phase 0): the operator's runtime state belongs to the HOME, never
+# the code tree. With no explicit override the default used to be $BROKK_HOME/state
+# (the repo's scratch), so any advisory caller — ymir-validate, a session start —
+# read a DIFFERENT pidfile than the units and started a second scheduler over the
+# same schedule (measured 2026-11-06: one loop under the unit, one under the repo).
+# The hoard is the one answer; the repo's state/ is the fallback only when there is
+# no home at all.
+if [ -n "${BROKK_STATE_OVERRIDE:-}" ]; then
+  STATE="$BROKK_STATE_OVERRIDE"
+else
+  _hoard=""
+  if [ -r "$SCRIPT_DIR/../vault/hoard-lib.sh" ]; then
+    . "$SCRIPT_DIR/../vault/hoard-lib.sh" 2>/dev/null || true
+    ymir_home_root _hoard 2>/dev/null || _hoard=""
+  fi
+  if [ -n "$_hoard" ] && [ -d "$_hoard/state" ]; then
+    STATE="$_hoard/state"
+  else
+    STATE="$BROKK_HOME/state"
+  fi
+  unset _hoard
+fi
 # The schedule is the USER'S, not the distro's: an explicit BROKK_CONFIG_OVERRIDE
 # wins, then the home's own config/cron.yaml, then the repo's example (which
 # ships what a fresh hour suggests but never claims to be the live schedule).
@@ -183,7 +204,16 @@ scheduler='
     # from ended seats). The scheduler lives only while the state lock is held by
     # a live process; a headless scheduler with no lock retires too, because
     # Nornir is started BY a session, never before one.
-    if [ -n "${BROKK_MACHINE_STATE_DIR:-}" ]; then
+    #
+    # EXCEPTION (plan 51 Part 7): the always-on heart has no interactive session,
+    # so the record crons would never run. A PERSISTENT seat sets
+    # BROKK_NORNIR_PERSIST=1 and the loop binds to the machine ROLE, not a
+    # session: it stays up with no lock and is stopped only by --stop or the
+    # unit. (A fake session lock was the rejected alternative — it would refuse a
+    # real Brokk seat on the heart.)
+    if [ "${BROKK_NORNIR_PERSIST:-0}" = "1" ]; then
+      : # persistent seat: never retire on a missing session lock
+    elif [ -n "${BROKK_MACHINE_STATE_DIR:-}" ]; then
       mach="$BROKK_MACHINE_STATE_DIR"
     elif [ -f "$state/.lock-path" ]; then
       # Phase 0 (one state dir): the helms location is what the pointer says, never the
@@ -198,14 +228,16 @@ scheduler='
     else
       mach="${XDG_STATE_HOME:-$HOME/.local/state}/ymir"
     fi
-    lockf="$mach/brokk.lock"
-    owner=$(tr -d "[:space:]" <"$lockf" 2>/dev/null || true)
-    st=$(ps -o stat= -p "$owner" 2>/dev/null | tr -d " ")
-    if [ -z "$owner" ] || [ "$owner" = "1" ] || [ ! -d "/proc/$owner" ] \
-       || [ "${st#Z}" != "$st" ] || [ "${st#X}" != "$st" ]; then
-      printf "%s cron retired - no live session lock at %s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$lockf" >>"$log"
-      rm -f "$state/cron.pid" 2>/dev/null || true
-      exit 0
+    if [ "${BROKK_NORNIR_PERSIST:-0}" != "1" ]; then
+      lockf="$mach/brokk.lock"
+      owner=$(tr -d "[:space:]" <"$lockf" 2>/dev/null || true)
+      st=$(ps -o stat= -p "$owner" 2>/dev/null | tr -d " ")
+      if [ -z "$owner" ] || [ "$owner" = "1" ] || [ ! -d "/proc/$owner" ] \
+         || [ "${st#Z}" != "$st" ] || [ "${st#X}" != "$st" ]; then
+        printf "%s cron retired - no live session lock at %s\n" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$lockf" >>"$log"
+        rm -f "$state/cron.pid" 2>/dev/null || true
+        exit 0
+      fi
     fi
     now=$(date +%H:%M)
     today=$(date +%Y-%m-%d)

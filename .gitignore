@@ -171,7 +171,13 @@ assets/reference/state/
 
 # Apps live in their own repos (registered in the home registry), pulled by the
 # installer's step_apps — never tracked in the monorepo.
-apps/smidja/
+#
+# CORRECTION (2026-11-06): `apps/smidja/` was listed here and that was wrong —
+# the smithy is TRACKED (`git ls-files apps/smidja`), and the blanket ignore meant
+# every NEW smidja file was silently swallowed: written to the tree, invisible to
+# `git status`, and absent from any clone. It bit this change: `runrecord.py` and
+# the two doors were ignored while 34 smidja files were already tracked. Only its
+# RUNTIME data is untracked, and that is named above (`smidja_data/`, `smidja.db*`).
 !apps/README.md
 
 # The seat's chat belongs to the operator — in the home, never the repo (Rule 04).
@@ -200,3 +206,6 @@ bin/state/
 # operator's home in a public repo, which is exactly what private-guard catches.
 # They are outputs, not templates: nothing reads them back. Keep them out.
 bin/data/
+
+# The seat identity Hermes loads (machine-local; never published)
+.hermes.md
