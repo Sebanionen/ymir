@@ -158,6 +158,10 @@ path_component() {  # <path> -> the component it belongs to, or empty
     .agents/skills/galdr-ymirsystem/assets/smidja.md|.agents/skills/smidja-factory/*) echo smidja ;;
     .agents/skills/galdr-ymirsystem/assets/snotra-meeting-ear.md|bin/snotra*|tools/snotra/*) echo snotra ;;
     tools/tickets-mcp/*|bin/desktop/odrerir*|apps/odrerir/*) echo odrerir ;;
+    # The forge: worktrees, the sandbox, and now boxes. Before this row bin/forge/* mapped
+    # to NO component, so a correct forge note could never cover a forge path and the gate
+    # could only warn (2026-11-06, found while shipping the Utgard boxes).
+    bin/forge/*|.agents/sandbox/*) echo forge ;;
   esac
 }
 covered=0

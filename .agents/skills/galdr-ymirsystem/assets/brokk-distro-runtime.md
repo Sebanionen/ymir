@@ -879,3 +879,52 @@ agent) and, on tmux, the pane's own foreground command. Three outcomes, and no f
 - **unproven** → the engine raises and the shell road exits 3: `state/<id>.status` gets
   `failed: the launch produced NO agent — pane <id> …`, the meta records `seat=no`, Gná carries the word
   (`bin/notify/send.sh`), and the dispatcher never prints `spawned`. A half-seat is worse than none.
+
+## 2026-11-06 — Utgard grows a workshop: the box, and the third isolation shape
+
+**The gap this closes.** Yggdrasil gives a run its own files; herdr gives it a pane; Utgard *run* gives it a thirty-second
+sealed command (`--rm`, read-only rootfs, no network, 512m, 1.0 CPU). None of those gives a **routine** run a floor of
+its own, so a routine run shared the operator's `$HOME`, git identity and rail key. `apps/smidja/smidja_modules/permissions.py`
+says it plainly: *"'tools:' is a capability list, not a sandbox."*
+
+**The three isolation shapes, and which to choose (this REPLACES nothing; it completes the table):**
+
+| shape | what it protects | cost | choose when |
+|---|---|---|---|
+| herdr | the workspace you are living in | a pane | ordinary work in a worktree — still the default
+| `utgard run` | the host, for 30 seconds | one throwaway container | one untrusted command, no lasting need
+| `utgard box` | the host, the operator's identity, and the credential | one durable container | a run that lasts, must be entered, or must be compared against another
+
+**The box (`bin/forge/utgard-box.sh`, `utgard box …`).** `new · list · status · enter · url · seal · pull · stop ·
+start · rm · gc · build · probe`. A named container with its own volume at `/box`, its own network, TTL labels, and a
+published loopback port. Work goes in by `docker cp` (`--repo`) and comes out by `box pull` — a **copy, never a mount**,
+so nothing inside can write home.
+
+**The door (`bin/forge/utgard-box-door.py`) is the whole security argument.** An HTTP proxy with an allowlist of *names*
+that mean nothing outside it (`rail`), which **injects the rail credential**. The box therefore holds
+the four-letter word `door` where the rail key would be, and no secret at all; a compromised box has nothing worth taking. Every
+other name is refused in words, which is also how `box probe` proves the law.
+
+**Three seals, and the seal is MEASURED.** `none` (no network), `door` (the door only), `open` (the internet — declared,
+labelled, printed at `new`). Docker labels are immutable once a container exists, so `box seal` re-shapes the attachments
+and then reads the seal back off `.NetworkSettings.Networks`; `box list` and `box status` derive it the same way. A label
+that could lie about a seal was never a seal.
+
+**The fault found on the way, and it is not about boxes.** A container on this host **cannot reach any host service** —
+not :22, not :8080, not a scratch listener. `ufw` is active with `DEFAULT_INPUT_POLICY="DROP"` (`/etc/default/ufw`), and
+container→host is INPUT, which Docker's own rules do not open. The doors therefore share **one named network with a fixed
+subnet** (`utgard-door-net`, the subnet from `UTGARD_BOX_DOOR_SUBNET`), so the operator's rule can name one subnet and one
+port, and nothing else. `box probe` prints that exact line — this document does not carry the address, by law (RULES/39).
+
+**Printed, never applied.** `box new`, `box seal` and `box probe` print it; nothing runs it. The ward is the operator's
+(RULES/24). Until the rule exists, `box probe` reports the rail law FAIL and names the remedy — a refusal that names the
+road, never a silent downgrade. The other two laws (no host credentials, one road) hold with or without it.
+
+**Engine choices, measured.** Debian slim, not Alpine: `pi` is a node package with native dependencies and musl is where
+they break. `tini` as entrypoint so a long run reaps its orphans. Build is ~1m45s. `tests/test_utgard_box.sh` proves 29
+laws against a stub upstream and **never touches the real rail**; no engine, no daemon or no image is a clean skip that
+exit 0s with the reason (RULES/25).
+
+**What is still unmade, and named here so no one assumes it:** `box url` is loopback only (gate-fronting is not built);
+the estate is not spread across the fleet (a box lives where its engine is); `--repo` seeds by copy and does not sync;
+and best-of-N across boxes (`smidja lane`) is still plan 209's P3.
