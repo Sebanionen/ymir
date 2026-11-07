@@ -21,6 +21,13 @@ permission:
     "git diff*": allow
     "git log*": allow
     "git show*": allow
+    # The judge's ONE act of writing is its verdict, through its own door — the charter keeps
+    # edit:deny / write:deny, so the verdict file is written by a door that checks the head sha
+    # and the verdict shape (plan 206 §5).
+    "bin/forge/review-verdict.sh *": allow
+    # The read-only agent's MOUTH (the Allfather, 2026-11-06): ask the lock owner for anything the
+    # charter forbids — a merge, a fix, a decision — and read the answer in its own inbox.
+    "bin/seat/lock-ask.sh *": allow
   skill: allow
 domain: runestone
 name: forseti

@@ -945,9 +945,18 @@ launch_herdr() {  # -> prints pane id
   # was tried on 2026-09-24 and the worker still took the primary's helm, because
   # the pane's own environment wins for everything the harness reads at startup.
   [ -n "$SEAT_STATE_DIR" ] && mkdir -p "$SEAT_STATE_DIR" 2>/dev/null || true
+  # Two more variables ride the seat, both from plan 205 §2.2:
+  #   YMIR_SMITH   names the errand, so a door can tell a worker's shell from the operator's
+  #                without guessing (the shim reads it first, and falls back to the worktree path);
+  #   PATH         puts bin/forge/smith-bin first, where `gh` is the SHIM: a smith reads anything
+  #                and may never `pr create`, `pr merge`, `pr close`, `repo delete` or cut a release.
+  # Prepending is safe for the operator: the shim only refuses inside a worker's worktree (or when
+  # YMIR_SMITH is set), which the operator's root never is.
   out=$(herdr workspace create --cwd "$WT" --label "eindri-$ID" --no-focus \
     --env "BROKK_MACHINE_STATE_DIR=$SEAT_STATE_DIR" \
-    --env "BROKK_STATE_OVERRIDE=$SEAT_STATE_DIR" 2>/dev/null) || {
+    --env "BROKK_STATE_OVERRIDE=$SEAT_STATE_DIR" \
+    --env "YMIR_SMITH=$ID" \
+    --env "PATH=$ROOT/bin/forge/smith-bin:$PATH" 2>/dev/null) || {
     echo "error: herdr workspace create failed (is a herdr server running? try: herdr)" >&2
     return 1
   }

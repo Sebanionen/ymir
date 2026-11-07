@@ -10,7 +10,7 @@ the register becoming a to-do list twice, and to 390 doors with no name for the 
 ## 1 · The doors, by the job they serve
 
 capabilities[5]{surface,count}:
-  "shell doors (bin/*.sh)",758
+  "shell doors (bin/*.sh)",768
   "runtime modules (src/ymir_runtime/*.py)",56
   "skills (.agents/skills/*)",30
   "Pi extension tools",0
@@ -342,6 +342,11 @@ capabilities[5]{surface,count}:
 | packaged-gate.sh | packaged-gate.sh — prove the PUBLISHED artifact, not the tree. | tested | keep (a human or a cron row must run it) |
 | pr-pretest.sh | pr-pretest.sh — the PR-time gate: a REAL npm installation, locally, be | tested+named | keep (a human or a cron row must run it) |
 | review-rules.sh | review-rules.sh — the rules floor: load what a reviewer MUST know, or  | tested | keep (a human or a cron row must run it) |
+| review-seat.sh | review-seat.sh — the reviewer's SEAT: pi in a herdr pane, on the heart | tested | keep (a human or a cron row must run it) |
+| review-shelf.sh | review-shelf.sh — where a packet LANDS, and the waiting rule that keep | tested | keep (a human or a cron row must run it) |
+| review-verdict.sh | review-verdict.sh — the judge's ONE act of writing: its verdict, and n | tested | keep (a human or a cron row must run it) |
+| review-watch.sh | review-watch.sh — the missing trigger: a PR that arrives is a question | tested | keep (a human or a cron row must run it) |
+| ship.sh | ship.sh — the reviewer's merge: the one door that puts a judged PR on  | tested | keep (a human or a cron row must run it) |
 | skillopt-setup.sh | skillopt-setup.sh — one-time SkillOpt installation for Ymir. | tested | keep (a human or a cron row must run it) |
 | utgard.sh | utgard.sh — the sealed execution barrier (Utgard, the realm outside th | tested+named | keep (a human or a cron row must run it) |
 | yggdrasil.sh | yggdrasil.sh — the worktree manager (Yggdrasil, the world-tree). | tested+named | keep (a human or a cron row must run it) |
@@ -449,6 +454,7 @@ capabilities[5]{surface,count}:
 | inbound-test.sh | inbound-test.sh — THE acceptance test for "people can mail us" (plan 1 | tested | keep (a human or a cron row must run it) |
 | install.sh | install.sh — seat Gná's desk on THIS machine. Idempotent: one desk pe | tested+named | keep (a human or a cron row must run it) |
 | mail-scan.sh | mail-scan.sh — read-only: the last N hours of a mailbox, as compact JS | tested | keep (a human or a cron row must run it) |
+| agent-model.sh | agent-model.sh — WHICH MODEL, ON THIS SEAT. One resolver, and a refusa | tested | keep (a human or a cron row must run it) |
 | apodex-smoke-test.sh | apodex-smoke-test — validate an Apodex endpoint (GGUF via llama-router | tested+named | keep (a human or a cron row must run it) |
 | catalog.sh | catalog.sh — THE door to what this machine can serve. | tested+named | keep (a human or a cron row must run it) |
 | jev-doors.sh | jev-doors.sh — where the decision models answer, in one read. | tested | keep (a human or a cron row must run it) |
@@ -467,6 +473,7 @@ capabilities[5]{surface,count}:
 | no-delete-guard.sh | no-delete-guard.sh — Rule 11, ENFORCED. A tracked file is never delete | tested | keep (a human or a cron row must run it) |
 | approve.sh | approve.sh — one gesture answers one question. | tested+named | keep (a human or a cron row must run it) |
 | intake-gate.sh | intake-gate.sh — is this message signal, or noise? One decision call,  | tested | keep (a human or a cron row must run it) |
+| mail.sh | mail.sh — the operator-only mail door: a system tells the Allfather, a | tested+named | keep (a human or a cron row must run it) |
 | send.sh | send.sh — THE HOTLINE: one door a system calls when it has something t | tested+named | keep (a human or a cron row must run it) |
 | telegram-buttons.sh | telegram-buttons.sh — make a Telegram button that actually renders. | tested | keep (a human or a cron row must run it) |
 | telegram-machines.sh | telegram-machines.sh — Telegram across the FLEET: each machine's own b | tested+named | keep (a human or a cron row must run it) |
@@ -540,6 +547,8 @@ capabilities[5]{surface,count}:
 | hermes-seat.sh | hermes-seat.sh — seat Ymir's tools into Hermes, the same packets the o | tested+named | keep (a human or a cron row must run it) |
 | hermes-session-hook.sh | hermes-session-hook.sh — Hermes' session side of the Gná arm: the Sá | tested+named | keep (a human or a cron row must run it) |
 | hermes-telegram.sh | hermes-telegram.sh — seat THIS machine's Telegram bot into the Hermes  | tested+named | keep (a human or a cron row must run it) |
+| lock-ask.sh | lock-ask.sh — a read-only agent asks the LOCK OWNER for work, and the  | tested | keep (a human or a cron row must run it) |
+| lock-hold.sh | lock-hold.sh — a PRIMARY THAT DOES NOT EXIT: hold this machine's sessi | tested | keep (a human or a cron row must run it) |
 | pending.sh | pending.sh — everything that is waiting on the operator, in ONE list. | tested+named | keep (a human or a cron row must run it) |
 | pi-launcher.sh | pi-launcher.sh — the ONE launcher generator for a pi seat. | tested+named | keep (a human or a cron row must run it) |
 | seat-prove.sh | seat-prove.sh — a spawn is not a seat until the agent list shows it. | tested+named | keep (a human or a cron row must run it) |
@@ -547,6 +556,7 @@ capabilities[5]{surface,count}:
 | seat-wire.sh | seat-wire.sh — one seat speaks into another seat's live pane, and says | tested | keep (a human or a cron row must run it) |
 | seats.sh | seats.sh — where the work actually is: panes in either backend, and th | tested+named | keep (a human or a cron row must run it) |
 | test_core_four_pending_factory.sh | The ward for the three near-loop doors: core four, pending, and the fact | tested | keep (a human or a cron row must run it) |
+| test_lock_ask.sh | The ward for bin/seat/lock-ask.sh — a read-only agent asks the lock ow | tested | keep (a human or a cron row must run it) |
 | valknut-load.sh | valknut-load.sh — Valknut, the knot that binds the repo distro into ea | tested+named | keep (a human or a cron row must run it) |
 | whose-tree.sh | whose-tree.sh — whose code am I standing in? | tested | keep (a human or a cron row must run it) |
 | manifest.sh | manifest.sh — a skill declares itself; the index is DERIVED from the d | tested | keep (a human or a cron row must run it) |

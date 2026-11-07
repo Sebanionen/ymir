@@ -52,6 +52,19 @@ try:
 except Exception:
     pass
 
+# 3b · a PR raised for review but not judged — the loop asked, and no verdict has landed
+# (plan 206). The marker pair is the truth: `raised-pr-<n>.<head>` exists, `pr-<n>.<head>` does not.
+try:
+    reviewed = os.path.join(state, ".reviewed")
+    raised = glob.glob(os.path.join(reviewed, "raised-pr-*")) if os.path.isdir(reviewed) else []
+    for rp in raised:
+        tag = os.path.basename(rp)[len("raised-"):]          # pr-<n>.<head>
+        if not os.path.exists(os.path.join(reviewed, tag)):
+            n, _, head = tag.partition(".")
+            add("review", f"PR #{n.replace('pr-', '')} at {head[:12]} — asked, not yet judged", "review-watch", "")
+except Exception:
+    pass
+
 # 4 · the status shelf — lines the record itself marks as the operator's
 for p in glob.glob(os.path.join(home, "hodd/docs/status/*.md")):
     for line in open(p, errors="ignore"):

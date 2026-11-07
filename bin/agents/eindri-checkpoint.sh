@@ -98,7 +98,7 @@ d=json.load(sys.stdin)
 print(f"resume_plan[5]{{id,step,next,worktree,commits}}:")
 print(f\"  \\\"{d[chr(34)+chr(105)+chr(100)+chr(34)]}\\\",\\\"{d[chr(34)+chr(115)+chr(116)+chr(101)+chr(112)+chr(34)]}\\\",\\\"{d[chr(34)+chr(110)+chr(101)+chr(120)+chr(116)+chr(34)]}\\\",\\\"{d[chr(34)+chr(119)+chr(111)+chr(114)+chr(107)+chr(116)+chr(114)+chr(101)+chr(101)+chr(34)]}\\\",\\\"{d[chr(34)+chr(99)+chr(111)+chr(109)+chr(109)+chr(105)+chr(116)+chr(115)+chr(34)]}\\\")\")'
     printf 'next: sudo -u %s true; then re-seat with the checkpoint as the brief seed:\n' "$(id -un)"
-    printf '  bin/agents/einherjar-spawn.sh %s %s --mode local-only --harness pi --model opencode-go/deepseek-v4.1-flash\n' "$ID" "$ROOT"
+    printf '  bin/agents/einherjar-spawn.sh %s %s --mode local-only --harness pi   # model: bin/model/agent-model.sh <agent> resolves it for this seat\n' "$ID" "$ROOT"
     ;;
   *) printf 'eindri-checkpoint: unknown action %s\nhelp: save · show · list · resume\n' "$cmd" >&2; exit 2 ;;
 esac
