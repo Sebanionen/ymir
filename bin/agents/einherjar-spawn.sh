@@ -840,7 +840,13 @@ build_launch_command() {  # prints the worker command WITHOUT the leading exec
       local pi_args=()
       [ -n "$MODEL" ] && [ "$MODEL" != default ] && pi_args+=(--model "$MODEL")
       [ -n "$EFFORT" ] && [ "$EFFORT" != default ] && pi_args+=(--thinking "$EFFORT")
-      "$PI_LAUNCHER" print "$LAUNCH_CWD" ${pi_args[@]+"${pi_args[@]}"} --brief "$brief_ref"
+      # The extensions come from the PROJECT TREE, never from the worktree: the
+      # spawn deletes the worktree's `.pi/extensions` above (so pi does not load the
+      # same tool twice), so asking the launcher to count pins in `$LAUNCH_CWD` was a
+      # door that removed what it then demanded — every pi dispatch died at
+      # "holds no .pi/extensions tree" (measured 2026-11-06). `cd` still goes to the
+      # worktree; only the pin list is read from the project home.
+      "$PI_LAUNCHER" print "${PROJECT_DIR:-$ROOT}" ${pi_args[@]+"${pi_args[@]}"} --brief "$brief_ref"
       ;;
     *)
       local cmd=$RAW_LAUNCH
