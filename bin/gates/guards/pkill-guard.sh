@@ -112,7 +112,15 @@ case "$MODE" in
 esac
 
 # ── --check: the push range ──────────────────────────────────────────────────
-refs="$(cat 2>/dev/null || true)"
+# Read the refs ONLY when something is actually there to read. A ward runs inside
+# `$( ... )` from bin/gates/guards.sh, where stdin is whatever the caller happened
+# to hold open — a git hook pipe, a pane, a terminal. A bare `cat` then waits for an
+# EOF that never comes, and the push hangs with no output at all. Measured
+# 2026-11-11: three worktrees wedged on this line at once, each at three minutes and
+# climbing, and nothing on screen to say why. The bound is not a truncation: git
+# writes the refs and closes the pipe, so a real pre-push returns at once.
+refs=""
+if [ ! -t 0 ]; then refs="$(timeout 3 cat 2>/dev/null || true)"; fi
 base=""
 if [ -n "$refs" ]; then
   while read -r _local local_sha _remote remote_sha; do
@@ -139,13 +147,24 @@ added="$(git diff -U0 "$base" "$head_sha" -- 2>/dev/null | awk '
 
 [ -n "$added" ] || exit 0
 
+# Only a line that NAMES a blanket kill can be one, so find those first with a single
+# pass. Judging every changed line was O(lines) processes: measured 2026-11-11, a
+# 600-line range spent 25 seconds spawning printf/grep/sed triplets for lines that
+# contained nothing — and three concurrent worktrees made the delivery gate look hung,
+# with no output on screen to say otherwise. One grep, then judge only what it found.
+candidates="$(printf '%s\n' "$added" | grep -E "$PATTERN" || true)"
+[ -n "$candidates" ] || {
+  printf 'pkill-guard[1]{gate,result}:\n  "push","clean — no blanket kill in the range"\n'
+  exit 0
+}
+
 while IFS= read -r hit; do
   [ -n "$hit" ] || continue
   path="${hit%%:*}"; rest="${hit#*:}"; line="${rest%%:*}"; text="${rest#*:}"
   judge_line "$path" "$text" || continue
   block "$path" "$line" "$(printf '%s' "$text" | sed 's/^[[:space:]]*//' | cut -c1-160)"
   report
-done <<<"$added"
+done <<<"$candidates"
 
 if [ "$findings" -gt 0 ]; then
   printf 'pkill-guard[1]{gate,finding}:\n  "push","BLOCKED — %s blanket kill(s) in the range"\n' "$findings"
