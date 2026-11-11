@@ -28,7 +28,13 @@ ymir_home_record() {  # <result-var> — the home recorded at installation, or e
   local result_var=${1-} f="$YMIR_CONFIG_DIR/home"
   [ -n "$result_var" ] || return 2
   if [ -r "$f" ]; then
-    printf -v "$result_var" '%s' "$(head -n1 "$f" 2>/dev/null | tr -d '[:space:]')"
+    # Trim the EDGES only. `tr -d '[:space:]'` was here until 2026-11-11 and it
+    # deleted the spaces INSIDE the path: a home at `/mnt/c/Users/<windows-profile>/ymirhome`
+    # resolved as `/mnt/c/Users/AgentSeb/ymirhome`, and every door that tells the
+    # operator their home is set was pointing at a directory that does not exist.
+    # A Windows profile name very often carries a space, so this is not an edge case.
+    # The `\r` strip is for a record written or edited on the Windows side.
+    printf -v "$result_var" '%s' "$(head -n1 "$f" 2>/dev/null | sed 's/\r$//; s/^[[:space:]]*//; s/[[:space:]]*$//')"
   else
     printf -v "$result_var" '%s' ""
   fi

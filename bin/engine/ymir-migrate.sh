@@ -9,6 +9,11 @@
 # Each migration is `.agents/migrations/<NNNN>-<name>.sh`, MUST be idempotent,
 # and runs with `bash`. Applied ids are recorded in `state/migrations` (private).
 # `bin/engine/ymir-install.sh` and `bin/agents/brokk-update.sh` call `apply` after an update.
+#
+# A migration may answer with a THIRD outcome, exit 3 = DEFERRED: it is a real
+# migration that this machine cannot run yet (a destination nobody has named, a
+# service that must be stopped first). It is reported, never recorded as applied —
+# recording it would silence it forever — and never treated as a failure.
 set -u
 # The ONE resolver (Rule 07): env -> the recorded choice -> the one default.
 if [ -z "${YMIR_HOARD_LIB_LOADED:-}" ]; then
@@ -60,16 +65,27 @@ fi
 
 [ "$ACTION" = apply ] || { printf 'error: unknown action %s\nhelp: bin/engine/ymir-migrate.sh [status|apply [--dry-run]]\n' "$ACTION" >&2; exit 2; }
 
-ran=0; skipped=0
+ran=0; skipped=0; deferred=0
 for m in "${MIGS[@]}"; do
   id="$(basename "$m" .sh)"
   if is_applied "$id"; then skipped=$((skipped+1)); continue; fi
   printf 'ymir-migrate[1]{apply,migration}:\n  "%s","%s"\n' "$([ "$DRY" = 1 ] && echo dry-run || echo run)" "$id"
-  if [ "$DRY" = 1 ]; then continue; fi
-  if bash "$m"; then
-    printf '%s\n' "$id" >>"$APPLIED"; ran=$((ran+1))
-  else
-    printf 'error: migration %s failed — stopping; fix and re-run\n' "$id" >&2; exit 1
+  if [ "$DRY" = 1 ]; then
+    # A dry run must be able to NAME what it would touch, so the migration sees the
+    # flag. A migration that ignores it and writes anyway is a bug, not a dry run.
+    bash "$m" --dry-run || true
+    continue
   fi
+  bash "$m"; rc=$?
+  case "$rc" in
+    0) printf '%s\n' "$id" >>"$APPLIED"; ran=$((ran+1)) ;;
+    # 3 = DEFERRED: the migration is legitimate but this machine cannot run it yet
+    # (a destination nobody has named, a service that must be stopped first). It is
+    # NOT applied — recording it would silence it forever — and it is NOT a failure,
+    # because nothing is broken. It says why, and the next apply asks again.
+    3) deferred=$((deferred+1)) ;;
+    *) printf 'error: migration %s failed — stopping; fix and re-run\n' "$id" >&2; exit 1 ;;
+  esac
 done
 printf 'ymir-migrate[1]{action,applied,pending}:\n  "%s",%s,%s\n' "$([ "$DRY" = 1 ] && echo dry-run || echo apply)" "$ran" "$skipped"
+[ "$deferred" -eq 0 ] || printf 'ymir-migrate[1]{deferred,note}:\n  %s,"not applied and not failed — the reason is printed above"\n' "$deferred"
