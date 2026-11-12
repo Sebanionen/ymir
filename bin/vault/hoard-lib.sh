@@ -28,7 +28,11 @@ ymir_home_record() {  # <result-var> — the home recorded at installation, or e
   local result_var=${1-} f="$YMIR_CONFIG_DIR/home"
   [ -n "$result_var" ] || return 2
   if [ -r "$f" ]; then
-    printf -v "$result_var" '%s' "$(head -n1 "$f" 2>/dev/null | tr -d '[:space:]')"
+    # Only the line ending is stripped. `tr -d '[:space:]'` deleted EVERY space,
+    # so a home under a profiled Windows path ("C:/Users/Agent Seb/ymirhome")
+    # came back as "…/AgentSeb/ymirhome" — a directory that cannot exist, read
+    # by every unit, script and door that resolves the home (2026-11-12).
+    printf -v "$result_var" '%s' "$(head -n1 "$f" 2>/dev/null | tr -d '\r\n')"
   else
     printf -v "$result_var" '%s' ""
   fi
