@@ -52,16 +52,19 @@ kernel from `backends/` by `/proc/cpuinfo`: `haswell` for AVX2+FMA, `x64` as the
 The choice is worth making — measured here, the same 8-second clip took 2.5 s on
 `haswell` and 11.8 s on `x64`.
 
-The road, reproduced from an empty prefix:
+The road, reproduced from an empty prefix (`HOME` pointed at an empty directory so the
+seat's later source build cannot answer first; the model path is given explicitly for the
+same reason):
 
 ```
-$ SNOTRA_ENGINE_PREFIX=/tmp/snotra-prefix snotra-ensure.sh ensure --install
-snotra: unpacking the packaged engine into /tmp/snotra-prefix (no root) …
-snotra: engine seated at /tmp/snotra-prefix/bin/whisper-cli
+$ HOME=/tmp/opencode/fakehome SNOTRA_ENGINE_PREFIX=/tmp/opencode/wpre2 \
+  SNOTRA_WHISPER_MODEL=/home/ymir/whisper.cpp/models/ggml-small.en.bin \
+  systems/snotra/services/ear/snotra-ensure.sh ensure --install
+snotra: unpacking the packaged engine into /tmp/opencode/wpre2 (no root) …
+snotra: engine seated at /tmp/opencode/wpre2/bin/whisper-cli
 snotra[1]{engine,model,voxtype,seat}:
-  "/tmp/snotra-prefix/bin/whisper-cli","/home/ymir/whisper.cpp/models/ggml-small.en.bin","—","DESKTOP-FRS81OR"
+  "/tmp/opencode/wpre2/bin/whisper-cli","/home/ymir/whisper.cpp/models/ggml-small.en.bin","—","DESKTOP-FRS81OR"
 ```
-
 
 A build tree (the fleet's other seats) links its kernel statically, has no `backends/`,
 and is untouched by this.
@@ -147,8 +150,10 @@ fault the capture door had on 2026-11-09, still present on this path:
 
 ## What is not mended here
 
-- The seat's recorded home (`~/.config/ymir/home`) is a Windows path
-  (`/mnt/c/Users/.../ymirhome`); it exists, so the door writes there. Whether this seat
-  should keep its home on the Windows side is the Allfather's call, not this fix's.
+- The seat's recorded home (`~/.config/ymir/home`) is a Windows path with a space in it.
+  The resolver on this branch still deletes that space, so it points at a directory that
+  does not exist and a default minutes path under the hoard fails here. The sibling fix
+  for that lives in `bin/vault/hoard-lib.sh` (uncommitted, dated 2026-11-11) and is not
+  part of this change; the proof above names its output paths explicitly for that reason.
 - The live tail's microphone law (`SNOTRA_LOCAL_ROOM=1`) and the watch are untouched, as
   the errand scoped.

@@ -147,27 +147,36 @@ install_engine_from_packages() {
   for deb in "$tmp"/*.deb; do
     dpkg-deb -x "$deb" "$tmp/root" >/dev/null 2>&1 || { rm -rf "$tmp"; return 1; }
   done
-  mkdir -p "$ENGINE_PREFIX/bin" "$ENGINE_PREFIX/lib" "$ENGINE_PREFIX/backends" 2>/dev/null \
+  # stage the tree, verify it, then move it into place — a half-copied prefix
+  # would still be executable, and `status` would call it green.
+  local stage="$tmp/stage"
+  mkdir -p "$stage/bin" "$stage/lib" "$stage/backends" 2>/dev/null \
     || { rm -rf "$tmp"; return 1; }
   # only the binaries that run without extra libraries: whisper-cli (the ear),
   # whisper-server (the fleet ear lane) and whisper-quantize. whisper-stream
   # needs SDL2, which is not part of this unpack.
   local b
   for b in whisper-cli whisper-server whisper-quantize; do
-    [ -x "$tmp/root/usr/bin/$b" ] && cp -a "$tmp/root/usr/bin/$b" "$ENGINE_PREFIX/bin/"
+    [ -x "$tmp/root/usr/bin/$b" ] && cp -a "$tmp/root/usr/bin/$b" "$stage/bin/"
   done
-  find "$tmp/root/usr/lib" -maxdepth 3 -name 'libwhisper.so*' -exec cp -a {} "$ENGINE_PREFIX/lib/" \; 2>/dev/null
-  find "$tmp/root/usr/lib" -maxdepth 3 -name 'libggml*.so*' -exec cp -a {} "$ENGINE_PREFIX/lib/" \; 2>/dev/null
-  find "$tmp/root/usr/lib" -path '*ggml/backends0/*.so' -exec cp -a {} "$ENGINE_PREFIX/backends/" \; 2>/dev/null
-  rm -rf "$tmp"
-  if [ ! -x "$ENGINE_PREFIX/bin/whisper-cli" ] || ! find "$ENGINE_PREFIX/backends" -name 'libggml-cpu-*.so' | grep -q .; then
+  find "$tmp/root/usr/lib" -maxdepth 3 -name 'libwhisper.so*' -exec cp -a {} "$stage/lib/" \; 2>/dev/null
+  find "$tmp/root/usr/lib" -maxdepth 3 -name 'libggml*.so*' -exec cp -a {} "$stage/lib/" \; 2>/dev/null
+  find "$tmp/root/usr/lib" -path '*ggml/backends0/*.so' -exec cp -a {} "$stage/backends/" \; 2>/dev/null
+  if [ ! -x "$stage/bin/whisper-cli" ] || ! find "$stage/backends" -name 'libggml-cpu-*.so' | grep -q .; then
     printf 'snotra: the unpacked engine is incomplete\n' >&2
-    return 1
+    rm -rf "$tmp"; return 1
   fi
-  if ! LD_LIBRARY_PATH="$ENGINE_PREFIX/lib" "$ENGINE_PREFIX/bin/whisper-cli" -h >/dev/null 2>&1; then
+  if ! LD_LIBRARY_PATH="$stage/lib" "$stage/bin/whisper-cli" -h >/dev/null 2>&1; then
     printf 'snotra: the unpacked engine does not start\n' >&2
-    return 1
+    rm -rf "$tmp"; return 1
   fi
+  mkdir -p "$(dirname "$ENGINE_PREFIX")" 2>/dev/null || true
+  rm -rf "$ENGINE_PREFIX"
+  if ! mv "$stage" "$ENGINE_PREFIX"; then
+    printf 'snotra: could not move the engine into %s\n' "$ENGINE_PREFIX" >&2
+    rm -rf "$tmp"; return 1
+  fi
+  rm -rf "$tmp"
   printf 'snotra: engine seated at %s/bin/whisper-cli\n' "$ENGINE_PREFIX" >&2
   return 0
 }
