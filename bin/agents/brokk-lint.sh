@@ -35,13 +35,15 @@ js=OK
 if command -v node >/dev/null 2>&1; then
   while IFS= read -r f; do
     node --check "$f" 2>/dev/null || js=FAIL
-  done < <(find "$ROOT/.opencode/plugins" -name '*.js' 2>/dev/null)
+  # The adapters' SOURCE is .agents/harness/opencode/plugins/; the project-level
+  # .opencode/plugins door is gone (one home — 2026-11-12), so lint the source.
+  done < <(find "$ROOT/.agents/harness/opencode/plugins" "$ROOT/.opencode/plugins" -name '*.js' 2>/dev/null)
 fi
 add "plugin syntax" "$js"
 
 # 3. JSON parse
 json=OK
-for f in "$ROOT/opencode.json" "$ROOT"/.agents/config/*.json "$ROOT"/.claude/settings.json "$ROOT"/.codex/hooks.json "$ROOT"/.cursor/hooks.json "$ROOT"/.opencode/plugins/package.json; do
+for f in "$ROOT/opencode.json" "$ROOT"/.agents/config/*.json "$ROOT"/.claude/settings.json "$ROOT"/.codex/hooks.json "$ROOT"/.cursor/hooks.json "$ROOT"/.agents/harness/opencode/plugins/package.json "$ROOT"/.opencode/plugins/package.json; do
   [ -e "$f" ] || continue
   python3 -m json.tool "$f" >/dev/null 2>&1 || json=FAIL
 done

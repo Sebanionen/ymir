@@ -10,6 +10,16 @@ This is the reference an agent reads to add a harness adapter or rebuild one fro
 > be seated**, and the only symptom herdr can report is a pane that will not sit at
 > a prompt. It is paired with one deep-dive file per harness:
 
+> **The same law holds for OpenCode plugins (2026-11-12).** The adapters have ONE live
+> home, `~/.config/opencode/plugins/`, seeded from `.agents/harness/opencode/plugins/`;
+> the project-level `.opencode/plugins` door is not used, because OpenCode loads both
+> paths and does not de-duplicate. That home must also carry the one package the
+> adapters import — `@opencode/plugin`, pinned to the running OpenCode, plus `effect` —
+> or all six fail to load while every directory listing looks correct.
+> `bin/seat/harness-extensions-install.sh` installs it and reports an `opencode-deps`
+> row; `--check` reports it `stale` when it is missing. And a config edit is not live
+> until `opencode service restart`.
+
 | Deep dive | Harness |
 |---|---|
 | [`opencode.md`](opencode.md) | OpenCode (Öppencode) |
