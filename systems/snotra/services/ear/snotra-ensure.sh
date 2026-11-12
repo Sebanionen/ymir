@@ -7,8 +7,14 @@
 #
 # Per-OS install road:
 #   Arch/omarchy  pacman -S whisper-cpp            (extra repo; CPU backend)
-#   Debian/Ubuntu apt-get install whisper.cpp      (or build from source)
-#   otherwise     build whisper.cpp from source, or use an existing build
+#   Debian/Ubuntu the packaged engine WITHOUT root: `apt-get download` the three
+#                 .debs (~4 MB) and `dpkg-deb -x` them into $ENGINE_PREFIX. This
+#                 is the road that works on a seat whose sudo wants a password
+#                 (WSL2, a non-interactive shell). Falls back to
+#                 `sudo apt-get install -y whisper.cpp`, then to naming that
+#                 command for the operator.
+#   otherwise     build whisper.cpp from source (needs cmake), or use an
+#                 existing build
 #
 # The model is fetched from the whisper.cpp Hugging Face release (checksummed by
 # HTTPS; ~466 MB for small.en). A seat that already has voxtype keeps its models
@@ -23,16 +29,21 @@
 # Env:
 #   SNOTRA_WHISPER_BIN   — explicit engine override
 #   SNOTRA_WHISPER_MODEL — explicit model override
+#   SNOTRA_ENGINE_PREFIX — where the no-root packaged engine is unpacked
+#                          (default ~/.local/opt/whisper.cpp)
 #   SNOTRA_MODEL         — model name to fetch (default ggml-small.en)
 #
-# Exit: 0 engine + model present, 1 absent, 2 usage.
+# Exit: 0 engine + model present, 1 absent (nothing attempted), 2 usage,
+#       3 the operator must run one command (sudo/build) — never a false success.
 set -u
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 SNOTRA_MODEL="${SNOTRA_MODEL:-ggml-small.en}"
 MODEL_BASE="${SNOTRA_MODEL_URL:-https://huggingface.co/ggerganov/whisper.cpp/resolve/main}"
+ENGINE_PREFIX="${SNOTRA_ENGINE_PREFIX:-$HOME/.local/opt/whisper.cpp}"
+OPERATOR_COMMAND=""
 
-case "${1-}" in -v|-V|--version) printf '%s\n' "$VERSION"; exit 0 ;; -h|--help|"") sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;; esac
+case "${1-}" in -v|-V|--version) printf '%s\n' "$VERSION"; exit 0 ;; -h|--help|"") sed -n '2,/^set -u/p' "$0" | sed '$d' | sed 's/^# \{0,1\}//'; exit 0 ;; esac
 CMD="${1-}"; shift || true
 DO_INSTALL=0
 case "$CMD" in ensure|status|install) ;; *) printf 'error: unknown command %s\nhelp: systems/snotra/services/ear/snotra-ensure.sh [status|ensure|install]\n' "$CMD" >&2; exit 2 ;; esac
@@ -51,6 +62,7 @@ find_whisper() {
   done
   local p
   for p in \
+    "$ENGINE_PREFIX/bin/whisper-cli" \
     "$HOME/whisper.cpp.src/build/bin/whisper-cli" \
     "$HOME/whisper.cpp/build/bin/whisper-cli" \
     "$HOME/whisper.cpp.src/build/bin/main" \
@@ -102,6 +114,64 @@ status() {
 
 # --- install ----------------------------------------------------------------
 
+# The operator's one command, printed loudly and remembered as exit 3.
+need_operator() {
+  OPERATOR_COMMAND="$1"
+  printf '\nsnotra: this seat needs the operator. Run exactly:\n\n  %s\n\n' "$1" >&2
+}
+
+# The same engine, unpacked without root. Debian/Ubuntu publish whisper.cpp as
+# three small packages (`whisper.cpp`, `libwhisper1`, `libggml0`); `apt-get
+# download` and `dpkg-deb -x` need no privilege, so a seat whose sudo wants a
+# password still gets a real engine. The tree is laid out beside the binary so
+# the ear's own door finds everything without a second lookup:
+#
+#   $ENGINE_PREFIX/bin/whisper-cli
+#   $ENGINE_PREFIX/lib/libwhisper.so.1 · libggml.so.0 · libggml-base.so.0
+#   $ENGINE_PREFIX/backends/libggml-cpu-*.so
+#
+# libggml finds its CPU kernel through a compiled-in directory
+# (/usr/lib/x86_64-linux-gnu/ggml/backends0) that an unprivileged copy does not
+# have, so the door names one kernel from `backends/`
+# (snotra-transcribe.sh's pick_backend).
+install_engine_from_packages() {
+  have apt-get || return 1
+  have dpkg-deb || return 1
+  local tmp; tmp="$(mktemp -d 2>/dev/null)" || return 1
+  printf 'snotra: unpacking the packaged engine into %s (no root) …\n' "$ENGINE_PREFIX" >&2
+  if ! ( cd "$tmp" && apt-get download whisper.cpp libwhisper1 libggml0 ) >/dev/null 2>&1; then
+    printf 'snotra: apt-get download did not answer\n' >&2
+    rm -rf "$tmp"; return 1
+  fi
+  local deb
+  for deb in "$tmp"/*.deb; do
+    dpkg-deb -x "$deb" "$tmp/root" >/dev/null 2>&1 || { rm -rf "$tmp"; return 1; }
+  done
+  mkdir -p "$ENGINE_PREFIX/bin" "$ENGINE_PREFIX/lib" "$ENGINE_PREFIX/backends" 2>/dev/null \
+    || { rm -rf "$tmp"; return 1; }
+  # only the binaries that run without extra libraries: whisper-cli (the ear),
+  # whisper-server (the fleet ear lane) and whisper-quantize. whisper-stream
+  # needs SDL2, which is not part of this unpack.
+  local b
+  for b in whisper-cli whisper-server whisper-quantize; do
+    [ -x "$tmp/root/usr/bin/$b" ] && cp -a "$tmp/root/usr/bin/$b" "$ENGINE_PREFIX/bin/"
+  done
+  find "$tmp/root/usr/lib" -maxdepth 3 -name 'libwhisper.so*' -exec cp -a {} "$ENGINE_PREFIX/lib/" \; 2>/dev/null
+  find "$tmp/root/usr/lib" -maxdepth 3 -name 'libggml*.so*' -exec cp -a {} "$ENGINE_PREFIX/lib/" \; 2>/dev/null
+  find "$tmp/root/usr/lib" -path '*ggml/backends0/*.so' -exec cp -a {} "$ENGINE_PREFIX/backends/" \; 2>/dev/null
+  rm -rf "$tmp"
+  if [ ! -x "$ENGINE_PREFIX/bin/whisper-cli" ] || ! find "$ENGINE_PREFIX/backends" -name 'libggml-cpu-*.so' | grep -q .; then
+    printf 'snotra: the unpacked engine is incomplete\n' >&2
+    return 1
+  fi
+  if ! LD_LIBRARY_PATH="$ENGINE_PREFIX/lib" "$ENGINE_PREFIX/bin/whisper-cli" -h >/dev/null 2>&1; then
+    printf 'snotra: the unpacked engine does not start\n' >&2
+    return 1
+  fi
+  printf 'snotra: engine seated at %s/bin/whisper-cli\n' "$ENGINE_PREFIX" >&2
+  return 0
+}
+
 install_engine() {
   local os_id=""
   [ -r /etc/os-release ] && os_id="$(. /etc/os-release 2>/dev/null; printf '%s' "${ID:-}")"
@@ -112,23 +182,22 @@ install_engine() {
         if sudo -n pacman -S --noconfirm whisper-cpp >/dev/null 2>&1; then
           printf 'snotra: whisper-cpp installed\n' >&2; return 0
         fi
-        printf 'snotra: pacman needs a password — run: sudo pacman -S whisper-cpp\n' >&2
-        return 1
-      fi ;;
+      fi
+      need_operator 'sudo pacman -S whisper-cpp'
+      return 3 ;;
     debian|ubuntu|pop|linuxmint)
-      if have apt-get; then
-        printf 'snotra: installing whisper.cpp via apt-get …\n' >&2
-        if sudo -n apt-get install -y whisper.cpp >/dev/null 2>&1; then
-          printf 'snotra: whisper.cpp installed\n' >&2; return 0
-        fi
-        printf 'snotra: apt-get needs a password — run: sudo apt-get install -y whisper.cpp\n' >&2
-        return 1
-      fi ;;
+      # 1) no root at all — the road that works when sudo wants a password
+      install_engine_from_packages && return 0
+      # 2) root, only when sudo is passwordless
+      if have apt-get && sudo -n apt-get install -y whisper.cpp >/dev/null 2>&1; then
+        printf 'snotra: whisper.cpp installed\n' >&2; return 0
+      fi
+      # 3) the operator's one command
+      need_operator 'sudo apt-get install -y whisper.cpp'
+      return 3 ;;
   esac
-  printf 'snotra: no package for this OS — build whisper.cpp:\n' >&2
-  printf '  git clone https://github.com/ggerganov/whisper.cpp ~/whisper.cpp.src\n' >&2
-  printf '  cmake -S ~/whisper.cpp.src -B ~/whisper.cpp.src/build -DGGML_CUDA=ON && cmake --build ~/whisper.cpp.src/build -j\n' >&2
-  return 1
+  need_operator 'git clone https://github.com/ggerganov/whisper.cpp ~/whisper.cpp.src && cmake -S ~/whisper.cpp.src -B ~/whisper.cpp.src/build && cmake --build ~/whisper.cpp.src/build -j'
+  return 3
 }
 
 install_model() {
@@ -144,27 +213,39 @@ install_model() {
     fi
   fi
   rm -f "$dir/${SNOTRA_MODEL}.bin.part"
-  printf 'snotra: model fetch failed (offline?) — download %s to %s/\n' "$url" "$dir" >&2
-  return 1
+  need_operator "curl -fL -o $dir/${SNOTRA_MODEL}.bin $url"
+  return 3
 }
 
+# Returns 0 when the seat can now transcribe, 3 when only the operator can
+# finish it, 1 when the attempt failed for another reason.
 install_all() {
+  local rc=0
   if [ -z "$(find_whisper || true)" ] && [ -z "$(find_voxtype || true)" ]; then
-    install_engine || true
+    install_engine || rc=$?
+    [ "$rc" -ne 0 ] && return "$rc"
   fi
   if [ -z "$(find_model || true)" ]; then
-    install_model || true
+    install_model || rc=$?
+    [ "$rc" -ne 0 ] && return "$rc"
   fi
+  return 0
 }
 
 case "$CMD" in
   status) status; exit $? ;;
-  install) install_all; status; exit $? ;;
+  install)
+    install_all; rc=$?
+    status || true
+    [ "$rc" -ne 0 ] && exit "$rc"
+    exit 0 ;;
   ensure)
     if status >/dev/null 2>&1; then status; exit 0; fi
     if [ "$DO_INSTALL" = 1 ]; then
-      install_all
-      status; exit $?
+      install_all; rc=$?
+      status || true
+      [ "$rc" -ne 0 ] && exit "$rc"
+      exit 0
     fi
     status
     printf 'snotra: engine or model missing — run `systems/snotra/services/ear/snotra-ensure.sh install`\n' >&2

@@ -48,12 +48,39 @@ supports this; it is not a rewrite.
 ### M0 — the engine ensure (`systems/snotra/services/ear/snotra-ensure.sh`)
 
 - Reports the seat's engine + model; installs what is missing
-- Per-OS: `pacman -S whisper-cpp` (Arch/omarchy), `apt-get install whisper.cpp`
-  (Debian), else build-from-source guidance
+- Per-OS: `pacman -S whisper-cpp` (Arch/omarchy); on Debian/Ubuntu the packaged
+  engine is unpacked **without root** (see below), then passwordless
+  `apt-get install whisper.cpp`, then the operator's one command; elsewhere
+  build-from-source guidance
+- `ensure --install` exits **3** when only the operator can finish it, and prints
+  the exact command — it never reports a false success
 - Model fetched from the whisper.cpp Hugging Face release; a voxtype seat keeps
   its models
 - Wired into `bin/engine/ymir-install.sh` (`step_snotra`) and `bin/agents/eir-doctor.sh`
   (`snotra` surface)
+
+### M0a — the engine without root (2026-11-12)
+
+A seat whose sudo wants a password (a WSL2 hand, a non-interactive shell) used to be
+unable to install anything: the door tried `sudo -n apt-get` and stopped. `apt-get
+download` and `dpkg-deb -x` need no privilege, so the ensure script now unpacks
+`whisper.cpp`, `libwhisper1` and `libggml0` (~4 MB) into
+`$SNOTRA_ENGINE_PREFIX` (default `~/.local/opt/whisper.cpp`):
+
+| Path | What it is |
+|---|---|
+| `bin/whisper-cli` | the engine the ear calls (also `whisper-server`, `whisper-quantize`) |
+| `lib/` | `libwhisper.so.1`, `libggml.so.0`, `libggml-base.so.0` |
+| `backends/` | one `libggml-cpu-*.so` per microarchitecture |
+
+`libggml` looks for its CPU kernel in a compiled-in directory
+(`/usr/lib/x86_64-linux-gnu/ggml/backends0`) that an unprivileged copy does not have, and
+`GGML_BACKEND_PATH` takes one file rather than a directory. So `snotra-transcribe.sh`
+picks a kernel from `backends/` by `/proc/cpuinfo` (`haswell` for AVX2+FMA, `x64` as the
+floor) and exports `GGML_BACKEND_PATH`; a build tree links its kernel statically, has no
+`backends/`, and is unaffected.
+
+Measured on the WSL2 hand, 8-second clip: `haswell` 2.5 s against `x64` 11.8 s.
 
 ### M2 — Systemd unit (`tools/mill/systemd/snotra.service`)
 
@@ -235,10 +262,12 @@ the public repo. The repo carries only the wiring scripts and the MCP server.
 | heimdall | `~/whisper.cpp.src/build/bin/whisper-cli` (CUDA) | `~/whisper.cpp/models/ggml-small.en.bin` | the brain (<gpu>) |
 | whynot | `~/whisper.cpp/build/bin/whisper-cli` (CUDA) | `~/whisper.cpp/models/ggml-small.en.bin` | needs `LD_LIBRARY_PATH` |
 | omarchy | `/usr/bin/whisper-cli` (CPU, `extra/whisper-cpp`) | `~/.local/share/voxtype/models/ggml-small.en.bin` | voxtype also has a full `meeting` mode |
+| the WSL2 hand (2026-11-12) | `~/.local/opt/whisper.cpp/bin/whisper-cli` (CPU, unpacked package) | `~/whisper.cpp/models/ggml-small.en.bin` | no root; `GGML_BACKEND_PATH` names the kernel from `backends/` |
 
-The transcribe script discovers the engine (env → PATH → build trees →
-`voxtype transcribe`), normalises to 16 kHz mono, sets `LD_LIBRARY_PATH` for a
-build-tree binary, and picks GPU vs CPU by free VRAM (a resident rail model
+The transcribe script discovers the engine (env → PATH → build trees → the
+unprivileged prefix → `voxtype transcribe`), normalises to 16 kHz mono, sets
+`LD_LIBRARY_PATH` for a build-tree or packaged binary, picks the CPU kernel when the
+copy is packaged, and picks GPU vs CPU by free VRAM (a resident rail model
 starves CUDA — whynot's <gpu> always falls to the CPU).
 
 ### M13 — The live tail (`systems/snotra/services/ear/snotra-live.sh`), 2026-10-07

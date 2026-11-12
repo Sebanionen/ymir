@@ -1,22 +1,33 @@
 #!/usr/bin/env bash
-# systems/snotra/services/snotra-live.sh — the door itself (plan 129). The 'RETIRED SHIM' wording below was copied in by the move and removed 2026-10-31: this file IS the door, not a shim of one.
+# systems/snotra/services/ear/snotra-live.sh — the live tail door (plan 129).
 #
-# It exists so a caller nobody has repointed yet still works. It is retired by the dated follow-up in
-# docs/fixes/snotra/2026-10-24-snotra-becomes-a-system.md, and .agents/paths-ledger.yaml records the move.
+# The shim that once stood at systems/snotra/services/snotra-live.sh is retired
+# by docs/fixes/snotra/2026-10-24-snotra-becomes-a-system.md; this is the door
+# itself, and the move is recorded in .agents/paths-ledger.yaml. The shim's
+# pointer at the top of this file was removed 2026-11-12: it aimed at a path
+# that does not exist, so the door answered 127 instead of listening.
 set -euo pipefail
-_d="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-_root="$(cd "$_d/../../.." && pwd)"
-_new="$_root/systems/snotra/services/ear/snotra-live.sh"
-if [ ! -e "$_new" ]; then
-  printf 'snotra: the door moved to systems/snotra/services/ear/snotra-live.sh and is not there\n' >&2
-  exit 127
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# The repo root, found by walking up to the tree that carries RULES/ and
+# .agents/ — the old `../../../../` from services/ear/ landed one level above
+# the repo, so the rail resolver and the rune append were pointed at nothing.
+REPO_ROOT="$SCRIPT_DIR"
+while [ "$REPO_ROOT" != / ] && { [ ! -d "$REPO_ROOT/RULES" ] || [ ! -d "$REPO_ROOT/.agents" ]; }; do REPO_ROOT="$(dirname "$REPO_ROOT")"; done
+{ [ -d "$REPO_ROOT/RULES" ] && [ -d "$REPO_ROOT/.agents" ]; } || REPO_ROOT=""
+if [ -z "${YMIR_HOARD_LIB_LOADED:-}" ]; then
+  for _lib in ${REPO_ROOT:+"$REPO_ROOT/bin/vault/hoard-lib.sh"} "$SCRIPT_DIR/hoard-lib.sh"; do
+    [ -r "$_lib" ] && { . "$_lib"; YMIR_HOARD_LIB_LOADED=1; break; }
+  done
+  unset _lib
 fi
 if [ -z "${YMIR_HOME:-}" ] && command -v ymir_home_root >/dev/null 2>&1; then
   ymir_home_root YMIR_HOME
 fi
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../" && pwd)"
+[ -n "${YMIR_HOME:-}" ] || {
+  printf 'error: the hoard home is unresolved — bin/vault/hoard-lib.sh answered nothing\n' >&2
+  printf 'help: run the door from the repo, or set YMIR_HOME\n' >&2
+  exit 2
+}
 
 HOARD="$YMIR_HOME/hodd/life/meetings"
 STATE="$YMIR_HOME/state"
@@ -25,6 +36,7 @@ SLICES="$WORK/slices"
 LISTENING_FILE="$STATE/.snotra-listening"
 SEG="${SNOTRA_LIVE_SEGMENT_SECONDS:-6}"
 LANE="${SNOTRA_LANE:-ping}"
+ENGINE_PREFIX="${SNOTRA_ENGINE_PREFIX:-$HOME/.local/opt/whisper.cpp}"
 
 mkdir -p "$HOARD" "$STATE" "$WORK" 2>/dev/null || true
 
@@ -63,6 +75,7 @@ find_whisper() {
     "$HOME/whisper.cpp/build/bin/whisper-cli" \
     "$HOME/whisper.cpp.src/build/bin/main" \
     "$HOME/whisper.cpp/build/bin/main" \
+    "$ENGINE_PREFIX/bin/whisper-cli" \
     "/usr/local/bin/whisper-cli" \
     "/usr/bin/whisper-cli"; do
     if [ -x "$p" ]; then printf '%s' "$p"; return 0; fi
@@ -109,7 +122,7 @@ resolve_rail_model() {
     [ -n "$m" ] && { printf '%s' "$m"; return 0; }
   done
 
-  local resolver="$REPO_ROOT/bin/model/rail-resolve.sh"
+  local resolver="${REPO_ROOT:+$REPO_ROOT/bin/model/rail-resolve.sh}"
   [ -x "$resolver" ] || return 1
   bash "$resolver" resolve --json 2>/dev/null | python3 -c 'import json,sys
 try: d=json.load(sys.stdin)
@@ -162,6 +175,26 @@ is_noise() {
   return 1
 }
 
+# pick_backend <dir> — see snotra-transcribe.sh: GGML_BACKEND_PATH takes one
+# kernel file, so the choice is made from /proc/cpuinfo (haswell = AVX2+FMA,
+# x64 = the floor). A build tree has no backends/ and never reaches this.
+pick_backend() {
+  local d="$1" flags p
+  flags="$(grep -m1 '^flags' /proc/cpuinfo 2>/dev/null || true)"
+  for p in sapphirerapids skylakex haswell sse42 x64; do
+    case "$p" in
+      sapphirerapids) printf '%s' "$flags" | grep -qw avx512vnni || continue ;;
+      skylakex) printf '%s' "$flags" | grep -qw avx512f || continue ;;
+      haswell) printf '%s' "$flags" | grep -qw avx2 || continue ;;
+      sse42) printf '%s' "$flags" | grep -qw sse4_2 || continue ;;
+    esac
+    [ -f "$d/libggml-cpu-$p.so" ] && { printf '%s' "$d/libggml-cpu-$p.so"; return 0; }
+  done
+  p="$(ls "$d"/libggml-cpu-*.so 2>/dev/null | head -1)"
+  [ -n "$p" ] && printf '%s' "$p"
+  return 0
+}
+
 # ── the worker: turn finished slices into lines in the document ────────────────
 # A slice is COMPLETE only when the NEXT slice exists — the segment muxer writes
 # sequentially, so the newest file is always the one being written. That is why
@@ -175,7 +208,13 @@ transcribe_slice() {
   ensure_vram
   out="$WORK/.slice.$$"
   (
-    export LD_LIBRARY_PATH="$(dirname "$bin"):${LD_LIBRARY_PATH:-}"
+    local bindir
+    bindir="$(dirname "$bin")"
+    export LD_LIBRARY_PATH="$bindir:$(dirname "$bindir")/lib:${LD_LIBRARY_PATH:-}"
+    if [ -z "${GGML_BACKEND_PATH:-}" ] && [ -d "$(dirname "$bindir")/backends" ]; then
+      _backend="$(pick_backend "$(dirname "$bindir")/backends")"
+      [ -n "$_backend" ] && export GGML_BACKEND_PATH="$_backend"
+    fi
     # a 16 kHz mono slice carries no speaker split, so `-di` never applies
     if [ -n "$model" ]; then
       "$bin" -m "$model" -f "$wav" -l en -nt -np -otxt -of "$out" >/dev/null 2>&1
@@ -429,7 +468,7 @@ do_stop() {
   # 4) the Rune — every significant act is inscribed. The door's own signature is
   #    `runes-append.sh <actor> <event> --message "..."`; it refuses a bare
   #    positional, and it refuses LOUDLY, which is how the mis-call surfaced.
-  local runes="$REPO_ROOT/bin/records/runes-append.sh"
+  local runes="${REPO_ROOT:+$REPO_ROOT/bin/records/runes-append.sh}"
   if [ -x "$runes" ]; then
     bash "$runes" "snotra-live" "live-tail-closed" \
       --message "the live tail closed — $base ($cursor slices from this machine's microphone); live document $HOARD/$base_name" \

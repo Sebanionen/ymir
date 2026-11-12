@@ -35,25 +35,34 @@
 #                        `ear` row, port SNOTRA_EAR_PORT=8322)
 
 set -u
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# The repo root, found by walking up to the tree that carries RULES/ and
+# .agents/ — never a fixed number of `../`. The old resolver looked two levels
+# up, which from services/ear/ is not the repo root, so the door died on an
+# unbound YMIR_HOME the moment it ran outside a shell that already knew the home.
+ROOT="$SCRIPT_DIR"
+while [ "$ROOT" != / ] && { [ ! -d "$ROOT/RULES" ] || [ ! -d "$ROOT/.agents" ]; }; do ROOT="$(dirname "$ROOT")"; done
+{ [ -d "$ROOT/RULES" ] && [ -d "$ROOT/.agents" ]; } || ROOT=""
 # The ONE resolver (Rule 07): env -> the recorded choice -> the one default.
 if [ -z "${YMIR_HOARD_LIB_LOADED:-}" ]; then
-  for _yc in "${ROOT:-}/bin/vault/hoard-lib.sh" \
-             "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." 2>/dev/null && pwd)/bin/vault/hoard-lib.sh" \
-             "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." 2>/dev/null && pwd)/bin/vault/hoard-lib.sh" \
-             "$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)/hoard-lib.sh"; do
-    [ -n "$_yc" ] && [ -r "$_yc" ] && { . "$_yc"; YMIR_HOARD_LIB_LOADED=1; break; }
+  for _yc in ${ROOT:+"$ROOT/bin/vault/hoard-lib.sh"} "$SCRIPT_DIR/hoard-lib.sh"; do
+    [ -r "$_yc" ] && { . "$_yc"; YMIR_HOARD_LIB_LOADED=1; break; }
   done
   unset _yc
 fi
 if [ -z "${YMIR_HOME:-}" ] && command -v ymir_home_root >/dev/null 2>&1; then
   ymir_home_root YMIR_HOME
 fi
+[ -n "${YMIR_HOME:-}" ] || {
+  printf 'error: the hoard home is unresolved — bin/vault/hoard-lib.sh answered nothing\n' >&2
+  printf 'help: run the door from the repo, or set YMIR_HOME\n' >&2
+  exit 2
+}
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="$(d="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; s="$d"; while [ "$d" != / ] && { [ ! -d "$d/RULES" ] || [ ! -d "$d/.agents" ]; }; do d="$(dirname "$d")"; done; { [ -d "$d/RULES" ] && [ -d "$d/.agents" ]; } || d="$s"; printf '%s' "$d")"
 YMIR_HOME="${YMIR_HOME}"
 HOARD="$YMIR_HOME/hodd"
 MEETINGS="$HOARD/workspaces/meetings"
+ENGINE_PREFIX="${SNOTRA_ENGINE_PREFIX:-$HOME/.local/opt/whisper.cpp}"
 WHISPER_GPU="${WHISPER_GPU:-on}"
 # The rail is the LIVING rail (plan 51 Parts 9a/9c): the ear's summaries ride
 # whichever strong box is CONNECTED, resolved by the ONE resolver. An explicit
@@ -94,13 +103,15 @@ find_whisper() {
   for c in whisper-cli whisper-cpp whisper; do
     if command -v "$c" >/dev/null 2>&1; then command -v "$c"; return 0; fi
   done
-  # 3) the fleet's known build trees (whisper-cli, then the deprecated `main`)
+  # 3) the fleet's known build trees (whisper-cli, then the deprecated `main`),
+  #    then the no-root packaged copy snotra-ensure.sh seats
   local p
   for p in \
     "$HOME/whisper.cpp.src/build/bin/whisper-cli" \
     "$HOME/whisper.cpp/build/bin/whisper-cli" \
     "$HOME/whisper.cpp.src/build/bin/main" \
     "$HOME/whisper.cpp/build/bin/main" \
+    "$ENGINE_PREFIX/bin/whisper-cli" \
     "/usr/local/bin/whisper-cli" \
     "/usr/bin/whisper-cli"; do
     if [ -x "$p" ]; then printf '%s' "$p"; return 0; fi
@@ -170,14 +181,43 @@ audio_channels() {
     -of default=nw=1:nk=1 "$1" 2>/dev/null | head -1 | tr -d '[:space:]'
 }
 
+# pick_backend <dir> — the most specific CPU kernel this host can run.
+#
+# Debian/Ubuntu ship libggml as one .so per microarchitecture. ggml's own
+# loader picks the best from a DIRECTORY, but GGML_BACKEND_PATH takes one FILE,
+# so the choice is made from /proc/cpuinfo. `haswell` is the AVX2+FMA baseline
+# and on this seat it ran 4.7x faster than the generic `x64` kernel (2.5 s
+# against 11.8 s for an 8-second clip, measured 2026-11-12); `x64` is the floor
+# that always runs. A build tree links its kernel statically and has no
+# backends/, so it never reaches this.
+pick_backend() {
+  local d="$1" flags p
+  flags="$(grep -m1 '^flags' /proc/cpuinfo 2>/dev/null || true)"
+  for p in sapphirerapids skylakex haswell sse42 x64; do
+    case "$p" in
+      sapphirerapids) printf '%s' "$flags" | grep -qw avx512vnni || continue ;;
+      skylakex) printf '%s' "$flags" | grep -qw avx512f || continue ;;
+      haswell) printf '%s' "$flags" | grep -qw avx2 || continue ;;
+      sse42) printf '%s' "$flags" | grep -qw sse4_2 || continue ;;
+    esac
+    [ -f "$d/libggml-cpu-$p.so" ] && { printf '%s' "$d/libggml-cpu-$p.so"; return 0; }
+  done
+  p="$(ls "$d"/libggml-cpu-*.so 2>/dev/null | head -1)"
+  [ -n "$p" ] && printf '%s' "$p"
+  return 0
+}
+
 # Writes "$TMP_PREFIX.txt"; returns non-zero when the engine failed.
-# A build-tree binary needs its own directory on LD_LIBRARY_PATH (libwhisper.so).
+# A build-tree binary needs its own directory on LD_LIBRARY_PATH (libwhisper.so);
+# a packaged copy also carries lib/ and backends/ beside bin/.
 # Run inside a subshell so a CUDA abort cannot print a signal message into the
 # transcript path; the caller retries on the CPU.
 run_whisper() {
   local bin="$1" model="$2" audio="$3"; shift 3
-  local bindir
+  local bindir libdir backenddir
   bindir="$(dirname "$bin")"
+  libdir="$(dirname "$bindir")/lib"
+  backenddir="$(dirname "$bindir")/backends"
   rm -f "$TMP_PREFIX.txt"
   # `-di` is the stereo-channel diarization: whisper compares the two channels'
   # energy over each segment and prefixes the text `(speaker 0)` / `(speaker 1)`.
@@ -189,7 +229,14 @@ run_whisper() {
     DI="-di"
   fi
   (
-    export LD_LIBRARY_PATH="$bindir:${LD_LIBRARY_PATH:-}"
+    export LD_LIBRARY_PATH="$bindir:$libdir:${LD_LIBRARY_PATH:-}"
+    # A packaged copy's libggml loads its CPU kernel from backends/; name one
+    # explicitly (the compiled-in path /usr/lib/.../ggml/backends0 does not
+    # exist for an unprivileged copy). An already-exported choice wins.
+    if [ -z "${GGML_BACKEND_PATH:-}" ] && [ -d "$backenddir" ]; then
+      _backend="$(pick_backend "$backenddir")"
+      [ -n "$_backend" ] && export GGML_BACKEND_PATH="$_backend"
+    fi
     # --output-srt rides alongside the plain text: it is the ONLY output that
     # carries timestamps, and a mined action item without its moment cannot be
     # jumped to in the recording.
