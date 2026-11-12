@@ -11,7 +11,9 @@
 #
 # WHAT IT DOES, per harness, from the descriptors in `.agents/harnesses/`:
 #   pi        the settings `extensions[]` entry, resolved by realpath (bin/seat/valknut-load.sh --global)
-#   opencode  the plugin set copied into ~/.config/opencode/plugins
+#   opencode  the plugin set copied into ~/.config/opencode/plugins, and the ONE dependency
+#             those adapters import (@opencode/plugin, pinned to the running opencode)
+#             installed beside them — files without a package resolve nothing (2026-11-12)
 #   claude    the hook scripts into ~/.claude/hooks  (the JSON wiring is NAMED, never merged blind)
 #   codex     hooks.json and the skills links under ~/.codex
 #   cursor    the rules into ~/.cursor/rules
@@ -62,7 +64,57 @@ copy_tree() {  # <src-dir> <dst-dir> <label> — copy only what differs, keep on
   return 0
 }
 
-printf 'harness_extensions[%s]{harness,state,detail}:\n' 6
+# The plugin FILES alone are not a working plugin. Every adapter opens with
+# `import { Plugin } from "@opencode/plugin"`, and OpenCode resolves that package
+# from the plugin file's own directory upwards. A home carrying the six files and
+# no package.json resolves nothing, and the harness reports "6 plugins failed"
+# while every listing looks right (2026-11-12). The dependency is pinned to the
+# RUNNING opencode's version, because that is the API the adapters are written
+# against; a version the registry does not publish falls back to latest.
+opencode_deps_state() {  # <home> → ok | absent | stale
+  local home="${1-}" spec
+  [ -n "$home" ] && [ -f "$home/package.json" ] || { printf 'absent'; return 0; }
+  spec="$(python3 - "$home/package.json" <<'PY' 2>/dev/null || true
+import json, sys
+try:
+    print((json.load(open(sys.argv[1])).get("dependencies") or {}).get("@opencode/plugin", ""))
+except Exception:
+    print("")
+PY
+)"
+  [ -n "$spec" ] && [ -d "$home/node_modules/@opencode/plugin" ] && printf 'ok' || printf 'stale'
+}
+opencode_deps_install() {  # <home> → current | synced(<spec>) | skip(<why>)
+  local home="${1-}" ver spec
+  [ -n "$home" ] || { printf 'skip(no home)'; return 0; }
+  command -v npm >/dev/null 2>&1 || { printf 'skip(no npm)'; return 0; }
+  command -v opencode >/dev/null 2>&1 || { printf 'skip(no opencode)'; return 0; }
+  ver="$(opencode --version 2>/dev/null | head -1 | tr -dc '0-9.')"
+  spec="latest"
+  if [ -n "$ver" ] && npm view "@opencode/plugin@$ver" version >/dev/null 2>&1; then spec="$ver"; fi
+  mkdir -p "$home" 2>/dev/null || { printf 'skip(home not writable)'; return 0; }
+  python3 - "$home/package.json" "$spec" <<'PY' || { printf 'skip(package.json)'; return 0; }
+import json, sys
+path, spec = sys.argv[1], sys.argv[2]
+try:
+    doc = json.load(open(path))
+except Exception:
+    doc = {}
+doc.setdefault("private", True)
+doc.setdefault("type", "module")
+deps = doc.setdefault("dependencies", {})
+deps["@opencode/plugin"] = spec
+deps.setdefault("effect", "^3.10.0")
+json.dump(doc, open(path, "w"), indent=2)
+PY
+  [ -d "$home/node_modules/@opencode/plugin" ] || {
+    ( cd "$home" && npm install --no-audit --no-fund >/dev/null 2>&1 ) || { printf 'skip(npm install failed)'; return 0; }
+    printf 'synced(%s)' "$spec"; return 0
+  }
+  printf 'current'
+}
+
+printf 'harness_extensions[%s]{harness,state,detail}:\n' 7
 
 # ── pi: the settings entry that makes the extensions load from any directory ──
 if command -v pi >/dev/null 2>&1; then
@@ -88,6 +140,20 @@ if command -v opencode >/dev/null 2>&1; then
     copy_tree "$ROOT/.opencode/plugins" "$HOME/.config/opencode/plugins" "opencode-guards" || true
   else
     copy_tree "$ROOT/.opencode/plugins" "$HOME/.config/opencode/plugins" "opencode-guards" || true
+  fi
+  oc_home="$HOME/.config/opencode/plugins"
+  if [ "$mode" = "check" ]; then
+    case "$(opencode_deps_state "$oc_home")" in
+      ok) say "  \"opencode-deps\",\"current\",\"@opencode/plugin resolves beside the plugins\"" ;;
+      *)  say "  \"opencode-deps\",\"stale\",\"no resolvable @opencode/plugin in $oc_home — every adapter fails to import\""
+          stale=$((stale+1)) ;;
+    esac
+  else
+    deps_state="$(opencode_deps_install "$oc_home")"
+    case "$deps_state" in
+      current|synced*) say "  \"opencode-deps\",\"synced\",\"$deps_state\"" ;;
+      *)               say "  \"opencode-deps\",\"skip\",\"$deps_state\"" ;;
+    esac
   fi
   [ "$mode" = "install" ] && say "  \"opencode\",\"note\",\"the twenty tools come from ymir-tools.ts; loaded by opencode's own config\"" || true
 else

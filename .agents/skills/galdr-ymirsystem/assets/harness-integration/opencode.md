@@ -1,8 +1,9 @@
 # OpenCode Harness Adapter (Öppencode)
 
-> **Purpose:** Rebuild, verify, or extend the OpenCode adapter — the `.opencode/plugins/*.js` shims that seat Brokk on `session.created`, arm **Sýn** on `session.idle`, guard the turn end, and enforce the PreToolUse seatbelts.
+> **Purpose:** Rebuild, verify, or extend the OpenCode adapter — the `.agents/harness/opencode/plugins/*.js` shims that seat Brokk on `session.created`, arm **Sýn** on `session.idle`, guard the turn end, and enforce the PreToolUse seatbelts.
 
-OpenCode is Ymir's **primary harness** (`config/eindri-harness` = `opencode`; `opencode.json` sets `"default_agent": "brokk"`). Its adapters are Node ESM plugins auto-loaded from `.opencode/plugins/`.
+OpenCode is Ymir's **primary harness** (`config/eindri-harness` = `opencode`; `opencode.json` sets `"default_agent": "brokk"`). Its adapters are ESM plugins built by OpenCode's Bun runtime and loaded from ONE home —
+`~/.config/opencode/plugins/` — seeded from `.agents/harness/opencode/plugins/`.
 
 ---
 
@@ -10,15 +11,34 @@ OpenCode is Ymir's **primary harness** (`config/eindri-harness` = `opencode`; `o
 
 | File | Export | Norse role | Contract part |
 |---|---|---|---|
-| `.opencode/plugins/saga-sessionstart.js` | `SagaSessionstart` | **Sága** — runs the digest and injects it into the session | Session-open injection |
-| `.opencode/plugins/syn-watch-arm.js` | `SynWatchArm` | **Sýn** — owns watcher continuity | Watch arm |
-| `.opencode/plugins/syn-turnend-guard.js` | `SynTurnendGuard` | **Sýn** — refuses a blind turn end | Turn-end guard |
-| `.opencode/plugins/syn-pretool-check.js` | `SynPretoolCheck` | **Sýn** — arm seatbelt | PreToolUse (arm) |
-| `.opencode/plugins/syn-cd-check.js` | `SynCdCheck` | **Sýn** — cd seatbelt | PreToolUse (cd) |
-| `.opencode/plugins/lib/rodd-operational-input.js` | `encodeRoddOperationalInput` | **Rödd** — the wire encoder | shared |
-| `.opencode/plugins/package.json` | — | declares `"type": "module"` | — |
+| `.agents/harness/opencode/plugins/saga-sessionstart.js` | `SagaSessionstart` | **Sága** — runs the digest and injects it into the session | Session-open injection |
+| `.agents/harness/opencode/plugins/syn-watch-arm.js` | `SynWatchArm` | **Sýn** — owns watcher continuity | Watch arm |
+| `.agents/harness/opencode/plugins/syn-turnend-guard.js` | `SynTurnendGuard` | **Sýn** — refuses a blind turn end | Turn-end guard |
+| `.agents/harness/opencode/plugins/syn-pretool-check.js` | `SynPretoolCheck` | **Sýn** — arm seatbelt | PreToolUse (arm) |
+| `.agents/harness/opencode/plugins/syn-cd-check.js` | `SynCdCheck` | **Sýn** — cd seatbelt | PreToolUse (cd) |
+| `.agents/harness/opencode/plugins/lib/rodd-operational-input.js` | `encodeRoddOperationalInput` | **Rödd** — the wire encoder | shared |
+| `.agents/harness/opencode/plugins/package.json` | — | declares `"type": "module"` | — |
 
-There is **no** `plugin` array in `opencode.json`; OpenCode discovers `.opencode/plugins/*.js` by path. The plugins are plain ESM and import only Node builtins plus their local `./lib/`.
+There is **no** `plugin` array in `opencode.json`; OpenCode discovers the files under
+`~/.config/opencode/plugins/` — and under a project's `.opencode/plugins/` — by path.
+
+### One home, and the one dependency (2026-11-12)
+
+- **One home.** The project-level `.opencode/plugins` door is gone. OpenCode loads both
+  paths and does not de-duplicate, so the tracked symlink that used to sit there offered
+  every adapter twice — and the project copy could never resolve (a checkout carries no
+  `node_modules`). The source is `.agents/harness/opencode/plugins/`; the live home is
+  `~/.config/opencode/plugins/`.
+- **One dependency.** Every adapter opens with `import { Plugin } from "@opencode/plugin"`,
+  and OpenCode resolves that package from the plugin file's own directory upwards. A home
+  with the files and no `package.json` resolves nothing and reports *"6 plugins failed"*
+  while every listing looks right. The home therefore carries
+  `{"dependencies": {"@opencode/plugin": "<the running opencode's version>", "effect": "^3"}}`,
+  installed by `bin/seat/harness-extensions-install.sh` (the `opencode-deps` row; `--check`
+  reports it `stale` when it is missing).
+- **A config edit is not live until the service reloads it.** The CLI talks to a background
+  service (`opencode service`), which loaded its configuration at start: `opencode service
+  restart` is what makes a changed plugin or MCP entry real.
 
 ---
 
